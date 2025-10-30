@@ -19,5 +19,10 @@ public class AuthorApplicationRunner implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws Exception {
         // TBD: access Database
+
+        authorRepository.save(new Author("Test", "Test", "email"));
+
+        List<Author> authors = authorRepository.findAll();
+
     }
 }
