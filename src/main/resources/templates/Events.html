@@ -28,5 +28,12 @@
             <td th:text="${event.price}"></td>
         </tr>
     </table>
+
+    <form th:action="@{/create-sample}" method="post">
+        <button type="submit">Create Sample Events</button>
+    </form>
+
+
+
 </body>
 </html>

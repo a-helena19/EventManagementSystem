@@ -48,6 +48,8 @@ public class Event {
         return "Event: [id= " + id + ", name= " + name + ", description= " + description + ", location= " + location + ", date= " + date + ", price= " + price + "]";
     }
 
+
+    // Getter
     public Long getId() {
         return id;
     }
