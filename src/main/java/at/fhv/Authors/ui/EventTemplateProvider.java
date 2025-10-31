@@ -1,7 +1,6 @@
-package at.fhv.Authors.events.ui;
+package at.fhv.Authors.ui;
 
 import at.fhv.Authors.domain.model.Event;
-import ch.qos.logback.core.model.Model;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -15,7 +14,9 @@ import java.util.List;
 public class EventTemplateProvider {
     @GetMapping("/events")
     public ModelAndView getEventTemplate() {
-        System.out.println("getEventTemplate");
+        // Test if it gets here
+        System.out.println("getEventTemplate called!");
+
         // Example event list
         List<Event> events = Arrays.asList(
                 new Event("Bubble Soccer", "", "Dornbirn", LocalDate.of(2025, 11, 10), new BigDecimal("44.99")),
