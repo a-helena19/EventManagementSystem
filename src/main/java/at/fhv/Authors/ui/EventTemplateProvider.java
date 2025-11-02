@@ -26,11 +26,7 @@ public class EventTemplateProvider {
         System.out.println("getEventTemplate called!");
 
         // Example event list
-        List<Event> events = Arrays.asList(
-                new Event("Bubble Soccer", "", "Dornbirn", LocalDate.of(2025, 11, 10), new BigDecimal("44.99")),
-                new Event ("Skydiving", "", "Hohenems", LocalDate.of(2025, 12, 5), new BigDecimal("299.99"))
-
-        );
+        List<Event> events = eventRepository.findAll();
 
         return new ModelAndView("Events", "events", events);
     }
