@@ -16,7 +16,7 @@
             <img src="/images/icons/EVERout_Logo_dunkel.png" height=200px>
             <h1>Create Event</h1>
 
-            <form id="event-form">
+            <form id="event-form" th:action="@{/create-event}" method="post">
 
                 <div class="form-row">
                     <label for="id">Id</label>
