@@ -32,6 +32,10 @@
 
     nextBtn?.addEventListener("click", () => {
         console.log('[popup] next click -> confirm');
+
+        // Vor dem Wechsel zu Step 2: Überblick erstellen
+        updateReview();
+
         // show confirm (step 2), hide edit (step 1)
         step1.style.display = "none";
         step2.style.display = "block";
@@ -43,6 +47,30 @@
         if (nextBtn) nextBtn.style.display = 'none';
         if (backBtn) backBtn.style.display = '';
     });
+
+    // Funktion, um den Review-Inhalt zu aktualisieren
+    function updateReview() {
+        const reviewContent = document.getElementById("reviewContent");
+        if (!reviewContent) return;
+
+        // Werte aus den Formularfeldern holen
+        const name = document.getElementById("name").value;
+        const description = document.getElementById("description").value;
+        const location = document.getElementById("location").value;
+        const date = document.getElementById("date").value;
+        const price = document.getElementById("price").value;
+
+        // Inhalt für Step 2 dynamisch erstellen
+        reviewContent.innerHTML = `
+            <ul class="list-group">
+                <li class="list-group-item"><strong>Name:</strong> ${name}</li>
+                <li class="list-group-item"><strong>Description:</strong> ${description || '-'}</li>
+                <li class="list-group-item"><strong>Location:</strong> ${location}</li>
+                <li class="list-group-item"><strong>Date:</strong> ${date}</li>
+                <li class="list-group-item"><strong>Price:</strong> €${parseFloat(price).toFixed(2)}</li>
+            </ul>
+        `;
+    }
 
     backBtn?.addEventListener("click", () => {
         console.log('[popup] back click -> edit');
