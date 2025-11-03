@@ -5,6 +5,7 @@
     const backBtn   = document.getElementById("backBtn");
     const step1     = document.getElementById("step1");
     const step2     = document.getElementById("step2");
+    const cancelBtn = document.getElementById("cancelBtn");
 
     console.log('[popup] init', { popup, openPopup, nextBtn, backBtn, step1, step2 });
 
@@ -84,6 +85,14 @@
         // show Next again
         if (nextBtn) nextBtn.style.display = '';
     });
+
+    cancelBtn?.addEventListener("click", () => {
+        console.log('[popup] cancel click -> close popup');
+        popup.style.display = "none";
+        step1.style.display = "block";
+        step2.style.display = "none";
+        disableFields(false);
+    })
 
     // Just to see if the file loaded
     console.log('[popup] handlers attached');
