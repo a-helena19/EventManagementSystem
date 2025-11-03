@@ -31,8 +31,24 @@
         backBtn && (backBtn.style.display = '');
     });
 
+    function validateStep1(){
+        const name = document.getElementById("name").value.trim();
+        const location = document.getElementById("location").value.trim();
+        const date = document.getElementById("date").value.trim();
+        const price = document.getElementById("price").value.trim();
+
+        if (!name || !location || !date || !price) {
+            alert("Please fill in all required fields before continuing.");
+            return false;
+        }
+        return true;
+    }
+
     nextBtn?.addEventListener("click", () => {
         console.log('[popup] next click -> confirm');
+
+        // Check if required fields are filled
+        if (!validateStep1()) return;
 
         // Vor dem Wechsel zu Step 2: Überblick erstellen
         updateReview();
