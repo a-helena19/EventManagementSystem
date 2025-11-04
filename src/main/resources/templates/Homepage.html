@@ -10,69 +10,68 @@
     <!--linking Bootstrap stylesheet and js-->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="/css/createEvent.css">
 </head>
 <body>
-<img src="/images/icons/EVERout_Logo_dunkel.png" height=200px>
-<button type="button" id="openPopup" class="btn btn-primary">Create Event</button>
+    <img src="/images/icons/EVERout_Logo_dunkel.png" height=200px>
 
-<div id="popup" style="display:none;">
+    <button id="openFormBtn" class="btn btn-primary" onclick="openPopup('true');">Create new event</button>
 
-    <form id="event-form" th:action="@{/create-event}" method="post">
+    <!-- Popup-Container -->
+    <div id="popupForm" class="popup" style="display:none;">
+        <div class="popup-content">
+            <!-- Close Button -->
+            <span id="closePopup" class="close" onclick="openPopup('false')">&times;</span>
+            <form id="event-form" th:action="@{/create-event}" method="post">
 
-        <!-- STEP 1 -->
-        <div id="step1">
-            <div class="form-row">
-                <label for="name">Name </label>
-                <input type="text" id="name" name="name" required>
-            </div>
 
-            <div class="form-row">
-                <label for="description">Description</label>
-                <textarea id="description" name="description"></textarea>
-            </div>
+                <div id="step1">
+                    <div class="form-row">
+                        <label for="name">Name </label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
 
-            <div class="form-row">
-                <label for="location">Location</label>
-                <input type="text" id="location" name="location" required>
-            </div>
+                    <div class="form-row">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description"></textarea>
+                    </div>
 
-            <div class="form-row">
-                <label for="date">Date </label>
-                <input type="date" id="date" name="date" required>
-            </div>
+                    <div class="form-row">
+                        <label for="location">Location</label>
+                        <input type="text" id="location" name="location" required>
+                    </div>
 
-            <div class="form-row">
-                <label for="price">Price (€)</label>
-                <input type="number" id="price" name="price" step="0.01" required>
-            </div>
+                    <div class="form-row">
+                        <label for="date">Date </label>
+                        <input type="date" id="date" name="date" required>
+                    </div>
 
-            <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
-            <button type="button" id="nextBtn" class="btn btn-primary">Next</button>
+                    <div class="form-row">
+                        <label for="price">Price (€)</label>
+                        <input type="number" id="price" name="price" step="0.01" required>
+                    </div>
+
+                    <div class="form-row">
+                        <label for="images">Upload images</label>
+                        <input type="file" id="images" name="images" accept="image/*" multiple required>
+                    </div>
+
+                    <button type="button" id="nextBtn" class="btn btn-primary" onclick="checkValidation('true')">Next</button>
+                    <button type="button" id="backBtn" class="btn btn-secondary" style="display: none;" onclick="nextStep('false')">Back</button>
+                    <button type="submit" id="submitBtn" class="btn btn-primary" style="display: none;">Create</button>
+                </div>
+
+
+            </form>
         </div>
-
-        <!-- STEP 2 (Review + Submit) -->
-        <div id="step2" style="display: none;">
-            <h4>Review your event details</h4>
-            <div id="reviewContent" class="mb-3">
-                <!-- Hier füllt JS automatisch die Eventdaten ein -->
-            </div>
-
-            <button type="button" id="backBtn" class="btn btn-secondary">Back</button>
-            <button type="submit" id="createBtn" class="btn btn-primary">Submit</button>
-        </div>
-
-    </form>
-</div>
+    </div>
 
 
 
-<!--Success Info when you have created an Event-->
-<h1>We can use this at a later moment</h1>
-<div class="alert alert-success">
-    <strong>Success!</strong> Your Event was Succesfully created.
-</div>
 
-<script src="/js/script.js?v=1"></script>
+
+
+    <script src="/js/createEvent.js?v=1"></script>
 
 </body>
 </html>

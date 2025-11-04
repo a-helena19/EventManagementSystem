@@ -1,6 +1,7 @@
 package at.fhv.Authors;
 
 import at.fhv.Authors.domain.model.Event;
+import at.fhv.Authors.domain.model.Status;
 import at.fhv.Authors.persistence.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
@@ -25,7 +26,7 @@ public class EventApplicationRunner implements ApplicationRunner {
         System.out.println("EventRunner is running!");
 
         // Inserting a new line to the event table
-        eventRepository.save(new Event("Default Event", "Testing the onload method", "Vienna", LocalDate.of(2025, 11, 8), new BigDecimal("49.99")));
+        eventRepository.save(new Event("Default Event", "Testing the onload method", "Vienna", LocalDate.of(2025, 11, 8), new BigDecimal("49.99"), Status.ACTIVE));
 
 
         // equals SELECT * FROM Event and saving the output in a list of event objects
@@ -34,7 +35,7 @@ public class EventApplicationRunner implements ApplicationRunner {
         // Printing each event in console
         for (Event event : events) {
             System.out.println("printing events: \n");
-            event.toString();
+            System.out.println(event.toString());
         }
 
     }

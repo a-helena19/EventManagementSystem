@@ -1,6 +1,7 @@
 package at.fhv.Authors.ui;
 
 import at.fhv.Authors.domain.model.Event;
+import at.fhv.Authors.domain.model.Status;
 import at.fhv.Authors.persistence.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -38,7 +39,7 @@ public class HomepageTemplateProvider {
             @RequestParam BigDecimal price
     ) {
         System.out.println("Creating new Event: " + name);
-        Event newEvent = new Event(name, description, location, date, price);
+        Event newEvent = new Event(name, description, location, date, price, Status.ACTIVE);
         eventRepository.save(newEvent);
 
         return "redirect:/homepage";

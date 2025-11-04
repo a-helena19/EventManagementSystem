@@ -1,6 +1,7 @@
 package at.fhv.Authors.ui;
 
 import at.fhv.Authors.domain.model.Event;
+import at.fhv.Authors.domain.model.Status;
 import at.fhv.Authors.persistence.EventRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,7 +35,7 @@ public class EventTemplateProvider {
     @PostMapping("/create-sample")
     public String createSampleEvent() {
         System.out.println("createSampleEvent called!");
-        eventRepository.save(new Event("Button Event", "Testing the create Event button", "Berlin", LocalDate.of(2026, 11, 20), new BigDecimal("199.99")));
+        eventRepository.save(new Event("Button Event", "Testing the create Event button", "Berlin", LocalDate.of(2026, 11, 20), new BigDecimal("199.99"), Status.ACTIVE));
         return "redirect:/events";
     }
 

@@ -30,22 +30,27 @@ public class Event {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
     // Default constructor required by JPA
     public Event() {}
 
     // Constructor without id (auto-generated)
-    public Event(String name, String description, String location, LocalDate date, BigDecimal price) {
+    public Event(String name, String description, String location, LocalDate date, BigDecimal price, Status status) {
         this.name = name;
         this.description = description;
         this.location = location;
         this.date = date;
         this.price = price;
+        this.status = status;
     }
 
 
     @Override
     public String toString() {
-        return "Event: [id= " + id + ", name= " + name + ", description= " + description + ", location= " + location + ", date= " + date + ", price= " + price + "]";
+        return "Event: [id= " + id + ", name= " + name + ", description= " + description + ", location= " + location + ", date= " + date + ", price= " + price + ", status= " + status + "]";
     }
 
 
@@ -72,6 +77,10 @@ public class Event {
 
     public BigDecimal getPrice() {
         return price;
+    }
+
+    public Status getStatus() {
+        return status;
     }
 }
 
