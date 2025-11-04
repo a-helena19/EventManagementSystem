@@ -73,7 +73,7 @@ function nextStep(disable) {
         location.setAttribute("readonly", "");
         date.setAttribute("readonly", "");
         price.setAttribute("readonly", "");
-        images.setAttribute("readonly", "");
+        images.classList.add('readonly-file'); // readonly Attribute won't prevent choosing files -> thus we use css
 
 
         name.setAttribute("style", "border: 0px");
@@ -93,7 +93,7 @@ function nextStep(disable) {
         location.removeAttribute("readonly");
         date.removeAttribute("readonly");
         price.removeAttribute("readonly");
-        images.removeAttribute("readonly");
+        images.classList.remove('readonly-file');
 
 
         name.setAttribute("style", "border: 1px solid");
@@ -120,6 +120,27 @@ function checkValidation (next) {
         // Show native browser validation messages
         form.reportValidity();
     }
+}
+
+function listFileNames() {
+    const fileInput = document.getElementById('images');
+    const fileNamesDiv = document.getElementById('fileNames');
+
+
+    const files = Array.from(fileInput.files);
+
+    if (files.length === 0) {
+        fileNamesDiv.textContent = "No files selected";
+        return;
+    }
+
+    // Dateinamen schön anzeigen
+    fileNamesDiv.innerHTML = `
+        <ul>
+          ${files.map(f => `<li>${f.name}</li>`).join('')}
+        </ul>
+    `;
+
 }
 
 
