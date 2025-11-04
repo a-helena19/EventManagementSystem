@@ -1,9 +1,13 @@
 package at.fhv.Authors.domain.model;
 
 import jakarta.persistence.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Access(AccessType.FIELD)
@@ -34,6 +38,9 @@ public class Event {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EventImage> images = new ArrayList<>();
+
     // Default constructor required by JPA
     public Event() {}
 
@@ -45,16 +52,12 @@ public class Event {
         this.date = date;
         this.price = price;
         this.status = status;
+        this.images = new ArrayList<>();
+
     }
 
 
-    @Override
-    public String toString() {
-        return "Event: [id= " + id + ", name= " + name + ", description= " + description + ", location= " + location + ", date= " + date + ", price= " + price + ", status= " + status + "]";
-    }
-
-
-    // Getter
+    // Getter and Setter
     public Long getId() {
         return id;
     }
@@ -63,24 +66,75 @@ public class Event {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getDescription() {
         return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getLocation() {
         return location;
     }
 
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
     public LocalDate getDate() {
         return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
     }
 
     public BigDecimal getPrice() {
         return price;
     }
 
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
     public Status getStatus() {
         return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public List<EventImage> getImages() {
+        return images;
+    }
+
+    public void setImages(List<EventImage> images) {
+        this.images = images;
+        for (EventImage img : images) {
+            img.setEvent(this);
+        }
+    }
+
+    public void addImage(EventImage image) {
+        images.add(image);
+        image.setEvent(this);
+    }
+
+    public void removeImage(EventImage image) {
+        images.remove(image);
+        image.setEvent(null);
+    }
+
+    @Override
+    public String toString() {
+        return "Event [id=" + id + ", name=" + name + ", description=" + description + ", location=" + location +
+                ", date=" + date + ", price=" + price + ", status=" + status + "]";
     }
 }
 
