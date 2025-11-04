@@ -68,12 +68,12 @@ function nextStep(disable) {
         backBtn.setAttribute("style", "display: inline;");
         submitBtn.setAttribute("style", "display: inline;");
 
-        name.setAttribute("disabled", "");
-        description.setAttribute("disabled", "");
-        location.setAttribute("disabled", "");
-        date.setAttribute("disabled", "");
-        price.setAttribute("disabled", "");
-        images.setAttribute("disabled", "");
+        name.setAttribute("readonly", "");
+        description.setAttribute("readonly", "");
+        location.setAttribute("readonly", "");
+        date.setAttribute("readonly", "");
+        price.setAttribute("readonly", "");
+        images.setAttribute("readonly", "");
 
 
         name.setAttribute("style", "border: 0px");
@@ -88,12 +88,12 @@ function nextStep(disable) {
         backBtn.setAttribute("style", "display: none;");
         submitBtn.setAttribute("style", "display: none;");
 
-        name.removeAttribute("disabled");
-        description.removeAttribute("disabled");
-        location.removeAttribute("disabled");
-        date.removeAttribute("disabled");
-        price.removeAttribute("disabled");
-        images.removeAttribute("disabled");
+        name.removeAttribute("readonly");
+        description.removeAttribute("readonly");
+        location.removeAttribute("readonly");
+        date.removeAttribute("readonly");
+        price.removeAttribute("readonly");
+        images.removeAttribute("readonly");
 
 
         name.setAttribute("style", "border: 1px solid");
