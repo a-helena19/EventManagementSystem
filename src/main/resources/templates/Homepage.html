@@ -22,7 +22,7 @@
         <div class="popup-content">
             <!-- Close Button -->
             <span id="closePopup" class="close" onclick="openPopup('false')">&times;</span>
-            <form id="event-form" th:action="@{/create-event}" method="post">
+            <form id="event-form" th:action="@{/create-event}" method="post" enctype="multipart/form-data">
 
 
                 <div id="step1">
@@ -48,7 +48,7 @@
 
                     <div class="form-row">
                         <label for="price">Price (€)</label>
-                        <input type="number" id="price" name="price" step="0.01" required>
+                        <input type="number" id="price" name="price" step="0.01" min="0.00" required>
                     </div>
 
                     <div class="form-row">
