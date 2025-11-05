@@ -58,8 +58,11 @@
 
                     <div class="form-row">
                         <label for="images">Upload images</label>
-                        <input type="file" id="images" name="images" accept="image/*" multiple required>
+                        <input type="file" id="images" name="images" accept="image/*" multiple required onchange="listFileNames()">
                     </div>
+
+                    <!-- Hier erscheinen die Dateinamen -->
+                    <div id="fileNames"></div>
 
                     <button type="button" id="nextBtn" class="btn btn-primary" onclick="checkValidation('true')">Next</button>
                     <button type="button" id="backBtn" class="btn btn-secondary" style="display: none;" onclick="nextStep('false')">Back</button>
