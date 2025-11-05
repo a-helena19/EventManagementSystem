@@ -38,6 +38,9 @@ public class Event {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @Column(nullable = true)
+    private String cancelreason;
+
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EventImage> images = new ArrayList<>();
 
@@ -108,6 +111,14 @@ public class Event {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public String getCancelreason(){
+        return cancelreason;
+    }
+
+    public void setCancelreason(String reason){
+        this.cancelreason = reason;
     }
 
     public List<EventImage> getImages() {

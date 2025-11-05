@@ -2,6 +2,8 @@ package at.fhv.Authors.domain.model;
 
 import jakarta.persistence.*;
 
+import java.util.Base64;
+
 @Entity
 @Table(name = "event_images")
 public class EventImage {
@@ -26,8 +28,13 @@ public class EventImage {
     }
 
     // Getter/Setter
+    public Long getId() { return id; }
     public byte[] getImageData() { return imageData; }
     public void setImageData(byte[] imageData) { this.imageData = imageData; }
     public Event getEvent() { return event; }
     public void setEvent(Event event) { this.event = event; }
+
+    public String getBase64Image() {
+        return Base64.getEncoder().encodeToString(imageData);
+    }
 }
