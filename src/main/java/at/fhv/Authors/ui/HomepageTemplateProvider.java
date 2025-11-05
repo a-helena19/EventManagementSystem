@@ -25,6 +25,7 @@ public class HomepageTemplateProvider {
     @Autowired
     private EventRepository eventRepository;
 
+    // create a view and link it to Homepage.html
     @GetMapping("/homepage")
     public ModelAndView getHomepageTemplate() {
         // Test if it gets here
@@ -34,7 +35,7 @@ public class HomepageTemplateProvider {
         return new ModelAndView("Homepage");
     }
 
-
+    // RequestParam: gets data by using name in html not id or class
     @PostMapping("/create-event")
     public String createEvent(
             @RequestParam String name,
@@ -42,7 +43,7 @@ public class HomepageTemplateProvider {
             @RequestParam String location,
             @RequestParam LocalDate date,
             @RequestParam BigDecimal price,
-            @RequestParam("images") List<MultipartFile> images
+            @RequestParam List<MultipartFile> images
     ) throws IOException {
         System.out.println("Creating new Event: " + name);
 
@@ -52,10 +53,10 @@ public class HomepageTemplateProvider {
         newEvent.setLocation(location);
         newEvent.setDate(date);
         newEvent.setPrice(price);
-        newEvent.setStatus(Status.ACTIVE);
+        newEvent.setStatus(Status.ACTIVE); // we might change this later to be confirmed by back-office
 
 
-        // Bilder hinzufügen
+        // add images
         if (images != null) {
             for (MultipartFile file : images) {
                 if (!file.isEmpty()) {

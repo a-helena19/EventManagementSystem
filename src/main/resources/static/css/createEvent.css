@@ -1,4 +1,4 @@
-/* Hintergrund-Overlay */
+/* Background-Overlay */
 .popup {
     position: fixed;
     top: 0;
@@ -12,7 +12,7 @@
     z-index: 999;
 }
 
-/* Inhalt des Pop-ups */
+
 .popup-content {
     background-color: #fff;
     padding: 20px 30px;
@@ -40,15 +40,15 @@
 }
 
 #event-form {
-    max-width: 600px; /* maximale Breite des Formulars */
-    margin: 50px auto; /* zentriert es horizontal */
+    max-width: 600px;
+    margin: 50px auto; /* centers it horizontally */
     padding: 20px;
     background-color: #f9f9f9;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* Jede Zeile */
+/* Every row */
 .form-row {
     display: flex;
     align-items: center;
@@ -65,7 +65,7 @@
 /* Inputs und Textarea-Styling */
 .form-row input,
 .form-row textarea {
-    flex: 1; /* gleiche Breite für alle */
+    flex: 1; /* same width for all */
     padding: 8px 10px;
     border: 1px solid #ccc;
     border-radius: 6px;
@@ -73,7 +73,7 @@
     transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-/* Hover- und Fokus-Effekte */
+/* Hover- und Fokus-Effects */
 .form-row input:focus,
 .form-row textarea:focus {
     border-color: #007bff;
@@ -81,7 +81,7 @@
     outline: none;
 }
 
-/* Button */
+
 #nextBtn {
     display: block;
     margin: 20px auto 0 auto;
@@ -106,12 +106,12 @@ input, textarea, select {
     transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-/* Wenn das Feld valide ist */
+/* When a field is valid */
 input:valid, textarea:valid, select:valid {
     border-color: green; /* grün, wenn alles korrekt */
 }
 
-/* Optional: negative Rückmeldung */
+/* When a field is invalid */
 input:invalid:focus, textarea:invalid:focus, select:invalid:focus {
     border-color: red; /* rot, wenn falsch/fokusiert */
 }
@@ -128,24 +128,20 @@ input:invalid:focus, textarea:invalid:focus, select:invalid:focus {
     transition: background-color 0.3s;
 }
 
-/* Primary (Submit) button style */
 #submitBtn {
     background-color: #007bff;
     color: white;
 }
 
-/* Hover for Submit */
 #submitBtn:hover {
     background-color: #0056b3;
 }
 
-/* Secondary (Back) button style */
 #backBtn {
     background-color: #6c757d;
     color: white;
 }
 
-/* Hover for Back */
 #backBtn:hover {
     background-color: #5a6268;
 }
@@ -154,18 +150,18 @@ input:invalid:focus, textarea:invalid:focus, select:invalid:focus {
 #backBtn,
 #submitBtn {
     display: inline-block;
-    margin: 20px 5px 0 5px; /* spacing between buttons */
+    margin: 20px 5px 0 5px;
 }
 
-/* Optional: Center both buttons as a group */
+/* Center both buttons as a group */
 #backBtn + #submitBtn {
     text-align: center;
 }
 
 
 .readonly-file {
-    pointer-events: none;   /* Maus-Interaktion ausschalten */
-    opacity: 0.6;           /* leicht ausgegraut, optional */
+    pointer-events: none;   /* disable Mouse-Interaktion */
+    opacity: 0.6;
 }
 
 #fileNames {

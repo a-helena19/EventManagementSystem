@@ -15,9 +15,11 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URLConnection;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 
 @Controller
@@ -29,34 +31,42 @@ public class EventTemplateProvider {
     @Autowired
     private EventImageRepository eventImageRepository;
 
+    //create a view and link it to Events.html
     @GetMapping("/events")
     public ModelAndView getEventTemplate() {
         // Test if it gets here
         System.out.println("getEventTemplate called!");
 
-        // Example event list
+        // SELECT * FROM EVENTS
         List<Event> events = eventRepository.findAll();
 
         return new ModelAndView("Events", "events", events);
     }
 
+    // RequestParam: gets data by using name in html not id or class
     @GetMapping("/events/image/{id}")
     @ResponseBody
-    public ResponseEntity<byte[]> getEventImage(@PathVariable Long id) {
+    public ResponseEntity<byte[]> getEventImage(@PathVariable Long id) throws IOException {
         EventImage image = eventImageRepository.findById(id).orElseThrow();
 
+        // Automatically detects the correct MIME type from the image bytes
+        String contentType = URLConnection.guessContentTypeFromStream(new ByteArrayInputStream(image.getImageData()));
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.IMAGE_JPEG); // oder MediaType.IMAGE_PNG je nach Format
+        headers.setContentType(MediaType.parseMediaType(contentType));
 
         return new ResponseEntity<>(image.getImageData(), headers, HttpStatus.OK);
     }
 
-    @PostMapping("/create-sample")
+    // we don't need this method anymore, but it might help later
+    /*
+    @PostMapping("/create_sample")
     public String createSampleEvent() {
         System.out.println("createSampleEvent called!");
         eventRepository.save(new Event("Button Event", "Testing the create Event button", "Berlin", LocalDate.of(2026, 11, 20), new BigDecimal("199.99"), Status.ACTIVE));
         return "redirect:/events";
     }
+
+     */
     
     
     @PostMapping("/cancel_event/{id}")
@@ -71,7 +81,7 @@ public class EventTemplateProvider {
         eventToCancel.setStatus(Status.CANCELLED);
         eventToCancel.setCancelreason(reason);
 
-        // JPA repository will take save() here as Update because we get the Event with its id
+        // JPA repository will take save() here as Update not Insert into because we get the Event by its id
         eventRepository.save(eventToCancel);
         return "redirect:/events";
     }

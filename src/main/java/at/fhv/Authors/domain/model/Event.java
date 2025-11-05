@@ -20,7 +20,6 @@ public class Event {
     @Column(nullable = false)
     private String name;
 
-    // Description is optional, thus it can be null
     @Column(nullable = true)
     private String description;
 
@@ -38,9 +37,12 @@ public class Event {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @Column(nullable = true)
+    @Column(name = "cancel_reason",nullable = true)
     private String cancelreason;
 
+    // mappedBy: bidirectional relationship and event is the owner.
+    // CascadeType.ALL: all operations (persist, merge, remove, refresh, detach) on the parent (event) will be automatically applied on the child (eventImage)
+    // orphanRemoval = true: removing an eventImage from images -> will be automatically removed from the database
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<EventImage> images = new ArrayList<>();
 

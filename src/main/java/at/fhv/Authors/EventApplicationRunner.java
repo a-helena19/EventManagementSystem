@@ -19,10 +19,10 @@ public class EventApplicationRunner implements ApplicationRunner {
     @Autowired
     private EventRepository eventRepository;
 
+    // this method will run everytime you start the application
     @Override
     public void run(ApplicationArguments args) throws Exception {
 
-        // Testing if the method is running
         System.out.println("EventRunner is running!");
 
         // Inserting a new line to the event table

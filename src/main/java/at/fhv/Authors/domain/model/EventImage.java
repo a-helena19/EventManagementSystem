@@ -16,7 +16,7 @@ public class EventImage {
     @Column(name = "image_data", nullable = false)
     private byte[] imageData;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)  //many-to-one relationship, LAZY: load parent only when accessed
     @JoinColumn(name = "event_id")
     private Event event;
 
@@ -34,7 +34,4 @@ public class EventImage {
     public Event getEvent() { return event; }
     public void setEvent(Event event) { this.event = event; }
 
-    public String getBase64Image() {
-        return Base64.getEncoder().encodeToString(imageData);
-    }
 }

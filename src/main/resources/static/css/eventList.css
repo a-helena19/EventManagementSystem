@@ -39,3 +39,15 @@ body {
 .modal-footer button {
     min-width: 100px;
 }
+
+.clickable-card {
+    height: 215px;          /* fixed height for all cards */
+    display: flex;
+    overflow: hidden;       /* prevent content overflow */
+}
+
+.clickable-card .card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* pushes Cancel button or footer down */
+}
