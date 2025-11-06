@@ -1,4 +1,6 @@
-function setEmpty() {
+document.addEventListener("DOMContentLoaded", () => {
+    const modalEl = document.getElementById('createEventModal');
+    const form = document.getElementById('event-form');
     const name = document.getElementById('name');
     const description = document.getElementById('description');
     const location = document.getElementById('location');
@@ -6,50 +8,28 @@ function setEmpty() {
     const price = document.getElementById('price');
     const images = document.getElementById('images');
 
-    name.value = "";
-    description.value = "";
-    location.value = "";
-    date.value = "";
-    price.value = "";
-    images.value = null;
 
-}
-
-
-function openPopup(open) {
-    const openBtn = document.getElementById('openFormBtn');
-    const popup = document.getElementById('popupForm');
-    const closePopup = document.getElementById('closePopup');
-    const date = document.getElementById('date');
+// Reset form when modal is opened
+    modalEl.addEventListener('show.bs.modal', () => {
+        name.value = '';
+        description.value = '';
+        location.value = '';
+        date.value = '';
+        price.value = '';
+        images.value = null;
+        listFileNames();
+        form.classList.remove('was-validated'); // reset validation styling
+        nextStep(false);
 
 
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months start at 0
-    const dd = String(today.getDate()).padStart(2, '0');
-    const minDate = `${yyyy}-${mm}-${dd}`;
-
-
-    if (open === "true") {
-        // Popup öffnen
-        openBtn.addEventListener('click', () => {
-            popup.style.display = 'flex';
-            setEmpty();
-            nextStep("false");
-            date.setAttribute("min", minDate);
-            // Set min date = today
-
-
-        });
-    }
-    else if (open === "false") {
-        // Popup schließen
-        closePopup.addEventListener('click', () => {
-            popup.style.display = 'none';
-        });
-    }
-
-}
+// Set min date to today
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        date.setAttribute("min", `${yyyy}-${mm}-${dd}`);
+    });
+});
 
 
 function nextStep(disable) {
@@ -63,45 +43,35 @@ function nextStep(disable) {
     const backBtn = document.getElementById('backBtn');
     const nextBtn = document.getElementById('nextBtn');
 
-    if (disable === "true") {
-        nextBtn.setAttribute("style", "display: none;");
-        backBtn.setAttribute("style", "display: inline;");
-        submitBtn.setAttribute("style", "display: inline;");
+    if (disable) {
+        nextBtn.style.display = "none";
+        backBtn.style.display = "inline-block";
+        submitBtn.style.display = "inline-block";
 
-        name.setAttribute("readonly", "");
-        description.setAttribute("readonly", "");
-        location.setAttribute("readonly", "");
-        date.setAttribute("readonly", "");
-        price.setAttribute("readonly", "");
+        [name, description, location, date, price].forEach(element => {
+            element.setAttribute("readonly", "");
+            element.style.border = "0px";
+            element.style.backgroundColor = "#e9ecef"; // light grey/darker background
+            element.style.color = "#495057"; // slightly darker text for readability
+        });
         images.classList.add('readonly-file'); // readonly Attribute won't prevent choosing files -> thus we use css
-
-
-        name.setAttribute("style", "border: 0px");
-        description.setAttribute("style", "border: 0px");
-        location.setAttribute("style", "border: 0px");
-        date.setAttribute("style", "border: 0px");
-        price.setAttribute("style", "border: 0px");
-        images.setAttribute("style", "border: 0px");
+        images.style.border = "0px";
+        images.style.backgroundColor = "#e9ecef";
     }
-    else if (disable === "false") {
-        nextBtn.setAttribute("style", "display: flex;");
-        backBtn.setAttribute("style", "display: none;");
-        submitBtn.setAttribute("style", "display: none;");
+    else if (!disable) {
+        nextBtn.style.display = "inline-block";
+        backBtn.style.display = "none";
+        submitBtn.style.display = "none";
 
-        name.removeAttribute("readonly");
-        description.removeAttribute("readonly");
-        location.removeAttribute("readonly");
-        date.removeAttribute("readonly");
-        price.removeAttribute("readonly");
+        [name, description, location, date, price].forEach(element => {
+            element.removeAttribute("readonly");
+            element.style.border = "1px solid";
+            element.style.backgroundColor = "white"; // restore default
+            element.style.color = "black";
+        });
         images.classList.remove('readonly-file');
-
-
-        name.setAttribute("style", "border: 1px solid");
-        description.setAttribute("style", "border: 1px solid");
-        location.setAttribute("style", "border: 1px solid");
-        date.setAttribute("style", "border: 1px solid");
-        price.setAttribute("style", "border: 1px solid");
-        images.setAttribute("style", "border: 1px solid");
+        images.style.border = "1px solid";
+        images.style.backgroundColor = "white";
     }
 }
 
@@ -110,23 +80,16 @@ function nextStep(disable) {
 function checkValidation (next) {
     const form = document.getElementById("event-form");
 
-    // HTML5 validation check
     if (form.checkValidity()) {
-        // Optionally: extra custom verification
-        // e.g., check if some field matches a pattern, etc.
-
-        nextStep(next); // <-- run your function
+        nextStep(next); // <-- run nextStep function
     } else {
-        // Show native browser validation messages
-        form.reportValidity();
+        form.classList.add('was-validated');
     }
 }
 
 function listFileNames() {
     const fileInput = document.getElementById('images');
     const fileNamesDiv = document.getElementById('fileNames');
-
-
     const files = Array.from(fileInput.files);
 
     if (files.length === 0) {
@@ -134,7 +97,7 @@ function listFileNames() {
         return;
     }
 
-    // Dateinamen schön anzeigen
+    // makes a better view
     fileNamesDiv.innerHTML = `
         <ul>
           ${files.map(f => `<li>${f.name}</li>`).join('')}

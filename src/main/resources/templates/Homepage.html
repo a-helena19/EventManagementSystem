@@ -15,57 +15,76 @@
 <body>
     <img src="/images/icons/EVERout_Logo_dunkel_v1.png" height=200px>
 
-    <button id="openFormBtn" class="btn btn-primary" onclick="openPopup('true');">Create new event</button>
+    <button id="openFormBtn" class="btn btn-primary mt-4" data-bs-toggle="modal" data-bs-target="#createEventModal">Create new event</button>
 
-    <!-- Popup-Container -->
-    <div id="popupForm" class="popup" style="display:none;">
-        <div class="popup-content">
-            <!-- Close Button -->
-            <span id="closePopup" class="close" onclick="openPopup('false')">&times;</span>
-            <form id="event-form" th:action="@{/create-event}" method="post" enctype="multipart/form-data">
-
-
-                <div id="step1">
-                    <div class="form-row">
-                        <label for="name">Name </label>
-                        <input type="text" id="name" name="name" required>
-                    </div>
-
-                    <div class="form-row">
-                        <label for="description">Description</label>
-                        <textarea id="description" name="description"></textarea>
-                    </div>
-
-                    <div class="form-row">
-                        <label for="location">Location</label>
-                        <input type="text" id="location" name="location" required>
-                    </div>
-
-                    <div class="form-row">
-                        <label for="date">Date </label>
-                        <input type="date" id="date" name="date" required>
-                    </div>
-
-                    <div class="form-row">
-                        <label for="price">Price (€)</label>
-                        <input type="number" id="price" name="price" step="0.01" min="0.00" required>
-                    </div>
-
-                    <div class="form-row">
-                        <label for="images">Upload images</label>
-                        <input type="file" id="images" name="images" accept="image/*" multiple required onchange="listFileNames()">
-                    </div>
-
-                    <!-- uploaded Filenames -->
-                    <div id="fileNames"></div>
-
-                    <button type="button" id="nextBtn" class="btn btn-primary" onclick="checkValidation('true')">Next</button>
-                    <button type="button" id="backBtn" class="btn btn-secondary" style="display: none;" onclick="nextStep('false')">Back</button>
-                    <button type="submit" id="submitBtn" class="btn btn-primary" style="display: none;">Create</button>
+    <!-- Bootstrap Modal -->
+    <div class="modal fade" id="createEventModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Event</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
+                <div class="modal-body">
+                    <form id="event-form" th:action="@{/create-event}" method="post" enctype="multipart/form-data">
 
 
-            </form>
+                        <div class="mb-3 d-flex flex-column">
+                            <label for="name" class="form-label">Name </label>
+                            <input type="text" id="name" name="name" class="form-control" required>
+                            <div class="invalid-feedback">
+                                Please enter a valid name.
+                            </div>
+                        </div>
+
+                        <div class="mb-3 d-flex flex-column">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea id="description" name="description" class="form-control"></textarea>
+                        </div>
+
+                        <div class="mb-3 d-flex flex-column">
+                            <label for="location" class="form-label">Location</label>
+                            <input type="text" id="location" name="location" class="form-control" required>
+                            <div class="invalid-feedback">
+                                Please enter a valid location.
+                            </div>
+                        </div>
+
+                        <div class="mb-3 d-flex flex-column">
+                            <label for="date" class="form-label">Date </label>
+                            <input type="date" id="date" name="date" class="form-control" required>
+                            <div class="invalid-feedback">
+                                Please enter a valid date.
+                            </div>
+                        </div>
+
+                        <div class="mb-3 d-flex flex-column">
+                            <label for="price" class="form-label">Price (€)</label>
+                            <input type="number" id="price" name="price" step="0.01" min="0.00" class="form-control" required>
+                            <div class="invalid-feedback">
+                                Please enter a valid price.
+                            </div>
+                        </div>
+
+                        <div class="mb-3 d-flex flex-column">
+                            <label for="images" class="form-label">Upload images</label>
+                            <input type="file" id="images" name="images" accept="image/*" multiple class="form-control" required onchange="listFileNames()">
+                            <div class="invalid-feedback">
+                                Please enter a valid image-file.
+                            </div>
+                        </div>
+
+                        <!-- uploaded Filenames -->
+                        <div id="fileNames" class="mb-3"></div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="button" id="nextBtn" class="btn btn-primary" onclick="checkValidation(true)">Next</button>
+                            <button type="button" id="backBtn" class="btn btn-secondary" style="display: none;" onclick="nextStep(false)">Back</button>
+                            <button type="submit" id="submitBtn" class="btn btn-primary" style="display: none;">Create</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
