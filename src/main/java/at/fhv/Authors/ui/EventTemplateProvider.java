@@ -79,6 +79,7 @@ public class EventTemplateProvider {
         Event eventToCancel = eventRepository.findById(id).orElseThrow();
 
         eventToCancel.setStatus(Status.CANCELLED);
+        System.out.println(eventToCancel.getStatus());
         eventToCancel.setCancelreason(reason);
 
         // JPA repository will take save() here as Update not Insert into because we get the Event by its id

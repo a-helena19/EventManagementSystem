@@ -38,6 +38,7 @@ function nextStep(disable) {
     const location = document.getElementById('location');
     const date = document.getElementById('date');
     const price = document.getElementById('price');
+    const imagesLabel = document.getElementById('imageLabel')
     const images = document.getElementById('images');
     const submitBtn = document.getElementById('submitBtn');
     const backBtn = document.getElementById('backBtn');
@@ -57,6 +58,7 @@ function nextStep(disable) {
         images.classList.add('readonly-file'); // readonly Attribute won't prevent choosing files -> thus we use css
         images.style.border = "0px";
         images.style.backgroundColor = "#e9ecef";
+        imagesLabel.classList.add('readonly-imageLabel');
     }
     else if (!disable) {
         nextBtn.style.display = "inline-block";
@@ -72,6 +74,7 @@ function nextStep(disable) {
         images.classList.remove('readonly-file');
         images.style.border = "1px solid";
         images.style.backgroundColor = "white";
+        imagesLabel.classList.remove('readonly-imageLabel');
     }
 }
 

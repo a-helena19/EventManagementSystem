@@ -76,7 +76,7 @@
                             <button
                                     type="button"
                                     class="btn btn-outline-danger btn-sm"
-                                    th:if="${event.status != 'CANCELLED'}"
+                                    th:if="${#strings.toUpperCase(event.status) != 'CANCELLED'}"
                                     th:attr="data-bs-toggle='modal', data-bs-target='#cancelModal-' + ${event.id}"
                                     onclick="event.stopPropagation()">
                                 Cancel

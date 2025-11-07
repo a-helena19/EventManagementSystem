@@ -134,3 +134,8 @@ input:invalid:focus, textarea:invalid:focus, select:invalid:focus {
     padding-left: 20px;
     margin: 0;
 }
+
+
+.readonly-imageLabel {
+    pointer-events: none;
+}
