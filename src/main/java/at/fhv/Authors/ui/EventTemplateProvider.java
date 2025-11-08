@@ -13,6 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
 import java.io.ByteArrayInputStream;
@@ -67,23 +68,41 @@ public class EventTemplateProvider {
     }
 
      */
-    
-    
+
+
     @PostMapping("/cancel_event/{id}")
     public String cancelEvent(
-        @PathVariable Long id,
-        @RequestParam ("cancellationReason") String reason
+            @PathVariable Long id,
+            @RequestParam ("cancellationReason") String reason,
+            RedirectAttributes redirectAttributes
 
-    ) {
+    ) { try  {
         System.out.println("cancelEvent called!");
         Event eventToCancel = eventRepository.findById(id).orElseThrow();
 
+        String eventName = eventToCancel.getName();
+
         eventToCancel.setStatus(Status.CANCELLED);
-        System.out.println(eventToCancel.getStatus());
         eventToCancel.setCancelreason(reason);
+
 
         // JPA repository will take save() here as Update not Insert into because we get the Event by its id
         eventRepository.save(eventToCancel);
+
+        // Success message
+        redirectAttributes.addFlashAttribute("toastType", "success");
+        redirectAttributes.addFlashAttribute("toastMessage", "Event '" + eventName + "' successfully cancelled!");
+
+    } catch (Exception e) {
+        System.err.println("Error cancelling event: " + e.getMessage());
+        e.printStackTrace();
+
+        // Error message
+        redirectAttributes.addFlashAttribute("toastType", "error");
+        redirectAttributes.addFlashAttribute("toastMessage", "Failed to cancel event. Please try again.");
+    }
+
+
         return "redirect:/events";
     }
 

@@ -38,8 +38,8 @@ function nextStep(disable) {
     const location = document.getElementById('location');
     const date = document.getElementById('date');
     const price = document.getElementById('price');
-    const imagesLabel = document.getElementById('imageLabel')
     const images = document.getElementById('images');
+    const imagesLabel = document.querySelector('label[for="images"]');
     const submitBtn = document.getElementById('submitBtn');
     const backBtn = document.getElementById('backBtn');
     const nextBtn = document.getElementById('nextBtn');
@@ -55,12 +55,20 @@ function nextStep(disable) {
             element.style.backgroundColor = "#e9ecef"; // light grey/darker background
             element.style.color = "#495057"; // slightly darker text for readability
         });
-        images.classList.add('readonly-file'); // readonly Attribute won't prevent choosing files -> thus we use css
+
+        // Disable file input completely
+        images.classList.add('readonly-file');
         images.style.border = "0px";
         images.style.backgroundColor = "#e9ecef";
-        imagesLabel.classList.add('readonly-imageLabel');
-    }
-    else if (!disable) {
+        images.style.pointerEvents = "none"; // Prevent all interactions
+
+        // Also disable the label if it exists
+        if (imagesLabel) {
+            imagesLabel.style.pointerEvents = "none";
+            imagesLabel.style.opacity = "1";
+            imagesLabel.style.cursor = "not-allowed";
+        }
+    } else if (!disable) {
         nextBtn.style.display = "inline-block";
         backBtn.style.display = "none";
         submitBtn.style.display = "none";
@@ -71,13 +79,21 @@ function nextStep(disable) {
             element.style.backgroundColor = "white"; // restore default
             element.style.color = "black";
         });
+
+        // Re-enable file input
         images.classList.remove('readonly-file');
         images.style.border = "1px solid";
         images.style.backgroundColor = "white";
-        imagesLabel.classList.remove('readonly-imageLabel');
+        images.style.pointerEvents = "auto"; // Re-enable interactions
+
+        // Re-enable the label if it exists
+        if (imagesLabel) {
+            imagesLabel.style.pointerEvents = "auto";
+            imagesLabel.style.opacity = "1";
+            imagesLabel.style.cursor = "pointer";
+        }
     }
 }
-
 
 
 function checkValidation (next) {
@@ -108,7 +124,3 @@ function listFileNames() {
     `;
 
 }
-
-
-
-

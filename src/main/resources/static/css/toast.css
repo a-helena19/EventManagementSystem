@@ -1,0 +1,129 @@
+/* Toast Container - positioned at bottom right */
+.toast-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Toast Styling */
+.toast {
+    min-width: 320px;
+    max-width: 420px;
+    border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    animation: slideIn 0.3s ease-out;
+    overflow: hidden;
+    border: none;
+}
+
+.toast.hiding {
+    animation: slideOut 0.3s ease-in;
+}
+
+/* Success Toast */
+.toast.toast-success {
+    background-color: #d4edda;
+}
+
+.toast.toast-success .toast-header {
+    background-color: #28a745;
+    color: white;
+}
+
+/* Error Toast */
+.toast.toast-error {
+    background-color: #f8d7da;
+}
+
+.toast.toast-error .toast-header {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Toast Header */
+.toast-header {
+    font-weight: 600;
+    padding: 14px 16px;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.toast-header .me-auto {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+}
+
+.toast-icon {
+    font-size: 20px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.toast-title {
+    font-size: 16px;
+    line-height: 1;
+}
+
+/* Toast Body */
+.toast-body {
+    padding: 16px;
+    font-size: 15px;
+    color: #2d3748;
+    line-height: 1.5;
+}
+
+.toast.toast-success .toast-body {
+    background-color: #d4edda;
+}
+
+.toast.toast-error .toast-body {
+    background-color: #f8d7da;
+}
+
+/* Animations */
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+}
+
+/* Close button styling */
+.toast .btn-close {
+    filter: brightness(0) invert(1);
+    margin: 0;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background-color: #fff;
+}

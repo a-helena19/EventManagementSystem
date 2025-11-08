@@ -1,99 +1,147 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Homepage</title>
+    <title>EVERout - Homepage</title>
     <link rel="icon" type="image/png" href="/images/icons/EVERout_Logo_hell_v3.png">
-
-    <!--linking Bootstrap stylesheet and js-->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" defer></script>
+    <link rel="stylesheet" href="/css/navbar.css">
+    <link rel="stylesheet" href="/css/homepage.css">
     <link rel="stylesheet" href="/css/createEvent.css">
+    <link rel="stylesheet" href="/css/toast.css">
 </head>
 <body>
-    <img src="/images/icons/EVERout_Logo_dunkel_v1.png" height=200px>
 
-    <button id="openFormBtn" class="btn btn-primary mt-4" data-bs-toggle="modal" data-bs-target="#createEventModal">Create new event</button>
-
-    <!-- Bootstrap Modal -->
-    <div class="modal fade" id="createEventModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Create New Event</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="event-form" th:action="@{/create-event}" method="post" enctype="multipart/form-data">
+<!-- Toast Notification Template -->
+<div id="toastData"
+     th:if="${toastType != null and toastMessage != null}"
+     th:data-type="${toastType}"
+     th:data-message="${toastMessage}"
+     style="display: none;">
+</div>
 
 
-                        <div class="mb-3 d-flex flex-column">
-                            <label for="name" class="form-label">Name </label>
-                            <input type="text" id="name" name="name" class="form-control" required>
-                            <div class="invalid-feedback">
-                                Please enter a valid name.
-                            </div>
+<div id="toastContainer" class="toast-container"></div>
+
+
+<template id="toastTemplate">
+    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">
+                <span class="toast-icon" style="font-size: 18px; margin-right: 8px;"></span>
+                <span class="toast-title"></span>
+            </strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body"></div>
+    </div>
+</template>
+
+
+<!-- Navigation Bar -->
+<div id="navbar">
+    <ul>
+        <li class="navbarLeft"><a href="/homepage"><img class="logo" src="/images/icons/EVERout_Logo_dunkel_v3.png" alt="Home button"></a></li>
+        <li class="navbarLeft"><a class="links" href="/events">EVENTS</a></li>
+        <li class="navbarRight"><a href="/usertest"><img id="profile" src="/images/icons/Profile.png" alt="profile-account"></a></li>
+        <li class="navbarRight"><a><img id="cart" src="/images/icons/shoppingCart.png" alt="cart"></a></li>
+        <li class="navbarRight"><a><img id="favorites" src="/images/icons/favorites.png" alt="favorites"></a></li>
+    </ul>
+</div>
+
+<!-- Hero Section -->
+<div class="index">
+    <div class="dim">
+        <h1>Find Your Adventure</h1>
+        <label>
+            <input id="search" type="search" placeholder="Search for Events..." value="">
+        </label>
+        <br><br>
+        <!-- Create Event Button -->
+        <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#createEventModal">
+            Create New Event
+        </button>
+    </div>
+</div>
+
+<!-- Activities Section -->
+<div id="activities" class="mt-5">
+    <h2>Popular Activities</h2>
+</div>
+
+<!-- Bootstrap Modal for Creating Event -->
+<div class="modal fade" id="createEventModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Event</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="event-form" th:action="@{/create-event}" method="post" enctype="multipart/form-data">
+
+                    <div class="mb-3 d-flex flex-column">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" id="name" name="name" class="form-control" required>
+                        <div class="invalid-feedback">
+                            Please enter a valid name.
                         </div>
+                    </div>
 
-                        <div class="mb-3 d-flex flex-column">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea id="description" name="description" class="form-control"></textarea>
+                    <div class="mb-3 d-flex flex-column">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea id="description" name="description" class="form-control"></textarea>
+                    </div>
+
+                    <div class="mb-3 d-flex flex-column">
+                        <label for="location" class="form-label">Location</label>
+                        <input type="text" id="location" name="location" class="form-control" required>
+                        <div class="invalid-feedback">
+                            Please enter a valid location.
                         </div>
+                    </div>
 
-                        <div class="mb-3 d-flex flex-column">
-                            <label for="location" class="form-label">Location</label>
-                            <input type="text" id="location" name="location" class="form-control" required>
-                            <div class="invalid-feedback">
-                                Please enter a valid location.
-                            </div>
+                    <div class="mb-3 d-flex flex-column">
+                        <label for="date" class="form-label">Date</label>
+                        <input type="date" id="date" name="date" class="form-control" required>
+                        <div class="invalid-feedback">
+                            Please enter a valid date.
                         </div>
+                    </div>
 
-                        <div class="mb-3 d-flex flex-column">
-                            <label for="date" class="form-label">Date </label>
-                            <input type="date" id="date" name="date" class="form-control" required>
-                            <div class="invalid-feedback">
-                                Please enter a valid date.
-                            </div>
+                    <div class="mb-3 d-flex flex-column">
+                        <label for="price" class="form-label">Price (€)</label>
+                        <input type="number" id="price" name="price" step="0.01" min="0.00" class="form-control" required>
+                        <div class="invalid-feedback">
+                            Please enter a valid price.
                         </div>
+                    </div>
 
-                        <div class="mb-3 d-flex flex-column">
-                            <label for="price" class="form-label">Price (€)</label>
-                            <input type="number" id="price" name="price" step="0.01" min="0.00" class="form-control" required>
-                            <div class="invalid-feedback">
-                                Please enter a valid price.
-                            </div>
+                    <div class="mb-3 d-flex flex-column">
+                        <label for="images" class="form-label">Upload images</label>
+                        <input type="file" id="images" name="images" accept="image/*" multiple class="form-control" required onchange="listFileNames()">
+                        <div class="invalid-feedback">
+                            Please enter a valid image-file.
                         </div>
+                    </div>
 
-                        <div class="mb-3 d-flex flex-column">
-                            <label for="images" class="form-label" id="imageLabel">Upload images</label>
-                            <input type="file" id="images" name="images" accept="image/*" multiple class="form-control" required onchange="listFileNames()">
-                            <div class="invalid-feedback">
-                                Please enter a valid image-file.
-                            </div>
-                        </div>
+                    <!-- Uploaded Filenames -->
+                    <div id="fileNames" class="mb-3"></div>
 
-                        <!-- uploaded Filenames -->
-                        <div id="fileNames" class="mb-3"></div>
-
-                        <div class="d-flex justify-content-between">
-                            <button type="button" id="nextBtn" class="btn btn-primary" onclick="checkValidation(true)">Next</button>
-                            <button type="button" id="backBtn" class="btn btn-secondary" style="display: none;" onclick="nextStep(false)">Back</button>
-                            <button type="submit" id="submitBtn" class="btn btn-primary" style="display: none;">Create</button>
-                        </div>
-                    </form>
-                </div>
+                    <div class="d-flex justify-content-between">
+                        <button type="button" id="nextBtn" class="btn btn-primary" onclick="checkValidation(true)">Next</button>
+                        <button type="button" id="backBtn" class="btn btn-secondary" style="display: none;" onclick="nextStep(false)">Back</button>
+                        <button type="submit" id="submitBtn" class="btn btn-primary" style="display: none;">Create</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+</div>
 
-
-
-
-
-
-    <script src="/js/createEvent.js?v=1"></script>
+<script src="/js/createEvent.js"></script>
+<script src="/js/toast.js?v=1"></script>
 
 </body>
 </html>
