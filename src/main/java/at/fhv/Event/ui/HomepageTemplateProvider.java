@@ -1,9 +1,9 @@
-package at.fhv.Authors.ui;
+package at.fhv.Event.ui;
 
-import at.fhv.Authors.domain.model.Event;
-import at.fhv.Authors.domain.model.EventImage;
-import at.fhv.Authors.domain.model.Status;
-import at.fhv.Authors.persistence.EventRepository;
+import at.fhv.Event.domain.model.Event;
+import at.fhv.Event.domain.model.EventImage;
+import at.fhv.Event.domain.model.Status;
+import at.fhv.Event.persistence.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +14,6 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;

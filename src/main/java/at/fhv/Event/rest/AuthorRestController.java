@@ -1,6 +1,6 @@
-package at.fhv.Authors.rest;
+package at.fhv.Event.rest;
 
-import at.fhv.Authors.domain.Author;
+import at.fhv.Event.domain.Author;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

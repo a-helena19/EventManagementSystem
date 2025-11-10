@@ -1,10 +1,10 @@
-package at.fhv.Authors.ui;
+package at.fhv.Event.ui;
 
-import at.fhv.Authors.domain.model.Event;
-import at.fhv.Authors.domain.model.EventImage;
-import at.fhv.Authors.domain.model.Status;
-import at.fhv.Authors.persistence.EventImageRepository;
-import at.fhv.Authors.persistence.EventRepository;
+import at.fhv.Event.domain.model.Event;
+import at.fhv.Event.domain.model.EventImage;
+import at.fhv.Event.domain.model.Status;
+import at.fhv.Event.persistence.EventImageRepository;
+import at.fhv.Event.persistence.EventRepository;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -18,9 +18,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.net.URLConnection;
-import java.time.LocalDate;
 import java.util.List;
 
 @Controller

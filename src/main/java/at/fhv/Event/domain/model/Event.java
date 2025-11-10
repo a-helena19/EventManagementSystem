@@ -1,9 +1,7 @@
-package at.fhv.Authors.domain.model;
+package at.fhv.Event.domain.model;
 
 import jakarta.persistence.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;

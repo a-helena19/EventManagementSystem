@@ -1,4 +1,4 @@
-package at.fhv.Authors;
+package at.fhv.Event;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

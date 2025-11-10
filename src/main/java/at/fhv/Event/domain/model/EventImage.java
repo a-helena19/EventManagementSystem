@@ -1,8 +1,6 @@
-package at.fhv.Authors.domain.model;
+package at.fhv.Event.domain.model;
 
 import jakarta.persistence.*;
-
-import java.util.Base64;
 
 @Entity
 @Table(name = "event_images")

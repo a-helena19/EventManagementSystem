@@ -1,6 +1,6 @@
-package at.fhv.Authors.persistence;
+package at.fhv.Event.persistence;
 
-import at.fhv.Authors.domain.model.Event;
+import at.fhv.Event.domain.model.Event;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

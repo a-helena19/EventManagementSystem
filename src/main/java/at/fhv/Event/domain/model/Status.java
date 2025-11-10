@@ -1,4 +1,4 @@
-package at.fhv.Authors.domain.model;
+package at.fhv.Event.domain.model;
 
 public enum Status {
     ACTIVE,
