@@ -1,6 +1,8 @@
 package at.fhv.Event.domain.model;
 
 import jakarta.persistence.*;
+import org.hibernate.type.SqlTypes;
+import org.hibernate.annotations.JdbcTypeCode;
 
 @Entity
 @Table(name = "event_images")
@@ -11,6 +13,7 @@ public class EventImage {
     private Long id;
 
     @Lob
+    @JdbcTypeCode(SqlTypes.BINARY)
     @Column(name = "image_data", nullable = false)
     private byte[] imageData;
 
