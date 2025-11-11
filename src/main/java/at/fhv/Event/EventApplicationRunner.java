@@ -25,10 +25,6 @@ public class EventApplicationRunner implements ApplicationRunner {
 
         System.out.println("EventRunner is running!");
 
-        // Inserting a new line to the event table
-        eventRepository.save(new Event("Default Event", "Testing the onload method", "Vienna", LocalDate.of(2025, 11, 8), new BigDecimal("49.99"), Status.ACTIVE));
-
-
         // equals SELECT * FROM Event and saving the output in a list of event objects
         List<Event> events = eventRepository.findAll();
 
