@@ -1,5 +1,6 @@
 package at.fhv.Event.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import org.hibernate.type.SqlTypes;
 import org.hibernate.annotations.JdbcTypeCode;
@@ -19,6 +20,7 @@ public class EventImage {
 
     @ManyToOne(fetch = FetchType.LAZY)  //many-to-one relationship, LAZY: load parent only when accessed
     @JoinColumn(name = "event_id")
+    @JsonBackReference
     private Event event;
 
     public EventImage() {}

@@ -43,7 +43,7 @@
     <ul>
         <li class="navbarLeft"><a href="/homepage"><img class="logo" src="/images/icons/EVERout_Logo_dunkel_v3.png" alt="Home button"></a></li>
         <li class="navbarLeft"><a class="links" href="/events">EVENTS</a></li>
-        <li class="navbarRight"><a href="/usertest"><img id="profile" src="/images/icons/Profile.png" alt="profile-account"></a></li>
+        <li class="navbarRight"><a href="/user"><img id="profile" src="/images/icons/Profile.png" alt="profile-account"></a></li>
         <li class="navbarRight"><a><img id="cart" src="/images/icons/shoppingCart.png" alt="cart"></a></li>
         <li class="navbarRight"><a><img id="favorites" src="/images/icons/favorites.png" alt="favorites"></a></li>
     </ul>
@@ -79,113 +79,74 @@
 </div>
 
 <!-- Events List Container -->
-<div class="container mt-4" id="eventsContainer">
-    <div th:each="event : ${events}"
-         class="card mb-3 shadow-sm clickable-card event-card"
-         th:attr="data-bs-toggle='modal', data-bs-target='#detailsModal-' + ${event.id},
-                      data-name=${event.name},
-                      data-location=${event.location},
-                      data-description=${event.description},
-                      data-status=${event.status}">
-        <div class="row g-0 align-items-center">
-            <!--Left: Image-->
-            <div class="col-md-3">
-                <img th:src="${#lists.isEmpty(event.images) ? '/images/default.jpg' : '/events/image/' + event.images.get(0).id}"
-                     class="img-fluid rounded-start event-image" alt="Event Image">
-            </div>
+<div class="container mt-4" id="eventsWrapper">
+    <div id="eventsContainer"></div>
 
-            <!--Right: Info-->
-            <div class="col-md-9">
-                <div class="card-body">
-                    <h5 th:text="${event.name}" class="card-title"></h5>
-                    <p class="card-text mb-1">
-                        <strong>Location:</strong> <span th:text="${event.location}"></span>
-                    </p>
-                    <p class="card-text mb-2">
-                        <strong>Price:</strong> <span th:text="${event.price} + ' €'"></span>
-                    </p>
-                    <p class="card-text">
-                        <small th:text="'Status: ' + ${event.status}"></small>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- No Results Message -->
     <div id="noResults" class="no-results" style="display: none;">
         <div class="no-results-icon">🔍</div>
         <h3>No events found</h3>
         <p>Try adjusting your search terms</p>
     </div>
+</div>
 
-    <!-- Details Modal -->
-    <div th:each="event : ${events}" th:id="'detailsModal-' + ${event.id}" class="modal mt-3" tabindex="-1">
+<!-- Templates for event card and modals -->
+<template id="eventCardTemplate">
+    <div class="card mb-3 shadow-sm clickable-card event-card">
+        <div class="row g-0 align-items-center">
+            <div class="col-md-3">
+                <img class="img-fluid rounded-start event-image" alt="Event Image" style="width:100%; height:160px; object-fit:cover;">
+            </div>
+            <div class="col-md-9">
+                <div class="card-body">
+                    <h5 class="card-title"></h5>
+                    <p class="card-text mb-1"><strong>Location:</strong> <span class="card-location"></span></p>
+                    <p class="card-text mb-2"><strong>Price:</strong> <span class="card-price"></span></p>
+                    <p class="card-text"><small class="card-status"></small></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<template id="detailsModalTemplate">
+    <div class="modal mt-3" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 th:text="${event.name}" class="modal-title"></h5>
+                    <h5 class="modal-title"></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-
                 <div class="modal-body">
-                    <!-- Gallery -->
-                    <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
-                        <img th:each="img : ${event.images}"
-                             th:src="@{'/events/image/' + ${img.id}}"
-                             class="img-thumbnail"
-                             style="width: 150px; height: 150px; object-fit: cover;">
-
-                        <!-- Default Image if no images exist -->
-                        <img th:if="${#lists.isEmpty(event.images)}"
-                             th:src="@{/images/default.jpg}"
-                             class="img-thumbnail"
-                             style="width: 150px; height: 150px; object-fit: cover;">
-                    </div>
-
-                    <!-- Info -->
-                    <p><strong>Name:</strong> <span th:text="${event.name}"></span></p>
-                    <p><strong>Description:</strong> <span th:text="${event.description}"></span></p>
-                    <p><strong>Location:</strong> <span th:text="${event.location}"></span></p>
-                    <p><strong>Date:</strong> <span th:text="${#temporals.format(event.date, 'dd.MM.yyyy')}"></span></p>
-                    <p><strong>Price:</strong> <span th:text="${event.price} + ' €'"></span></p>
-                    <p><strong>Status:</strong> <span th:text="${event.status}"></span></p>
-
-                    <!-- Show cancellation reason if event is cancelled -->
-                    <p th:if="${event.status.toString() == 'CANCELLED'}">
-                        <strong>Cancellation Reason:</strong> <span th:text="${event.cancelreason}"></span>
-                    </p>
-
-                    <!-- Cancel Button - only show if NOT cancelled -->
-                    <div class="cancel-section text-end" th:if="${event.status.toString() != 'CANCELLED'}">
-                        <button
-                                type="button"
-                                class="btn btn-outline-danger btn-sm"
-                                th:attr="data-bs-toggle='modal', data-bs-target='#cancelModal-' + ${event.id}"
-                                onclick="event.stopPropagation()">
-                            Cancel
-                        </button>
+                    <div class="gallery d-flex flex-wrap justify-content-center gap-2 mb-3"></div>
+                    <p><strong>Name:</strong> <span class="d-name"></span></p>
+                    <p><strong>Description:</strong> <span class="d-desc"></span></p>
+                    <p><strong>Location:</strong> <span class="d-location"></span></p>
+                    <p><strong>Date:</strong> <span class="d-date"></span></p>
+                    <p><strong>Price:</strong> <span class="d-price"></span></p>
+                    <p><strong>Status:</strong> <span class="d-status"></span></p>
+                    <p class="d-cancelreason" style="display:none;"><strong>Cancellation Reason:</strong> <span></span></p>
+                    <div class="cancel-section text-end" style="display:none;">
+                        <button type="button" class="btn btn-outline-danger btn-sm btn-open-cancel">Cancel Event</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</template>
 
-    <!-- Cancel Confirmation Modal -->
-    <div th:each="event : ${events}" th:id="'cancelModal-' + ${event.id}" class="modal fade" tabindex="-1">
+<template id="cancelModalTemplate">
+    <div class="modal fade" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <form th:action="@{'/cancel_event/' + ${event.id}}" method="post">
+                <form class="cancel-form">
                     <div class="modal-header">
                         <h5 class="modal-title">Cancel Event</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-
                     <div class="modal-body">
                         <p>Please provide a reason for cancellation:</p>
-                        <textarea name="cancellationReason" class="form-control" rows="3" required></textarea>
+                        <textarea name="cancellationReason" class="form-control cancellationReason" rows="3" required></textarea>
                     </div>
-
                     <div class="modal-footer">
                         <button type="submit" class="btn btn-danger">Confirm</button>
                     </div>
@@ -193,10 +154,12 @@
             </div>
         </div>
     </div>
-</div>
+</template>
 
+
+<script src="/js/toast.js"></script>
 <script src="/js/eventSearch.js"></script>
-<script src="/js/toast.js?v=1"></script>
+<script src="/js/eventApi.js"></script>
 
 
 </body>

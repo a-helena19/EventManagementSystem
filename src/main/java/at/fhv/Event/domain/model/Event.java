@@ -1,5 +1,6 @@
 package at.fhv.Event.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -36,12 +37,13 @@ public class Event {
     private Status status;
 
     @Column(name = "cancel_reason",nullable = true)
-    private String cancelreason;
+    private String cancellationReason;
 
     // mappedBy: bidirectional relationship and event is the owner.
     // CascadeType.ALL: all operations (persist, merge, remove, refresh, detach) on the parent (event) will be automatically applied on the child (eventImage)
     // orphanRemoval = true: removing an eventImage from images -> will be automatically removed from the database
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<EventImage> images = new ArrayList<>();
 
     // Default constructor required by JPA
@@ -113,12 +115,12 @@ public class Event {
         this.status = status;
     }
 
-    public String getCancelreason(){
-        return cancelreason;
+    public String getCancellationReason(){
+        return cancellationReason;
     }
 
-    public void setCancelreason(String reason){
-        this.cancelreason = reason;
+    public void setCancellationReason(String reason){
+        this.cancellationReason = reason;
     }
 
     public List<EventImage> getImages() {

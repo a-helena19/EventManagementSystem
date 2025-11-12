@@ -8,8 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const price = document.getElementById('price');
     const images = document.getElementById('images');
 
-
-// Reset form when modal is opened
+    // Reset form when modal is opened
     modalEl.addEventListener('show.bs.modal', () => {
         name.value = '';
         description.value = '';
@@ -18,20 +17,60 @@ document.addEventListener("DOMContentLoaded", () => {
         price.value = '';
         images.value = null;
         listFileNames();
-        form.classList.remove('was-validated'); // reset validation styling
+        form.classList.remove('was-validated');
         nextStep(false);
 
-
-// Set min date to today
+        // Set min date to today
         const today = new Date();
         const yyyy = today.getFullYear();
         const mm = String(today.getMonth() + 1).padStart(2, '0');
         const dd = String(today.getDate()).padStart(2, '0');
         date.setAttribute("min", `${yyyy}-${mm}-${dd}`);
     });
+
+    // Form submission to backend
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        // Build FormData for backend
+        const formData = new FormData();
+        formData.append("name", name.value);
+        formData.append("description", description.value);
+        formData.append("location", location.value);
+        formData.append("date", date.value);
+        formData.append("price", price.value);
+
+        if (images.files.length > 0) {
+            for (const file of images.files) {
+                formData.append("images", file);
+            }
+        }
+
+        try {
+            const res = await fetch("/api/events/create", {
+                method: "POST",
+                body: formData
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                showToast("success", `Event "${data.name}" created successfully!`);
+                form.reset();
+                listFileNames();
+                nextStep(false);
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                modal.hide();
+            } else {
+                const text = await res.text();
+                showToast("error", text);
+            }
+        } catch (err) {
+            showToast("error", "Network error: " + err.message);
+        }
+    });
 });
 
-
+// --- Multi-step Event Form (Next/Back) ---
 function nextStep(disable) {
     const name = document.getElementById('name');
     const description = document.getElementById('description');
@@ -49,44 +88,40 @@ function nextStep(disable) {
         backBtn.style.display = "inline-block";
         submitBtn.style.display = "inline-block";
 
-        [name, description, location, date, price].forEach(element => {
-            element.setAttribute("readonly", "");
-            element.style.border = "0px";
-            element.style.backgroundColor = "#e9ecef"; // light grey/darker background
-            element.style.color = "#495057"; // slightly darker text for readability
+        [name, description, location, date, price].forEach(el => {
+            el.setAttribute("readonly", "");
+            el.style.border = "0px";
+            el.style.backgroundColor = "#e9ecef";
+            el.style.color = "#495057";
         });
 
-        // Disable file input completely
         images.classList.add('readonly-file');
         images.style.border = "0px";
         images.style.backgroundColor = "#e9ecef";
-        images.style.pointerEvents = "none"; // Prevent all interactions
+        images.style.pointerEvents = "none";
 
-        // Also disable the label if it exists
         if (imagesLabel) {
             imagesLabel.style.pointerEvents = "none";
             imagesLabel.style.opacity = "1";
             imagesLabel.style.cursor = "not-allowed";
         }
-    } else if (!disable) {
+    } else {
         nextBtn.style.display = "inline-block";
         backBtn.style.display = "none";
         submitBtn.style.display = "none";
 
-        [name, description, location, date, price].forEach(element => {
-            element.removeAttribute("readonly");
-            element.style.border = "1px solid";
-            element.style.backgroundColor = "white"; // restore default
-            element.style.color = "black";
+        [name, description, location, date, price].forEach(el => {
+            el.removeAttribute("readonly");
+            el.style.border = "1px solid";
+            el.style.backgroundColor = "white";
+            el.style.color = "black";
         });
 
-        // Re-enable file input
         images.classList.remove('readonly-file');
         images.style.border = "1px solid";
         images.style.backgroundColor = "white";
-        images.style.pointerEvents = "auto"; // Re-enable interactions
+        images.style.pointerEvents = "auto";
 
-        // Re-enable the label if it exists
         if (imagesLabel) {
             imagesLabel.style.pointerEvents = "auto";
             imagesLabel.style.opacity = "1";
@@ -95,32 +130,27 @@ function nextStep(disable) {
     }
 }
 
-
-function checkValidation (next) {
+// --- Validation for Next Button ---
+function checkValidation(next) {
     const form = document.getElementById("event-form");
 
     if (form.checkValidity()) {
-        nextStep(next); // <-- run nextStep function
+        nextStep(next);
     } else {
         form.classList.add('was-validated');
     }
 }
 
+// --- Display file names ---
 function listFileNames() {
     const fileInput = document.getElementById('images');
     const fileNamesDiv = document.getElementById('fileNames');
     const files = Array.from(fileInput.files);
 
-    if (files.length === 0) {
+    if (!files.length) {
         fileNamesDiv.textContent = "No files selected";
         return;
     }
 
-    // makes a better view
-    fileNamesDiv.innerHTML = `
-        <ul>
-          ${files.map(f => `<li>${f.name}</li>`).join('')}
-        </ul>
-    `;
-
+    fileNamesDiv.innerHTML = `<ul>${files.map(f => `<li>${f.name}</li>`).join('')}</ul>`;
 }

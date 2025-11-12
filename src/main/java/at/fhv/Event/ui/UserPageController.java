@@ -5,15 +5,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 @Controller
-public class UsertestTemplateProvider {
+public class UserPageController {
 
-    @GetMapping("/usertest")
+    @GetMapping("/user")
     public ModelAndView getUsertestTemplate() {
-        // Test if it gets here
-        System.out.println("getUsertestTemplate called!");
-
-
-        return new ModelAndView("Usertest");
+        return new ModelAndView("User");
     }
 
 

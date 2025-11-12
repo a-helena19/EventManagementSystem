@@ -1,18 +1,24 @@
 function showToast(type, message) {
     const toastContainer = document.getElementById('toastContainer');
-    const toastTemplate = document.getElementById('toastTemplate');
+    if (!toastContainer) return;
 
-    const toastElement = toastTemplate.content.cloneNode(true).querySelector('.toast');
+    // Create Toast
+    const toastElement = document.createElement("div");
+    toastElement.className = `toast align-items-center border-0`;
+    toastElement.setAttribute("role", "alert");
+    toastElement.setAttribute("aria-live", "assertive");
+    toastElement.setAttribute("aria-atomic", "true");
 
-    const toastId = 'toast-' + Date.now();
-    toastElement.id = toastId;
+    // Icon & Title
+    let icon = '';
+    let title = '';
+    let toastClass = '';
 
-    let icon, title, toastClass;
-    if (type === 'success') {
+    if (type === "success") {
         icon = '✓';
         title = 'Success';
         toastClass = 'toast-success';
-    } else if (type === 'error') {
+    } else if (type === "error") {
         icon = '✗';
         title = 'Error';
         toastClass = 'toast-error';
@@ -20,10 +26,17 @@ function showToast(type, message) {
 
     toastElement.classList.add(toastClass);
 
-    toastElement.querySelector('.toast-icon').textContent = icon;
-    toastElement.querySelector('.toast-title').textContent = title;
-
-    toastElement.querySelector('.toast-body').textContent = message;
+    // HTML Struktur wie im alten Template
+    toastElement.innerHTML = `
+        <div class="toast-header">
+            <strong class="me-auto">
+                <span class="toast-icon">${icon}</span>
+                <span class="toast-title">${title}</span>
+            </strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">${message}</div>
+    `;
 
     toastContainer.appendChild(toastElement);
 
@@ -31,21 +44,7 @@ function showToast(type, message) {
         autohide: true,
         delay: 5000
     });
-
     bsToast.show();
 
-    toastElement.addEventListener('hidden.bs.toast', () => {
-        toastElement.remove();
-    });
+    toastElement.addEventListener("hidden.bs.toast", () => toastElement.remove());
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    const toastData = document.getElementById('toastData');
-    if (toastData) {
-        const type = toastData.dataset.type;
-        const message = toastData.dataset.message;
-        if (type && message) {
-            showToast(type, message);
-        }
-    }
-});

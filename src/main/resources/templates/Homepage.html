@@ -44,7 +44,7 @@
     <ul>
         <li class="navbarLeft"><a href="/homepage"><img class="logo" src="/images/icons/EVERout_Logo_dunkel_v3.png" alt="Home button"></a></li>
         <li class="navbarLeft"><a class="links" href="/events">EVENTS</a></li>
-        <li class="navbarRight"><a href="/usertest"><img id="profile" src="/images/icons/Profile.png" alt="profile-account"></a></li>
+        <li class="navbarRight"><a href="/user"><img id="profile" src="/images/icons/Profile.png" alt="profile-account"></a></li>
         <li class="navbarRight"><a><img id="cart" src="/images/icons/shoppingCart.png" alt="cart"></a></li>
         <li class="navbarRight"><a><img id="favorites" src="/images/icons/favorites.png" alt="favorites"></a></li>
     </ul>
@@ -79,7 +79,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="event-form" th:action="@{/create-event}" method="post" enctype="multipart/form-data">
+                <form id="event-form" enctype="multipart/form-data">
 
                     <div class="mb-3 d-flex flex-column">
                         <label for="name" class="form-label">Name</label>
@@ -127,7 +127,7 @@
                     </div>
 
                     <!-- Uploaded Filenames -->
-                    <div id="fileNames" class="mb-3"></div>
+                    <div class="mb-3" id="fileNames"></div>
 
                     <div class="d-flex justify-content-between">
                         <button type="button" id="nextBtn" class="btn btn-primary" onclick="checkValidation(true)">Next</button>
@@ -140,7 +140,7 @@
     </div>
 </div>
 
-<script src="/js/createEvent.js"></script>
+<script src="/js/homepageApi.js"></script>
 <script src="/js/toast.js?v=1"></script>
 
 </body>
