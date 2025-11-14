@@ -11,6 +11,12 @@ async function loadEvents() {
     }
 }
 
+// getting a location object
+function formatLocation(location) {
+    if (!location) return "-";
+    return `${location.street} ${location.houseNumber}, ${location.postalCode} ${location.city}, ${location.state}, ${location.country}`;
+}
+
 // Render event cards and attach click listener to open details modal
 function renderEvents(events) {
     const container = document.getElementById("eventsContainer");
@@ -25,17 +31,17 @@ function renderEvents(events) {
         const el = card.querySelector(".event-card");
 
         el.querySelector(".card-title").textContent = ev.name;
-        el.querySelector(".card-location").textContent = ev.location;
+        el.querySelector(".card-location").textContent = formatLocation(ev.location);
         el.querySelector(".card-price").textContent = ev.price.toFixed(2) + " €";
         el.querySelector(".card-status").textContent = ev.status;
         el.dataset.status = ev.status.toLowerCase();
-        el.dataset.location = ev.location.toLowerCase();
+        el.dataset.location = formatLocation(ev.location).toLowerCase();
 
         const imgEl = el.querySelector(".event-image");
-        if (ev.images && ev.images.length > 0) {
-            imgEl.src = `/api/events/image/${ev.images[0].id}`;
+        if (ev.imageIds && ev.imageIds.length > 0) {
+            imgEl.src = `/api/events/image/${ev.imageIds[0]}`;
         } else {
-            imgEl.src = "/images/placeholder.png";
+            imgEl.src = "/images/default.jpg";
         }
 
         // Card click -> open details modal
@@ -54,7 +60,7 @@ function openDetailsModal(ev) {
     modalEl.querySelector(".modal-title").textContent = ev.name;
     modalEl.querySelector(".d-name").textContent = ev.name;
     modalEl.querySelector(".d-desc").textContent = ev.description || "-";
-    modalEl.querySelector(".d-location").textContent = ev.location;
+    modalEl.querySelector(".d-location").textContent = formatLocation(ev.location);
     modalEl.querySelector(".d-date").textContent = ev.date;
     modalEl.querySelector(".d-price").textContent = ev.price.toFixed(2) + " €";
     modalEl.querySelector(".d-status").textContent = ev.status;
@@ -62,10 +68,10 @@ function openDetailsModal(ev) {
     // Images gallery
     const gallery = modalEl.querySelector(".gallery");
     gallery.innerHTML = "";
-    if (ev.images && ev.images.length > 0) {
-        ev.images.forEach(img => {
+    if (ev.imageIds && ev.imageIds.length > 0) {
+        ev.imageIds.forEach(imgId => {
             const imgEl = document.createElement("img");
-            imgEl.src = `/api/events/image/${img.id}`;
+            imgEl.src = `/api/events/image/${imgId}`;
             imgEl.className = "img-thumbnail";
             imgEl.style.width = "120px";
             imgEl.style.height = "80px";
@@ -78,10 +84,13 @@ function openDetailsModal(ev) {
     const cancelSection = modalEl.querySelector(".cancel-section");
     const cancelBtn = modalEl.querySelector(".btn-open-cancel");
     const cancelReasonEl = modalEl.querySelector(".d-cancelreason");
+    const bookSection = modalEl.querySelector(".book-section");
+    const bookBtn = modalEl.querySelector(".btn-open-book");
     if (ev.status === "CANCELLED") {
         cancelSection.style.display = "none";
         cancelReasonEl.style.display = "block"; // Grund anzeigen
         cancelReasonEl.querySelector("span").textContent = ev.cancellationReason || "-";
+        bookSection.style.display = "none";
     } else {
         cancelSection.style.display = "block"; // Cancel Button anzeigen
         cancelReasonEl.style.display = "none";
@@ -135,6 +144,34 @@ function openDetailsModal(ev) {
             bsCancelModal.show();
 
         });
+        bookSection.style.display = "block";
+        bookBtn.addEventListener("click", () => {
+            const bookTemplate = document.getElementById("bookModalTemplate");
+            const bookContent = bookTemplate.content.cloneNode(true);
+            const bookModalEl = bookContent.querySelector(".modal");
+
+            // Hide Details-Modal
+            const detailsBsModal = bootstrap.Modal.getInstance(modalEl);
+            detailsBsModal.hide();
+
+            // Set up form submit
+            bookModalEl.querySelector(".book-form").addEventListener("submit", async (e) => {
+                e.preventDefault();
+                showToast("success", "Booking functionality coming soon!");
+                bootstrap.Modal.getInstance(bookModalEl).hide();
+            });
+
+            // When closed, re-show details
+            bookModalEl.addEventListener("hidden.bs.modal", () => {
+                bookModalEl.remove();
+                detailsBsModal.show();
+            });
+
+            document.body.appendChild(bookModalEl);
+            const bsBookModal = new bootstrap.Modal(bookModalEl);
+            bsBookModal.show();
+        });
+
     }
 
     document.body.appendChild(modalEl);

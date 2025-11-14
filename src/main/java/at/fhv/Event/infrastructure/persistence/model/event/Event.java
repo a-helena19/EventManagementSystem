@@ -1,4 +1,4 @@
-package at.fhv.Event.domain.model;
+package at.fhv.Event.infrastructure.persistence.model.event;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Access(AccessType.FIELD)
 @Table(name = "Event")
 public class Event {
     @Id
@@ -23,7 +22,22 @@ public class Event {
     private String description;
 
     @Column(nullable = false)
-    private String location;
+    private String street;
+
+    @Column(nullable = false)
+    private String houseNumber;
+
+    @Column(nullable = false)
+    private String city;
+
+    @Column(nullable = false)
+    private String postalCode;
+
+    @Column(nullable = false)
+    private String state;
+
+    @Column(nullable = false)
+    private String country;
 
     @Column(nullable = false)
     private LocalDate date;
@@ -34,7 +48,7 @@ public class Event {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private EventStatus status;
 
     @Column(name = "cancel_reason",nullable = true)
     private String cancellationReason;
@@ -42,6 +56,7 @@ public class Event {
     // mappedBy: bidirectional relationship and event is the owner.
     // CascadeType.ALL: all operations (persist, merge, remove, refresh, detach) on the parent (event) will be automatically applied on the child (eventImage)
     // orphanRemoval = true: removing an eventImage from images -> will be automatically removed from the database
+    // EAGER: Loads all images every time you load events, even if you don’t need them
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<EventImage> images = new ArrayList<>();
@@ -50,15 +65,28 @@ public class Event {
     public Event() {}
 
     // Constructor without id (auto-generated)
-    public Event(String name, String description, String location, LocalDate date, BigDecimal price, Status status) {
+    public Event(String name,
+                 String description,
+                 String street,
+                 String houseNumber,
+                 String city,
+                 String postalCode,
+                 String state,
+                 String country,
+                 LocalDate date,
+                 BigDecimal price,
+                 EventStatus status) {
         this.name = name;
         this.description = description;
-        this.location = location;
+        this.street = street;
+        this.houseNumber = houseNumber;
+        this.city = city;
+        this.postalCode = postalCode;
+        this.state = state;
+        this.country = country;
         this.date = date;
         this.price = price;
         this.status = status;
-        this.images = new ArrayList<>();
-
     }
 
 
@@ -83,12 +111,38 @@ public class Event {
         this.description = description;
     }
 
-    public String getLocation() {
-        return location;
+    public String getStreet() {return street;}
+
+    public void setStreet(String street) {
+        this.street = street;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public String getHouseNumber() {return houseNumber;}
+
+    public void setHouseNumber(String houseNumber) {
+        this.houseNumber = houseNumber;
+    }
+    public String getCity() {return city;}
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+    public String getPostalCode() {return postalCode;}
+
+    public void setPostalCode(String postalCode) {
+        this.postalCode = postalCode;
+    }
+
+    public String getState() {return state;}
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getCountry() {return country;}
+
+    public void setCountry(String country) {
+        this.country = country;
     }
 
     public LocalDate getDate() {
@@ -107,11 +161,11 @@ public class Event {
         this.price = price;
     }
 
-    public Status getStatus() {
+    public EventStatus getStatus() {
         return status;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(EventStatus status) {
         this.status = status;
     }
 
@@ -146,7 +200,8 @@ public class Event {
 
     @Override
     public String toString() {
-        return "Event [id=" + id + ", name=" + name + ", description=" + description + ", location=" + location +
+        return "Event [id=" + id + ", name=" + name + ", description=" + description + ", location= " + street + " "
+                + houseNumber + ", " + postalCode + ", " + city + ", " + state + ", " + country +
                 ", date=" + date + ", price=" + price + ", status=" + status + "]";
     }
 }

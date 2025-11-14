@@ -1,8 +1,9 @@
 package at.fhv.Event.rest;
 
-import at.fhv.Event.application.EventService;
-import at.fhv.Event.domain.model.Event;
-import org.springframework.beans.factory.annotation.Autowired;
+import at.fhv.Event.application.services.EventService;
+import at.fhv.Event.rest.dtos.event.EventDTO;
+import at.fhv.Event.rest.dtos.event.CancelRequestDTO;
+import at.fhv.Event.domain.model.event.EventLocation;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -15,49 +16,62 @@ import java.math.BigDecimal;
 import java.net.URLConnection;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/events")
 public class EventRestController {
 
-    @Autowired
-    private EventService eventService;
+    private final EventService eventService;
 
+    public EventRestController(EventService eventService) {
+        this.eventService = eventService;
+    }
+
+    // Create a new event
     @PostMapping("/create")
     public ResponseEntity<?> createEvent(
             @RequestParam String name,
             @RequestParam(required = false) String description,
-            @RequestParam String location,
+            @RequestParam String street,
+            @RequestParam String houseNumber,
+            @RequestParam String city,
+            @RequestParam String postalCode,
+            @RequestParam String state,
+            @RequestParam String country,
             @RequestParam LocalDate date,
             @RequestParam BigDecimal price,
             @RequestParam(required = false) List<MultipartFile> images
     ) {
         try {
-            Event newEvent = eventService.createEvent(name, description, location, date, price, images);
-            return ResponseEntity.ok(newEvent);
+            EventLocation location = new EventLocation(street, houseNumber, city, postalCode, state, country);
+            EventDTO eventDTO = eventService.createEvent(name, description, location, date, price, images);
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of(
+                            "message", "Event created successfully",
+                            "id", eventDTO.id(),
+                            "name", eventDTO.name()
+                    ));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Failed to create event: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Failed to create event: " + e.getMessage()));
         }
     }
 
-    // return all events as a JSON
+    // Return all events as DTOs
     @GetMapping
-    public ResponseEntity<List<Event>> getAllEvents() {
-        return ResponseEntity.ok(eventService.getAllEvents());
+    public ResponseEntity<List<EventDTO>> getAllEvents() {
+        return ResponseEntity.ok(eventService.getAllEventsDTO());
     }
 
-
-
-    //get image (e.g. <img src="/api/events/image/5">)
+    // Return image bytes for a specific image ID
     @GetMapping("/image/{id}")
     public ResponseEntity<byte[]> getEventImage(@PathVariable Long id) {
         try {
             byte[] imageData = eventService.getEventImage(id);
-
             String contentType = URLConnection.guessContentTypeFromStream(new ByteArrayInputStream(imageData));
-            if (contentType == null) {
-                contentType = MediaType.IMAGE_JPEG_VALUE;
-            }
+            if (contentType == null) contentType = MediaType.IMAGE_JPEG_VALUE;
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(contentType));
@@ -68,22 +82,15 @@ public class EventRestController {
         }
     }
 
-    //cancel event
+    // Cancel an event
     @PutMapping("/cancel/{id}")
-    public ResponseEntity<?> cancelEvent(@PathVariable Long id, @RequestBody CancelRequest request) {
+    public ResponseEntity<?> cancelEvent(@PathVariable Long id, @RequestBody CancelRequestDTO request) {
         try {
-            Event updated = eventService.cancelEvent(id, request.getReason());
-            return ResponseEntity.ok(updated);
+            eventService.cancelEvent(id, request.getReason());
+            return ResponseEntity.ok(Map.of("message", "Event cancelled successfully"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to cancel event: " + e.getMessage());
+                    .body(Map.of("message", "Failed to cancel event: " + e.getMessage()));
         }
-    }
-
-    // small DTO-class for the JSON Body
-    public static class CancelRequest {
-        private String reason;
-        public String getReason() { return reason; }
-        public void setReason(String reason) { this.reason = reason; }
     }
 }

@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="/css/navbar.css">
     <link rel="stylesheet" href="/css/eventList.css">
     <link rel="stylesheet" href="/css/toast.css">
+    <link rel="stylesheet" href="/css/bookEvent.css">
 </head>
 <body>
 
@@ -94,7 +95,7 @@
     <div class="card mb-3 shadow-sm clickable-card event-card">
         <div class="row g-0 align-items-center">
             <div class="col-md-3">
-                <img class="img-fluid rounded-start event-image" alt="Event Image" style="width:100%; height:160px; object-fit:cover;">
+                <img class="img-fluid rounded-start event-image" alt="Event Image" style="width:100%; height:100%; object-fit:cover;">
             </div>
             <div class="col-md-9">
                 <div class="card-body">
@@ -125,8 +126,13 @@
                     <p><strong>Price:</strong> <span class="d-price"></span></p>
                     <p><strong>Status:</strong> <span class="d-status"></span></p>
                     <p class="d-cancelreason" style="display:none;"><strong>Cancellation Reason:</strong> <span></span></p>
-                    <div class="cancel-section text-end" style="display:none;">
-                        <button type="button" class="btn btn-outline-danger btn-sm btn-open-cancel">Cancel Event</button>
+                    <div class="d-flex justify-content-between">
+                        <div class="cancel-section text-end" style="display:none;">
+                            <button type="button" class="btn btn-outline-danger btn-sm btn-open-cancel">Cancel Event</button>
+                        </div>
+                        <div class="book-section text-end" style="display:none;">
+                            <button type="button" class="btn btn-outline-primary btn-sm btn-open-book">Book Now</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -149,6 +155,28 @@
                     </div>
                     <div class="modal-footer">
                         <button type="submit" class="btn btn-danger">Confirm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</template>
+
+
+<template id="bookModalTemplate">
+    <div class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form class="book-form">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Book Event</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body"></div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <button type="button" id="backBtn" class="btn btn-secondary" style="display: none;">Back</button>
+                        <button type="button" id = "nextBtn" class="btn btn-primary">Next</button>
+                        <button type="submit" id="submitBtn" class="btn btn-primary" style="display: none;">Create</button>
                     </div>
                 </form>
             </div>

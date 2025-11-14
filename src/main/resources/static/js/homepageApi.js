@@ -3,7 +3,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById('event-form');
     const name = document.getElementById('name');
     const description = document.getElementById('description');
-    const location = document.getElementById('location');
+    const street = document.getElementById('street');
+    const houseNumber = document.getElementById('houseNumber');
+    const city = document.getElementById('city');
+    const postalCode = document.getElementById('postalCode');
+    const state = document.getElementById('state');
+    const country = document.getElementById('country');
     const date = document.getElementById('date');
     const price = document.getElementById('price');
     const images = document.getElementById('images');
@@ -12,7 +17,12 @@ document.addEventListener("DOMContentLoaded", () => {
     modalEl.addEventListener('show.bs.modal', () => {
         name.value = '';
         description.value = '';
-        location.value = '';
+        street.value = '';
+        houseNumber.value = '';
+        city.value = '';
+        postalCode.value = '';
+        state.value = '';
+        country.value = '';
         date.value = '';
         price.value = '';
         images.value = null;
@@ -36,7 +46,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const formData = new FormData();
         formData.append("name", name.value);
         formData.append("description", description.value);
-        formData.append("location", location.value);
+        formData.append("street", street.value);
+        formData.append("houseNumber", houseNumber.value);
+        formData.append("city", city.value);
+        formData.append("postalCode", postalCode.value);
+        formData.append("state", state.value);
+        formData.append("country", country.value);
         formData.append("date", date.value);
         formData.append("price", price.value);
 
@@ -74,7 +89,12 @@ document.addEventListener("DOMContentLoaded", () => {
 function nextStep(disable) {
     const name = document.getElementById('name');
     const description = document.getElementById('description');
-    const location = document.getElementById('location');
+    const street = document.getElementById('street');
+    const houseNumber = document.getElementById('houseNumber');
+    const city = document.getElementById('city');
+    const postalCode = document.getElementById('postalCode');
+    const state = document.getElementById('state');
+    const country = document.getElementById('country');
     const date = document.getElementById('date');
     const price = document.getElementById('price');
     const images = document.getElementById('images');
@@ -88,7 +108,7 @@ function nextStep(disable) {
         backBtn.style.display = "inline-block";
         submitBtn.style.display = "inline-block";
 
-        [name, description, location, date, price].forEach(el => {
+        [name, description, street, houseNumber, city, postalCode, state, country, date, price].forEach(el => {
             el.setAttribute("readonly", "");
             el.style.border = "0px";
             el.style.backgroundColor = "#e9ecef";
@@ -110,7 +130,7 @@ function nextStep(disable) {
         backBtn.style.display = "none";
         submitBtn.style.display = "none";
 
-        [name, description, location, date, price].forEach(el => {
+        [name, description, street, houseNumber, city, postalCode, state, country, date, price].forEach(el => {
             el.removeAttribute("readonly");
             el.style.border = "1px solid";
             el.style.backgroundColor = "white";

@@ -158,6 +158,11 @@ body {
     padding-top: 1rem;
 }
 
+.book-section {
+    border-top: 1px solid #ddd;
+    padding-top: 1rem;
+}
+
 .modal-footer button {
     min-width: 100px;
 }

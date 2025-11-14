@@ -1,0 +1,58 @@
+#nextBtn {
+    display: block;
+    margin: 20px auto 0 auto;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#nextBtn:hover {
+    background-color: #0056b3;
+}
+
+/* Container for Back & Submit buttons */
+#backBtn,
+#submitBtn {
+    padding: 10px 20px;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#submitBtn {
+    background-color: #007bff;
+    color: white;
+}
+
+#submitBtn:hover {
+    background-color: #0056b3;
+}
+
+#backBtn {
+    background-color: #6c757d;
+    color: white;
+}
+
+#backBtn:hover {
+    background-color: #5a6268;
+}
+
+/* Layout — show them side by side */
+#backBtn,
+#submitBtn {
+    display: inline-block;
+    margin: 20px 5px 0 5px;
+}
+
+/* Center both buttons as a group */
+#backBtn + #submitBtn {
+    text-align: center;
+}
+
