@@ -11,6 +11,49 @@ async function loadEvents() {
     }
 }
 
+// Open shared Book Modal
+function openBookModal(ev, onCloseCallback) {
+    const bookTemplate = document.getElementById("bookModalTemplate");
+    const bookContent = bookTemplate.content.cloneNode(true);
+    const bookModalEl = bookContent.querySelector(".modal");
+
+    const nextBtn = bookModalEl.querySelector("#nextBtn");
+    const backBtn = bookModalEl.querySelector("#backBtn");
+    const submitBtn = bookModalEl.querySelector("#submitBtn");
+
+    // show booking confirmation step
+    nextBtn.addEventListener("click", () => {
+        nextBtn.style.display = "none";
+        backBtn.style.display = "inline-block";
+        submitBtn.style.display = "inline-block";
+    });
+
+    // go back to first step
+    backBtn.addEventListener("click", () => {
+        nextBtn.style.display = "inline-block";
+        backBtn.style.display = "none";
+        submitBtn.style.display = "none";
+    });
+
+    // Form submit
+    bookModalEl.querySelector(".book-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        showToast("success", "Booking functionality coming soon!");
+        bootstrap.Modal.getInstance(bookModalEl).hide();
+    });
+
+    // Cleanup and optional callback on close
+    bookModalEl.addEventListener("hidden.bs.modal", () => {
+        bookModalEl.remove();
+        if (typeof onCloseCallback === "function") onCloseCallback();
+    });
+
+    document.body.appendChild(bookModalEl);
+    const bsBookModal = new bootstrap.Modal(bookModalEl);
+    bsBookModal.show();
+
+}
+
 // getting a location object
 function formatLocation(location) {
     if (!location) return "-";
@@ -21,7 +64,7 @@ function formatLocation(location) {
 function renderEvents(events) {
     const container = document.getElementById("eventsContainer");
     const template = document.getElementById("eventCardTemplate");
-    const detailsTemplate = document.getElementById("detailsModalTemplate");
+
 
     container.innerHTML = "";
 
@@ -46,6 +89,22 @@ function renderEvents(events) {
 
         // Card click -> open details modal
         el.addEventListener("click", () => openDetailsModal(ev));
+
+        // --- ENABLE CARD BOOK BUTTON ---
+        const bookSection = el.querySelector(".book-section");
+        const bookBtn = el.querySelector(".btn-open-book");
+
+        if (ev.status && ev.status.toLowerCase() === "active") {
+            bookSection.style.display = "block";
+
+            bookBtn.addEventListener("click", (e) => {
+                e.stopPropagation(); // prevent opening details modal
+                openBookModal(ev);
+            });
+        }
+        else {
+            bookSection.style.display = "none";
+        }
 
         container.appendChild(card);
     });
@@ -84,16 +143,21 @@ function openDetailsModal(ev) {
     const cancelSection = modalEl.querySelector(".cancel-section");
     const cancelBtn = modalEl.querySelector(".btn-open-cancel");
     const cancelReasonEl = modalEl.querySelector(".d-cancelreason");
+
     const bookSection = modalEl.querySelector(".book-section");
     const bookBtn = modalEl.querySelector(".btn-open-book");
-    if (ev.status === "CANCELLED") {
+
+    if (ev.status && ev.status.toLowerCase() === "cancelled") {
         cancelSection.style.display = "none";
-        cancelReasonEl.style.display = "block"; // Grund anzeigen
-        cancelReasonEl.querySelector("span").textContent = ev.cancellationReason || "-";
         bookSection.style.display = "none";
+        cancelReasonEl.style.display = "block"; // show reason
+        cancelReasonEl.querySelector("span").textContent = ev.cancellationReason || "-";
     } else {
-        cancelSection.style.display = "block"; // Cancel Button anzeigen
+        cancelSection.style.display = "block"; // show cancel button
+        bookSection.style.display = "block";
         cancelReasonEl.style.display = "none";
+
+        // Cancel handler
         cancelBtn.addEventListener("click", () => {
             const cancelTemplate = document.getElementById("cancelModalTemplate");
             const cancelContent = cancelTemplate.content.cloneNode(true);
@@ -118,6 +182,7 @@ function openDetailsModal(ev) {
                     await loadEvents();
                     filterEvents();
 
+                    // Update UI
                     ev.status = "CANCELLED";
                     ev.cancellationReason = reason;
 
@@ -125,6 +190,7 @@ function openDetailsModal(ev) {
                     cancelReasonEl.style.display = "block";
                     cancelReasonEl.querySelector("span").textContent = reason;
                     cancelSection.style.display = "none";
+                    bookSection.style.display = "none";
 
                     bootstrap.Modal.getInstance(cancelModalEl).hide();
                 } catch (err) {
@@ -144,32 +210,14 @@ function openDetailsModal(ev) {
             bsCancelModal.show();
 
         });
-        bookSection.style.display = "block";
+
+        // Book button inside details modal
         bookBtn.addEventListener("click", () => {
-            const bookTemplate = document.getElementById("bookModalTemplate");
-            const bookContent = bookTemplate.content.cloneNode(true);
-            const bookModalEl = bookContent.querySelector(".modal");
-
-            // Hide Details-Modal
-            const detailsBsModal = bootstrap.Modal.getInstance(modalEl);
-            detailsBsModal.hide();
-
-            // Set up form submit
-            bookModalEl.querySelector(".book-form").addEventListener("submit", async (e) => {
-                e.preventDefault();
-                showToast("success", "Booking functionality coming soon!");
-                bootstrap.Modal.getInstance(bookModalEl).hide();
+            const detailsModal = bootstrap.Modal.getInstance(modalEl);
+            detailsModal.hide();
+            openBookModal(ev, () => {
+                detailsModal.show();
             });
-
-            // When closed, re-show details
-            bookModalEl.addEventListener("hidden.bs.modal", () => {
-                bookModalEl.remove();
-                detailsBsModal.show();
-            });
-
-            document.body.appendChild(bookModalEl);
-            const bsBookModal = new bootstrap.Modal(bookModalEl);
-            bsBookModal.show();
         });
 
     }
@@ -183,7 +231,7 @@ function openDetailsModal(ev) {
     });
 }
 
-// Page init
+// Page initialize
 document.addEventListener("DOMContentLoaded", () => {
     loadEvents();
 });

@@ -1,3 +1,11 @@
+.book-section {
+    padding-top: 1rem;
+}
+
+.card-book-section {
+    margin-right: 20px;
+}
+
 #nextBtn {
     display: block;
     margin: 20px auto 0 auto;

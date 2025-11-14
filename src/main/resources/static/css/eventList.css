@@ -154,17 +154,16 @@ body {
 }
 
 .cancel-section {
-    border-top: 1px solid #ddd;
     padding-top: 1rem;
 }
 
-.book-section {
+.modal-footer {
     border-top: 1px solid #ddd;
-    padding-top: 1rem;
 }
 
 .modal-footer button {
     min-width: 100px;
+    margin: 15px;
 }
 
 .clickable-card {

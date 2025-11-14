@@ -97,13 +97,21 @@
             <div class="col-md-3">
                 <img class="img-fluid rounded-start event-image" alt="Event Image" style="width:100%; height:100%; object-fit:cover;">
             </div>
-            <div class="col-md-9">
+            <div class="col-md-7">
                 <div class="card-body">
                     <h5 class="card-title"></h5>
                     <p class="card-text mb-1"><strong>Location:</strong> <span class="card-location"></span></p>
                     <p class="card-text mb-2"><strong>Price:</strong> <span class="card-price"></span></p>
                     <p class="card-text"><small class="card-status"></small></p>
                 </div>
+            </div>
+            <div class ="col-md-2 d-flex justify-content-end align-items-center" >
+                <div  class="card-book-section">
+                    <div class="book-section text-end">
+                        <button type="button" class="btn btn-outline-primary btn-sm btn-open-book">Book Now</button>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -126,6 +134,8 @@
                     <p><strong>Price:</strong> <span class="d-price"></span></p>
                     <p><strong>Status:</strong> <span class="d-status"></span></p>
                     <p class="d-cancelreason" style="display:none;"><strong>Cancellation Reason:</strong> <span></span></p>
+                </div>
+                <div class="modal-footer">
                     <div class="d-flex justify-content-between">
                         <div class="cancel-section text-end" style="display:none;">
                             <button type="button" class="btn btn-outline-danger btn-sm btn-open-cancel">Cancel Event</button>
