@@ -200,8 +200,8 @@ public class Event {
 
     @Override
     public String toString() {
-        return "Event [id=" + id + ", name=" + name + ", description=" + description + ", location= " + street + " "
-                + houseNumber + ", " + postalCode + ", " + city + ", " + state + ", " + country +
+        return "Event [id=" + id + ", name=" + name + ", description=" + description + ", location=" + street + " "
+                + houseNumber + ", " + postalCode + " " + city + ", " + state + ", " + country +
                 ", date=" + date + ", price=" + price + ", status=" + status + "]";
     }
 }

@@ -58,7 +58,7 @@ public class EventMapper {
             at.fhv.Event.domain.model.event.EventImage domainImg
     ) {
         var entity = new EventImage();
-        entity.setId(domainImg.getId());          // You must add setter in persistence class
+        entity.setId(domainImg.getId());
         entity.setImageData(domainImg.getImageData());
         return entity;
     }

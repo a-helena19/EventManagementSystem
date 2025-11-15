@@ -42,27 +42,27 @@ public class EventRepositoryJPAImpl implements EventRepository {
     }
 
     @Override
-    public void save(Event eventAggregate) {
-        eventJpaRepository.findById(eventAggregate.getId())
+    public void save(Event domainEvent) {
+        eventJpaRepository.findById(domainEvent.getId())
                 .ifPresentOrElse(entity -> {
 
                     // ================
                     // UPDATE SCALAR FIELDS
                     // ================
-                    entity.setName(eventAggregate.getName());
-                    entity.setDescription(eventAggregate.getDescription());
+                    entity.setName(domainEvent.getName());
+                    entity.setDescription(domainEvent.getDescription());
 
-                    entity.setStreet(eventAggregate.getLocation().getStreet());
-                    entity.setHouseNumber(eventAggregate.getLocation().getHouseNumber());
-                    entity.setCity(eventAggregate.getLocation().getCity());
-                    entity.setPostalCode(eventAggregate.getLocation().getPostalCode());
-                    entity.setState(eventAggregate.getLocation().getState());
-                    entity.setCountry(eventAggregate.getLocation().getCountry());
+                    entity.setStreet(domainEvent.getLocation().getStreet());
+                    entity.setHouseNumber(domainEvent.getLocation().getHouseNumber());
+                    entity.setCity(domainEvent.getLocation().getCity());
+                    entity.setPostalCode(domainEvent.getLocation().getPostalCode());
+                    entity.setState(domainEvent.getLocation().getState());
+                    entity.setCountry(domainEvent.getLocation().getCountry());
 
-                    entity.setDate(eventAggregate.getDate());
-                    entity.setPrice(eventAggregate.getPrice());
-                    entity.setStatus(EventMapper.toEntityStatus(eventAggregate.getStatus()));
-                    entity.setCancellationReason(eventAggregate.getCancellationReason());
+                    entity.setDate(domainEvent.getDate());
+                    entity.setPrice(domainEvent.getPrice());
+                    entity.setStatus(EventMapper.toEntityStatus(domainEvent.getStatus()));
+                    entity.setCancellationReason(domainEvent.getCancellationReason());
 
                     // ================
                     // UPDATE IMAGES (MERGE, DO NOT RECREATE!)
@@ -70,14 +70,14 @@ public class EventRepositoryJPAImpl implements EventRepository {
 
                     // 1. Remove images that are not in the aggregate anymore
                     entity.getImages().removeIf(persistedImg ->
-                            eventAggregate.getImages().stream()
+                            domainEvent.getImages().stream()
                                     .noneMatch(domainImg ->
                                             domainImg.getId() != null &&
                                                     domainImg.getId().equals(persistedImg.getId()))
                     );
 
                     // 2. Update existing or add new images
-                    for (var domainImg : eventAggregate.getImages()) {
+                    for (var domainImg : domainEvent.getImages()) {
 
                         // Check if image already exists in DB
                         var existing = entity.getImages().stream()
@@ -101,7 +101,7 @@ public class EventRepositoryJPAImpl implements EventRepository {
 
                 }, () -> {
                     // If event does not exist, insert new one
-                    eventJpaRepository.save(EventMapper.toEntity(eventAggregate));
+                    eventJpaRepository.save(EventMapper.toEntity(domainEvent));
                 });
     }
 

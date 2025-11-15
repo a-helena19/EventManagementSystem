@@ -85,9 +85,7 @@ public class Event {
 
     @Override
     public String toString() {
-        return "Event [id=" + id + ", name=" + name + ", description=" + description + ", location= " + getLocation().getStreet() + " "
-                + getLocation().getHouseNumber() + ", " + getLocation().getPostalCode() + ", " + getLocation().getCity() +
-                ", " + getLocation().getState() + ", " + getLocation().getCountry() +
-                ", date=" + date + ", price=" + price + ", status=" + status + "]";
+        return "Event [id=" + id + ", name=" + name + ", description=" + description + ", " +
+                location.toString() + " , date=" + date + ", price=" + price + ", status=" + status + "]";
     }
 }

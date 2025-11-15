@@ -5,10 +5,10 @@ import java.util.Optional;
 
 public interface EventRepository {
 
-    void addNewEvent(Event eventAggregate);
+    void addNewEvent(Event domainEvent);
     Optional<Event> findById(Long id);
     List<Event> findAll();
-    void save(Event eventAggregate);
+    void save(Event domainEvent);
     Optional<EventImage> findImageById(Long id);
 
 }
