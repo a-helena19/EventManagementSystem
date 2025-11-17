@@ -14,7 +14,10 @@ public class Booking {
     private Long id;
 
     @Column(nullable = false)
-    private String name;
+    private String firstname;
+
+    @Column(nullable = false)
+    private String lastname;
 
     @Column(nullable = false)
     @PastOrPresent(message = "Birth date cannot be in the future")
@@ -36,6 +39,7 @@ public class Booking {
     private String postalCode;
 
     @Column(nullable = true)
+    @Pattern(regexp = "^\\+[0-9 ]{6,20}$")
     private String phoneNumber;
 
     @Column(nullable = false)
@@ -55,7 +59,8 @@ public class Booking {
     public Booking() {}
 
     // Constructor without id (auto-generated)
-    public Booking(String name,
+    public Booking(String firstname,
+                 String lastname,
                  LocalDate birthDate,
                  LocalDate bookingDate,
                  String street,
@@ -65,7 +70,8 @@ public class Booking {
                  String phoneNumber,
                  String email,
                  BookingStatus status) {
-        this.name = name;
+        this.firstname = firstname;
+        this.lastname = lastname;
         this.birthDate = birthDate;
         this.bookingDate = bookingDate;
         this.street = street;
@@ -83,13 +89,17 @@ public class Booking {
         return id;
     }
 
-    public String getName() {
-        return name;
+    public String getFirstname() {
+        return firstname;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
     }
+
+    public String getLastname() {return lastname;}
+
+    public void setLastname(String lastname) {this.lastname = lastname;}
 
     public LocalDate getBirthDate() {return birthDate;}
 
@@ -144,7 +154,7 @@ public class Booking {
 
     @Override
     public String toString() {
-        return "Booking [id=" + id + ", name=" + name + ", birth date=" + birthDate + ", booking date=" + bookingDate
+        return "Booking [id=" + id + ", full name=" + firstname + " " + lastname + ", birth date=" + birthDate + ", booking date=" + bookingDate
                 + ", address=" + street + " " + houseNumber + ", " + postalCode + " " + city + ", phone number=" + phoneNumber +
                 ", email=" + email + ", booking status=" + status + ", event id=" + eventId + "]";
     }

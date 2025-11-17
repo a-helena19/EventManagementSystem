@@ -6,7 +6,8 @@ public class Booking {
 
     private Long id;
 
-    private String name;
+    private String firstname;
+    private String lastname;
     private LocalDate birthDate;
     private LocalDate bookingDate;
     private BookingAddress address;
@@ -17,14 +18,16 @@ public class Booking {
 
     public Booking() {}
 
-    public Booking(String name,
+    public Booking(String firstname,
+                   String lastname,
                    LocalDate birthDate,
                    LocalDate bookingDate,
                    BookingAddress address,
                    String phoneNumber,
                    String email,
                    BookingStatus status) {
-        this.name = name;
+        this.firstname = firstname;
+        this.lastname = lastname;
         this.birthDate = birthDate;
         this.bookingDate = bookingDate;
         this.address = address;
@@ -39,13 +42,17 @@ public class Booking {
         return id;
     }
 
-    public String getName() {
-        return name;
+    public String getFirstname() {
+        return firstname;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
     }
+
+    public String getLastname() {return lastname;}
+
+    public void setLastname(String lastname) {this.lastname = lastname;}
 
     public LocalDate getBirthDate() {return birthDate;}
 
@@ -84,7 +91,7 @@ public class Booking {
 
     @Override
     public String toString() {
-        return "Booking [id=" + id + ", name=" + name + ", birth date=" + birthDate + ", booking date=" + bookingDate
+        return "Booking [id=" + id + ", full name=" + firstname + " " + lastname + ", birth date=" + birthDate + ", booking date=" + bookingDate
                 + ", " + address.toString() + " , phone number=" + phoneNumber +
                 ", email=" + email + ", booking status=" + status + ", event id=" + eventId + "]";
     }

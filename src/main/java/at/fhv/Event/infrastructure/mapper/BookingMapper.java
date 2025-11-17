@@ -18,7 +18,8 @@ public class BookingMapper {
         );
 
         Booking domain = new Booking(
-                entity.getName(),
+                entity.getFirstname(),
+                entity.getLastname(),
                 entity.getBirthDate(),
                 entity.getBookingDate(),
                 address,
@@ -36,7 +37,8 @@ public class BookingMapper {
         if (domain == null) return null;
 
         at.fhv.Event.infrastructure.persistence.model.booking.Booking entity = new at.fhv.Event.infrastructure.persistence.model.booking.Booking(
-                domain.getName(),
+                domain.getLastname(),
+                domain.getLastname(),
                 domain.getBirthDate(),
                 domain.getBookingDate(),
                 domain.getAddress().getStreet(),

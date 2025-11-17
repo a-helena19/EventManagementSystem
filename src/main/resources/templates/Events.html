@@ -182,10 +182,75 @@
                         <h5 class="modal-title">Book Event</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <div class="modal-body"></div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="firstname" class="form-label">First name</label>
+                                <input type="text" id="firstname" name="firstname" class="form-control" required>
+                                <div class="invalid-feedback">
+                                    Please enter a valid first name.
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="lastname" class="form-label">Last name</label>
+                                <input type="text" id="lastname" name="lastname" class="form-control" required>
+                                <div class="invalid-feedback">
+                                    Please enter a valid last name.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3 d-flex flex-column">
+                            <label for="birthdate" class="form-label">Birth Date</label>
+                            <input type="date" id="birthdate" name="birthdate" class="form-control" placeholder="DD.MM.YYYY" required>
+                            <div class="invalid-feedback">
+                                Please enter a valid birth date.
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label for="street" class="form-label">Street</label>
+                                <input type="text" id="street" name="street" class="form-control" required>
+                                <div class="invalid-feedback">Please enter a valid street.</div>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="houseNumber" class="form-label">House Number</label>
+                                <input type="text" id="houseNumber" name="houseNumber" class="form-control" required>
+                                <div class="invalid-feedback">Please enter a valid house number.</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label for="city" class="form-label">City</label>
+                                <input type="text" id="city" name="city" class="form-control" required>
+                                <div class="invalid-feedback">Please enter a valid city.</div>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="postalCode" class="form-label">Postal Code</label>
+                                <input type="text" id="postalCode" name="postalCode" class="form-control" required>
+                                <div class="invalid-feedback">Please enter a valid postal code.</div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" id="email" name="email" class="form-control" placeholder="name@example.com" required>
+                                <div class="invalid-feedback">Please enter a valid email.</div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" pattern="^\+[0-9 ]{6,20}$" id="phone" name="phone" class="form-control" placeholder="+43 123 4567890">
+                                <div class="invalid-feedback">Please enter a valid phone number.</div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="modal-footer d-flex justify-content-between">
-                        <button type="button" id="backBtn" class="btn btn-secondary" style="display: none;">Back</button>
-                        <button type="button" id = "nextBtn" class="btn btn-primary">Next</button>
+                        <button type="button" id="backBtn" class="btn btn-secondary" style="display: none;" onclick="nextStep(false)">Back</button>
+                        <button type="button" id = "nextBtn" class="btn btn-primary" onclick="checkValidation(true)">Next</button>
                         <button type="submit" id="submitBtn" class="btn btn-primary" style="display: none;">Create</button>
                     </div>
                 </form>

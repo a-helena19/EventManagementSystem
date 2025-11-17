@@ -11,29 +11,66 @@ async function loadEvents() {
     }
 }
 
+// Next step for booking form
+function nextStep(readonly) {
+    const firstname = document.getElementById("firstname");
+    const lastname = document.getElementById("lastname");
+    const birthdate = document.getElementById("birthdate");
+    const street = document.getElementById("street");
+    const houseNumber = document.getElementById("houseNumber");
+    const city = document.getElementById("city");
+    const postalCode = document.getElementById("postalCode");
+    const email = document.getElementById("email");
+    const phone = document.getElementById("phone");
+    const nextBtn = document.getElementById("nextBtn");
+    const backBtn = document.getElementById("backBtn");
+    const submitBtn = document.getElementById("submitBtn");
+
+    if(readonly) {
+        nextBtn.style.display = "none";
+        backBtn.style.display = "inline-block";
+        submitBtn.style.display = "inline-block";
+        [firstname, lastname, birthdate, street, houseNumber, city, postalCode, email, phone].forEach(el => {
+            el.setAttribute("readonly", "");
+            el.style.border = "0px";
+            el.style.backgroundColor = "#e9ecef";
+            el.style.color = "#495057";
+    });
+    }
+    else {
+        nextBtn.style.display = "inline-block";
+        backBtn.style.display = "none";
+        submitBtn.style.display = "none";
+        [firstname, lastname, birthdate, street, houseNumber, city, postalCode, email, phone].forEach(el => {
+            el.removeAttribute("readonly");
+            el.style.border = "1px solid";
+            el.style.backgroundColor = "white";
+            el.style.color = "black";
+        });
+    }
+}
+
+// --- Validation for Next Button ---
+function checkValidation(next) {
+    const form = document.querySelector(".book-form");
+
+    if (form.checkValidity()) {
+        nextStep(next);
+    } else {
+        form.classList.add('was-validated');
+    }
+}
+
+
 // Open shared Book Modal
 function openBookModal(ev, onCloseCallback) {
     const bookTemplate = document.getElementById("bookModalTemplate");
     const bookContent = bookTemplate.content.cloneNode(true);
     const bookModalEl = bookContent.querySelector(".modal");
 
-    const nextBtn = bookModalEl.querySelector("#nextBtn");
-    const backBtn = bookModalEl.querySelector("#backBtn");
-    const submitBtn = bookModalEl.querySelector("#submitBtn");
+    const birthdate = bookModalEl.querySelector("#birthdate");
 
-    // show booking confirmation step
-    nextBtn.addEventListener("click", () => {
-        nextBtn.style.display = "none";
-        backBtn.style.display = "inline-block";
-        submitBtn.style.display = "inline-block";
-    });
 
-    // go back to first step
-    backBtn.addEventListener("click", () => {
-        nextBtn.style.display = "inline-block";
-        backBtn.style.display = "none";
-        submitBtn.style.display = "none";
-    });
 
     // Form submit
     bookModalEl.querySelector(".book-form").addEventListener("submit", (e) => {
@@ -52,6 +89,12 @@ function openBookModal(ev, onCloseCallback) {
     const bsBookModal = new bootstrap.Modal(bookModalEl);
     bsBookModal.show();
 
+    // Set max date to today
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    birthdate.setAttribute("max", `${yyyy}-${mm}-${dd}`);
 }
 
 // getting a location object

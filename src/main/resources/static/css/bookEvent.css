@@ -64,3 +64,17 @@
     text-align: center;
 }
 
+
+/* When a field is valid */
+.book-form input:valid,
+.book-form textarea:valid,
+.book-form select:valid {
+    border-color: green !important;
+}
+
+/* When a field is invalid */
+.book-form input:invalid:focus,
+.book-form textarea:invalid:focus,
+.book-form select:invalid:focus {
+    border-color: red !important;
+}
