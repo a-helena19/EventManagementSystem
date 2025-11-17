@@ -69,7 +69,8 @@ public class Booking {
                  String postalCode,
                  String phoneNumber,
                  String email,
-                 BookingStatus status) {
+                 BookingStatus status,
+                   Long eventId) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.birthDate = birthDate;
@@ -81,6 +82,7 @@ public class Booking {
         this.phoneNumber = phoneNumber;
         this.email = email;
         this.status = status;
+        this.eventId = eventId;
     }
 
 

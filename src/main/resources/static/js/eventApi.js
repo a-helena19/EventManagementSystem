@@ -13,15 +13,10 @@ async function loadEvents() {
 
 // Next step for booking form
 function nextStep(readonly) {
-    const firstname = document.getElementById("firstname");
-    const lastname = document.getElementById("lastname");
-    const birthdate = document.getElementById("birthdate");
-    const street = document.getElementById("street");
-    const houseNumber = document.getElementById("houseNumber");
-    const city = document.getElementById("city");
-    const postalCode = document.getElementById("postalCode");
-    const email = document.getElementById("email");
-    const phone = document.getElementById("phone");
+    const fields = [
+        "firstname", "lastname", "birthdate", "street", "houseNumber",
+        "city", "postalCode", "email", "phone"
+    ].map(id => document.getElementById(id));
     const nextBtn = document.getElementById("nextBtn");
     const backBtn = document.getElementById("backBtn");
     const submitBtn = document.getElementById("submitBtn");
@@ -30,7 +25,7 @@ function nextStep(readonly) {
         nextBtn.style.display = "none";
         backBtn.style.display = "inline-block";
         submitBtn.style.display = "inline-block";
-        [firstname, lastname, birthdate, street, houseNumber, city, postalCode, email, phone].forEach(el => {
+        fields.forEach(el => {
             el.setAttribute("readonly", "");
             el.style.border = "0px";
             el.style.backgroundColor = "#e9ecef";
@@ -41,7 +36,7 @@ function nextStep(readonly) {
         nextBtn.style.display = "inline-block";
         backBtn.style.display = "none";
         submitBtn.style.display = "none";
-        [firstname, lastname, birthdate, street, houseNumber, city, postalCode, email, phone].forEach(el => {
+        fields.forEach(el => {
             el.removeAttribute("readonly");
             el.style.border = "1px solid";
             el.style.backgroundColor = "white";
@@ -68,15 +63,67 @@ function openBookModal(ev, onCloseCallback) {
     const bookContent = bookTemplate.content.cloneNode(true);
     const bookModalEl = bookContent.querySelector(".modal");
 
-    const birthdate = bookModalEl.querySelector("#birthdate");
+    const dateOfBirth = bookModalEl.querySelector("#birthdate");
 
+    // Set max date to today
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    dateOfBirth.setAttribute("max", `${yyyy}-${mm}-${dd}`);
 
-
-    // Form submit
-    bookModalEl.querySelector(".book-form").addEventListener("submit", (e) => {
+    // Form submit handler
+    bookModalEl.querySelector(".book-form").addEventListener("submit", async (e) => {
         e.preventDefault();
-        showToast("success", "Booking functionality coming soon!");
-        bootstrap.Modal.getInstance(bookModalEl).hide();
+
+        const form = bookModalEl.querySelector(".book-form");
+
+        console.log("Submitting booking for event:", ev);
+        console.log("eventId =", ev?.id);
+        // Get values from the modal (only inside!)
+        const data = {
+            firstname: form.querySelector("#firstname").value,
+            lastname: form.querySelector("#lastname").value,
+            birthdate: form.querySelector("#birthdate").value,
+            street: form.querySelector("#street").value,
+            houseNumber: form.querySelector("#houseNumber").value,
+            city: form.querySelector("#city").value,
+            postalCode: form.querySelector("#postalCode").value,
+            email: form.querySelector("#email").value,
+            phone: form.querySelector("#phone").value,
+            eventId: ev?.id
+        };
+
+        const formData = new FormData();
+        for (const k in data) formData.append(k, data[k]);
+
+        try {
+            const res = await fetch('/api/bookings/create', {
+                method: "POST",
+                body: formData
+            });
+
+            if (!res.ok) {
+                const text = await res.text();
+                showToast("error", text);
+                return;
+            }
+
+            const data = await res.json();
+            showToast("success", `Booking for "${data.name}" created successfully!`);
+
+            // Reset UI
+            form.reset();
+            nextStep(false);
+
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(bookModalEl);
+            modal.hide();
+        }
+        catch (err) {
+            console.error(err);
+            showToast("error", "Failed to book event");
+        }
     });
 
     // Cleanup and optional callback on close
@@ -89,12 +136,7 @@ function openBookModal(ev, onCloseCallback) {
     const bsBookModal = new bootstrap.Modal(bookModalEl);
     bsBookModal.show();
 
-    // Set max date to today
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    birthdate.setAttribute("max", `${yyyy}-${mm}-${dd}`);
+
 }
 
 // getting a location object
@@ -252,15 +294,7 @@ function openDetailsModal(ev) {
             const bsCancelModal = new bootstrap.Modal(cancelModalEl);
             bsCancelModal.show();
 
-        });
-
-        // Book button inside details modal
-        bookBtn.addEventListener("click", () => {
-            const detailsModal = bootstrap.Modal.getInstance(modalEl);
-            detailsModal.hide();
-            openBookModal(ev, () => {
-                detailsModal.show();
-            });
+            bookBtn.addEventListener("click", () => openBookModal(ev));
         });
 
     }

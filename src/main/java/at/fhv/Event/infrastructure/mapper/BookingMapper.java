@@ -25,7 +25,8 @@ public class BookingMapper {
                 address,
                 entity.getPhoneNumber(),
                 entity.getEmail(),
-                BookingStatus.valueOf(entity.getStatus().name())
+                BookingStatus.valueOf(entity.getStatus().name()),
+                entity.getEventId()
         );
         domain.setEventId(entity.getEventId());
 
@@ -37,7 +38,7 @@ public class BookingMapper {
         if (domain == null) return null;
 
         at.fhv.Event.infrastructure.persistence.model.booking.Booking entity = new at.fhv.Event.infrastructure.persistence.model.booking.Booking(
-                domain.getLastname(),
+                domain.getFirstname(),
                 domain.getLastname(),
                 domain.getBirthDate(),
                 domain.getBookingDate(),
@@ -47,10 +48,9 @@ public class BookingMapper {
                 domain.getAddress().getPostalCode(),
                 domain.getPhoneNumber(),
                 domain.getEmail(),
-                at.fhv.Event.infrastructure.persistence.model.booking.BookingStatus.valueOf(domain.getStatus().name())
+                at.fhv.Event.infrastructure.persistence.model.booking.BookingStatus.valueOf(domain.getStatus().name()),
+                domain.getEventId()
         );
-
-        entity.setEventId(domain.getEventId());
 
         return entity;
     }

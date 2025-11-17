@@ -25,7 +25,8 @@ public class Booking {
                    BookingAddress address,
                    String phoneNumber,
                    String email,
-                   BookingStatus status) {
+                   BookingStatus status,
+                   Long eventId) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.birthDate = birthDate;
@@ -34,6 +35,7 @@ public class Booking {
         this.phoneNumber = phoneNumber;
         this.email = email;
         this.status = status;
+        this.eventId = eventId;
     }
 
 
@@ -41,6 +43,8 @@ public class Booking {
     public Long getId() {
         return id;
     }
+
+    public void setId(Long id) {this.id = id;}
 
     public String getFirstname() {
         return firstname;
