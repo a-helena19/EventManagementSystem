@@ -17,7 +17,7 @@ public class Event {
     private BigDecimal price;
     private EventStatus status;
     private String cancellationReason;
-    private final List<EventImage> images = new ArrayList<>();
+    private List<EventImage> images = new ArrayList<>();
 
 
     // Constructor for new event (no ID yet)
@@ -73,6 +73,17 @@ public class Event {
     public void cancel(String reason) {
         this.status = EventStatus.CANCELLED;
         this.cancellationReason = reason;
+    }
+
+    public void edit(String name, String description, EventLocation location, LocalDate date, BigDecimal price,
+                     EventStatus status, List<EventImage> images) {
+        this.name = name;
+        this.description = description;
+        this.location = location;
+        this.date = date;
+        this.price = price;
+        this.status = status;
+        this.images = images;
     }
 
     public void addImage(EventImage image) {

@@ -88,6 +88,32 @@ public class EventService {
     }
 
     /**
+     * Edit and Save an Event
+     */
+    public void editEvent(Long id, String name, String description, EventLocation location, LocalDate date,
+                          BigDecimal price, EventStatus status, List<MultipartFile> images) throws Exception {
+        Event eventToEdit = eventRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Event not found"));
+
+        // Convert uploaded files to domain EventImage
+        List<EventImage> imageList = images != null
+                ? images.stream()
+                .filter(file -> !file.isEmpty())
+                .map(file -> {
+                    try {
+                        return new EventImage(null, file.getBytes());
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .collect(Collectors.toList())
+                : List.of();
+
+        eventToEdit.edit(name, description, location, date, price, status, imageList);
+        eventRepository.save(eventToEdit);
+    }
+
+    /**
      * For debugging/logging purposes: prints all events to console.
      */
     @Transactional
