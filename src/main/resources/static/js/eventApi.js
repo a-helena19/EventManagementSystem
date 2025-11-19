@@ -139,6 +139,60 @@ function openBookModal(ev, onCloseCallback) {
 
 }
 
+
+// Open Cancel Modal
+function openCancelModal(ev, modalEl, cancelReasonEl, cancelSection, bookSection) {
+    const cancelTemplate = document.getElementById("cancelModalTemplate");
+    const cancelContent = cancelTemplate.content.cloneNode(true);
+    const cancelModalEl = cancelContent.querySelector(".modal");
+
+    // Hide Details-Modal
+    const detailsBsModal = bootstrap.Modal.getInstance(modalEl);
+    detailsBsModal.hide();
+
+    // Set up form submit
+    cancelModalEl.querySelector(".cancel-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const reason = cancelModalEl.querySelector(".cancellationReason").value;
+        try {
+            const res = await fetch(`/api/events/cancel/${ev.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ reason })
+            });
+            if (!res.ok) throw new Error(await res.text());
+            showToast("success", "Event cancelled successfully!");
+            await loadEvents();
+            filterEvents();
+
+            // Update UI
+            ev.status = "CANCELLED";
+            ev.cancellationReason = reason;
+
+            modalEl.querySelector(".d-status").textContent = ev.status;
+            cancelReasonEl.style.display = "block";
+            cancelReasonEl.querySelector("span").textContent = reason;
+            cancelSection.style.display = "none";
+            bookSection.style.display = "none";
+
+            bootstrap.Modal.getInstance(cancelModalEl).hide();
+        } catch (err) {
+            console.error(err);
+            showToast("error", "Failed to cancel event");
+        }
+    });
+
+    // When Cancel-Modal is closed, show Details-Modal again
+    cancelModalEl.addEventListener("hidden.bs.modal", () => {
+        cancelModalEl.remove();
+        detailsBsModal.show();
+    });
+
+    document.body.appendChild(cancelModalEl);
+    const bsCancelModal = new bootstrap.Modal(cancelModalEl);
+    bsCancelModal.show();
+}
+
 // getting a location object
 function formatLocation(location) {
     if (!location) return "-";
@@ -242,60 +296,19 @@ function openDetailsModal(ev) {
         bookSection.style.display = "block";
         cancelReasonEl.style.display = "none";
 
-        // Cancel handler
-        cancelBtn.addEventListener("click", () => {
-            const cancelTemplate = document.getElementById("cancelModalTemplate");
-            const cancelContent = cancelTemplate.content.cloneNode(true);
-            const cancelModalEl = cancelContent.querySelector(".modal");
-
-            // Hide Details-Modal
+        //Booking handler
+        bookBtn.addEventListener("click", () => {
             const detailsBsModal = bootstrap.Modal.getInstance(modalEl);
             detailsBsModal.hide();
 
-            // Set up form submit
-            cancelModalEl.querySelector(".cancel-form").addEventListener("submit", async (e) => {
-                e.preventDefault();
-                const reason = cancelModalEl.querySelector(".cancellationReason").value;
-                try {
-                    const res = await fetch(`/api/events/cancel/${ev.id}`, {
-                        method: "PUT",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ reason })
-                    });
-                    if (!res.ok) throw new Error(await res.text());
-                    showToast("success", "Event cancelled successfully!");
-                    await loadEvents();
-                    filterEvents();
+            openBookModal(ev, () => {
+                // Das wird ausgeführt, wenn Book-Modal geschlossen wird!
+                detailsBsModal.show();})
 
-                    // Update UI
-                    ev.status = "CANCELLED";
-                    ev.cancellationReason = reason;
-
-                    modalEl.querySelector(".d-status").textContent = ev.status;
-                    cancelReasonEl.style.display = "block";
-                    cancelReasonEl.querySelector("span").textContent = reason;
-                    cancelSection.style.display = "none";
-                    bookSection.style.display = "none";
-
-                    bootstrap.Modal.getInstance(cancelModalEl).hide();
-                } catch (err) {
-                    console.error(err);
-                    showToast("error", "Failed to cancel event");
-                }
-            });
-
-            // When Cancel-Modal is closed, show Details-Modal again
-            cancelModalEl.addEventListener("hidden.bs.modal", () => {
-                cancelModalEl.remove();
-                detailsBsModal.show();
-            });
-
-            document.body.appendChild(cancelModalEl);
-            const bsCancelModal = new bootstrap.Modal(cancelModalEl);
-            bsCancelModal.show();
-
-            bookBtn.addEventListener("click", () => openBookModal(ev));
         });
+
+        // Cancel handler
+        cancelBtn.addEventListener("click", () => openCancelModal(ev, modalEl, cancelReasonEl, cancelSection, bookSection));
 
     }
 
