@@ -9,6 +9,8 @@ import at.fhv.Event.rest.dtos.booking.BookingDTO;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class BookingService {
@@ -27,5 +29,11 @@ public class BookingService {
         bookingRepository.addNewEvent(newBooking);
 
         return BookingMapperDTO.toDTO(newBooking);
+    }
+
+    public List<BookingDTO> getAllBookingsDTO() {
+        return bookingRepository.findAll().stream()
+                .map(BookingMapperDTO::toDTO)
+                .collect(Collectors.toList());
     }
 }
