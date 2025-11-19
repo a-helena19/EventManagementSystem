@@ -1,6 +1,7 @@
 package at.fhv.Event.rest;
 
 import at.fhv.Event.application.services.EventService;
+import at.fhv.Event.domain.model.event.EventStatus;
 import at.fhv.Event.rest.dtos.event.EventDTO;
 import at.fhv.Event.rest.dtos.event.CancelRequestDTO;
 import at.fhv.Event.domain.model.event.EventLocation;
@@ -41,7 +42,7 @@ public class EventRestController {
             @RequestParam String country,
             @RequestParam LocalDate date,
             @RequestParam BigDecimal price,
-            @RequestParam(required = false) List<MultipartFile> images
+            @RequestParam List<MultipartFile> images
     ) {
         try {
             EventLocation location = new EventLocation(street, houseNumber, city, postalCode, state, country);
@@ -91,6 +92,35 @@ public class EventRestController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Failed to cancel event: " + e.getMessage()));
+        }
+    }
+
+    // Edit an event
+    @PutMapping("/edit/{id}/status/{status}")
+    public ResponseEntity<?> editEvent(@PathVariable Long id,
+                                       @PathVariable String status,
+                                       @RequestParam String name,
+                                       @RequestParam(required = false) String description,
+                                       @RequestParam String street,
+                                       @RequestParam String houseNumber,
+                                       @RequestParam String city,
+                                       @RequestParam String postalCode,
+                                       @RequestParam String state,
+                                       @RequestParam String country,
+                                       @RequestParam LocalDate date,
+                                       @RequestParam BigDecimal price,
+                                       @RequestParam List<MultipartFile> images) {
+        try {
+            EventLocation location = new EventLocation(street, houseNumber, city, postalCode, state, country);
+            EventStatus eventStatus = EventStatus.valueOf(status);
+            eventService.editEvent(id, name, description, location, date, price, eventStatus, images);
+            return ResponseEntity.ok(Map.of(
+                    "message", "Event was edited successfully",
+                    "id", id,
+                    "name", name));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Failed to edit event: " + e.getMessage()));
         }
     }
 }
