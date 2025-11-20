@@ -244,3 +244,10 @@ body {
         border-bottom-left-radius: 0;
     }
 }
+
+/* images in edit event form for next step */
+.readonly-file {
+    pointer-events: none !important;   /* disable Mouse-Interaktion */
+    opacity: 0.6;
+    cursor: not-allowed !important;
+}

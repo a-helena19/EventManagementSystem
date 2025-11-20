@@ -5,6 +5,8 @@ import at.fhv.Event.domain.model.event.EventStatus;
 import at.fhv.Event.rest.dtos.event.EventDTO;
 import at.fhv.Event.rest.dtos.event.CancelRequestDTO;
 import at.fhv.Event.domain.model.event.EventLocation;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -109,11 +111,20 @@ public class EventRestController {
                                        @RequestParam String country,
                                        @RequestParam LocalDate date,
                                        @RequestParam BigDecimal price,
-                                       @RequestParam List<MultipartFile> images) {
+                                       @RequestPart(required = false) List<MultipartFile> images,
+                                       @RequestParam(required = false) String deleteImageIds) {
         try {
             EventLocation location = new EventLocation(street, houseNumber, city, postalCode, state, country);
             EventStatus eventStatus = EventStatus.valueOf(status);
-            eventService.editEvent(id, name, description, location, date, price, eventStatus, images);
+
+
+            // Optional: parse IDs to delete
+            List<Long> idsToDelete = null;
+            if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
+                idsToDelete = new ObjectMapper().readValue(deleteImageIds, new TypeReference<List<Long>>() {});
+            }
+
+            eventService.editEvent(id, name, description, location, date, price, eventStatus, images, idsToDelete);
             return ResponseEntity.ok(Map.of(
                     "message", "Event was edited successfully",
                     "id", id,

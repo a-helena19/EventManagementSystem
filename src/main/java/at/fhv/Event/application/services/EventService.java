@@ -9,6 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -91,25 +92,36 @@ public class EventService {
      * Edit and Save an Event
      */
     public void editEvent(Long id, String name, String description, EventLocation location, LocalDate date,
-                          BigDecimal price, EventStatus status, List<MultipartFile> images) throws Exception {
+                          BigDecimal price, EventStatus status, List<MultipartFile> images, List<Long> idsToDelete) throws Exception {
         Event eventToEdit = eventRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
 
         // Convert uploaded files to domain EventImage
-        List<EventImage> imageList = images != null
-                ? images.stream()
-                .filter(file -> !file.isEmpty())
-                .map(file -> {
-                    try {
-                        return new EventImage(null, file.getBytes());
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                })
-                .collect(Collectors.toList())
-                : List.of();
+        List<EventImage> imageList = new ArrayList<>();
 
-        eventToEdit.edit(name, description, location, date, price, status, imageList);
+        if (images != null) {
+            for (MultipartFile file : images) {
+                if (file != null && !file.isEmpty()) {
+                    imageList.add(new EventImage(null, file.getBytes()));
+                }
+            }
+        }
+
+        // Remove images that were marked for deletion
+        if (idsToDelete != null && !idsToDelete.isEmpty()) {
+            List<EventImage> toRemove = eventToEdit.getImages().stream()
+                    .filter(img -> img.getId() != null && idsToDelete.contains(img.getId()))
+                    .toList();
+
+            toRemove.forEach(eventToEdit::removeImage);
+        }
+
+        List<EventImage> mergedImages = eventToEdit.getImages() != null
+                ? new java.util.ArrayList<>(eventToEdit.getImages())
+                : new java.util.ArrayList<>();
+        mergedImages.addAll(imageList);
+
+        eventToEdit.edit(name, description, location, date, price, status, mergedImages);
         eventRepository.save(eventToEdit);
     }
 

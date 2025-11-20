@@ -253,8 +253,8 @@
                         </div>
                     </div>
                     <div class="modal-footer d-flex justify-content-between">
-                        <button type="button" id="backBtn" class="btn btn-secondary" style="display: none;" onclick="nextStep(false)">Back</button>
-                        <button type="button" id = "nextBtn" class="btn btn-primary" onclick="checkValidation(true)">Next</button>
+                        <button type="button" id="backBtn" class="btn btn-secondary" style="display: none;" onclick="bookNextStep(false)">Back</button>
+                        <button type="button" id = "nextBtn" class="btn btn-primary" onclick="bookCheckValidation(true)">Next</button>
                         <button type="submit" id="submitBtn" class="btn btn-primary" style="display: none;">Create</button>
                     </div>
                 </form>
@@ -346,8 +346,13 @@
                         </div>
 
                         <div class="mb-3 d-flex flex-column">
+                            <!-- Existing Images -->
+                            <label class="form-label">Existing Images</label>
+                            <div id="existingImages" class="d-flex flex-wrap gap-2"></div>
+                        </div>
+                        <div class="mb-3 d-flex flex-column">
                             <label for="images" class="form-label">Upload images</label>
-                            <input type="file" id="images" name="images" accept="image/*" multiple class="form-control" required onchange="listFileNames()">
+                            <input type="file" id="images" name="images" accept="image/*" multiple class="form-control">
                             <div class="invalid-feedback">
                                 Please enter a valid image-file.
                             </div>
@@ -357,8 +362,8 @@
                         <div class="mb-3" id="fileNames"></div>
                     </div>
                     <div class="modal-footer d-flex justify-content-between">
-                        <button type="button" id="edit-backBtn" class="btn btn-secondary" style="display: none;">Back</button>
-                        <button type="button" id = "edit-nextBtn" class="btn btn-primary">Next</button>
+                        <button type="button" id="edit-backBtn" class="btn btn-secondary" style="display: none;" onclick="editNextStep(false)">Back</button>
+                        <button type="button" id = "edit-nextBtn" class="btn btn-primary" onclick="editCheckValidation(true)">Next</button>
                         <button type="submit" id="edit-submitBtn" class="btn btn-primary" style="display: none;">Update</button>
                     </div>
                 </form>
