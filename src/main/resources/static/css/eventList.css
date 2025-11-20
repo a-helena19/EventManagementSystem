@@ -157,6 +157,10 @@ body {
     padding-top: 1rem;
 }
 
+.edit-section {
+    padding-top: 1rem;
+}
+
 .modal-footer {
     border-top: 1px solid #ddd;
 }
