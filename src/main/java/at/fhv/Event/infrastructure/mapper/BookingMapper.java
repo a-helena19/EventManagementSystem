@@ -29,6 +29,7 @@ public class BookingMapper {
                 entity.getEventId()
         );
         domain.setEventId(entity.getEventId());
+        domain.setId(entity.getId());
 
         return domain;
     }
@@ -51,7 +52,7 @@ public class BookingMapper {
                 at.fhv.Event.infrastructure.persistence.model.booking.BookingStatus.valueOf(domain.getStatus().name()),
                 domain.getEventId()
         );
-
+        entity.setId(domain.getId());
         return entity;
     }
 }

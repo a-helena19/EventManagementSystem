@@ -68,6 +68,8 @@ function renderBookings(bookings) {
             statusBadge.classList.add("bg-danger");
         } else if (booking.status === "EXPIRED") {
             statusBadge.classList.add("bg-warning");
+        } else if (booking.status === "EVENTCANCELLED") {
+            statusBadge.classList.add("bg-secondary");
         }
 
         // Details button click handler

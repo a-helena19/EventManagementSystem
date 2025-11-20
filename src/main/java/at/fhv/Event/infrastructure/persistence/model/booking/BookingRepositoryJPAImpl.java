@@ -32,4 +32,19 @@ public class BookingRepositoryJPAImpl implements BookingRepository {
                 .map(BookingMapper::toDomain)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<Booking> findByEventId(Long eventId) {
+        return bookingJPARepository.findByEventId(eventId).stream()
+                .map(BookingMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void save(Booking booking) {
+        at.fhv.Event.infrastructure.persistence.model.booking.Booking entity = BookingMapper.toEntity(booking);
+        entity.setId(booking.getId());
+        bookingJPARepository.save(entity);
+    }
+
 }

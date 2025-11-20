@@ -1,5 +1,8 @@
 package at.fhv.Event.application.services;
 
+import at.fhv.Event.domain.model.booking.Booking;
+import at.fhv.Event.domain.model.booking.BookingRepository;
+import at.fhv.Event.domain.model.booking.BookingStatus;
 import at.fhv.Event.domain.model.event.*;
 import at.fhv.Event.rest.dtos.event.EventDTO;
 import at.fhv.Event.application.dtos.EventMapperDTO;
@@ -17,9 +20,11 @@ import java.util.stream.Collectors;
 public class EventService {
 
     private final EventRepository eventRepository;
+    private final BookingRepository bookingRepository;
 
-    public EventService(EventRepository eventRepository) {
+    public EventService(EventRepository eventRepository, BookingRepository bookingRepository) {
         this.eventRepository = eventRepository;
+        this.bookingRepository = bookingRepository;
     }
 
     /**
@@ -86,6 +91,15 @@ public class EventService {
 
         eventToCancel.cancel(reason);
         eventRepository.save(eventToCancel);
+
+        List<Booking> bookings = bookingRepository.findByEventId(id);
+        if (!bookings.isEmpty()) {
+            for (Booking booking : bookings) {
+                booking.setStatus(BookingStatus.EVENTCANCELLED);
+                bookingRepository.save(booking);
+                System.out.println("Booking ID: " + booking.getId() + ", Status: " + booking.getStatus());
+            }
+        }
     }
 
     /**
