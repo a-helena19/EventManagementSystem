@@ -401,7 +401,7 @@ function openBookModal(ev, onCloseCallback) {
 
 
 // Open Cancel Modal
-function openCancelModal(ev, modalEl, cancelReasonEl, cancelSection, bookSection) {
+function openCancelModal(ev, modalEl, cancelReasonEl, cancelSection, bookSection, editSection) {
     const cancelTemplate = document.getElementById("cancelModalTemplate");
     const cancelContent = cancelTemplate.content.cloneNode(true);
     const cancelModalEl = cancelContent.querySelector(".modal");
@@ -434,6 +434,7 @@ function openCancelModal(ev, modalEl, cancelReasonEl, cancelSection, bookSection
             cancelReasonEl.querySelector("span").textContent = reason;
             cancelSection.style.display = "none";
             bookSection.style.display = "none";
+            editSection.style.display = "none";
 
             bootstrap.Modal.getInstance(cancelModalEl).hide();
         } catch (err) {
@@ -574,7 +575,7 @@ function openDetailsModal(ev) {
         });
 
         // Cancel handler
-        cancelBtn.addEventListener("click", () => openCancelModal(ev, modalEl, cancelReasonEl, cancelSection, bookSection));
+        cancelBtn.addEventListener("click", () => openCancelModal(ev, modalEl, cancelReasonEl, cancelSection, bookSection, editSection));
 
     }
 
