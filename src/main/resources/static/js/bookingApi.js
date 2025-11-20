@@ -123,6 +123,8 @@ async function openDetailsModal(booking) {
         statusBadge.classList.add("bg-danger");
     } else if (booking.status === "EXPIRED") {
         statusBadge.classList.add("bg-warning");
+    } else if (booking.status === "EVENTCANCELLED") {
+        statusBadge.classList.add("bg-secondary");
     }
 
     // Add modal to DOM and show it
