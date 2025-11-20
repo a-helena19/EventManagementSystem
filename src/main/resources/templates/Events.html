@@ -144,6 +144,9 @@
                         <div class="book-section text-end" style="display:none;">
                             <button type="button" class="btn btn-outline-primary btn-sm btn-open-book">Book Now</button>
                         </div>
+                        <div class="edit-section text-end" style="display:none;">
+                            <button type="button" class="btn btn-outline-primary btn-sm btn-open-edit">Edit Event</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -260,7 +263,109 @@
     </div>
 </template>
 
+<template id="editModalTemplate">
+    <div class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form class="edit-form">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Event</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3 d-flex flex-column">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" id="name" name="name" class="form-control" required>
+                            <div class="invalid-feedback">
+                                Please enter a valid name.
+                            </div>
+                        </div>
 
+                        <div class="mb-3 d-flex flex-column">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea id="description" name="description" class="form-control"></textarea>
+                        </div>
+
+                        <!-- Location fields -->
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label for="street" class="form-label">Street</label>
+                                <input type="text" id="editStreet" name="street" class="form-control" required>
+                                <div class="invalid-feedback">Please enter a valid street.</div>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="houseNumber" class="form-label">House Number</label>
+                                <input type="text" id="editHouseNumber" name="houseNumber" class="form-control" required>
+                                <div class="invalid-feedback">Please enter a valid house number.</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-8 mb-3">
+                                <label for="city" class="form-label">City</label>
+                                <input type="text" id="editCity" name="city" class="form-control" required>
+                                <div class="invalid-feedback">Please enter a valid city.</div>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="postalCode" class="form-label">Postal Code</label>
+                                <input type="text" id="editPostalCode" name="postalCode" class="form-control" required>
+                                <div class="invalid-feedback">Please enter a valid postal code.</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="state" class="form-label">State</label>
+                                <input type="text" id="state" name="state" class="form-control" required>
+                                <div class="invalid-feedback">Please enter a valid state.</div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="country" class="form-label">Country</label>
+                                <input type="text" id="country" name="country" class="form-control" required>
+                                <div class="invalid-feedback">Please enter a valid country.</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3 d-flex flex-column">
+                            <label for="date" class="form-label">Date</label>
+                            <input type="date" id="date" name="date" class="form-control" required>
+                            <div class="invalid-feedback">
+                                Please enter a valid date.
+                            </div>
+                        </div>
+
+                        <div class="mb-3 d-flex flex-column">
+                            <label for="price" class="form-label">Price (€)</label>
+                            <input type="number" id="price" name="price" step="0.01" min="0.00" class="form-control" required>
+                            <div class="invalid-feedback">
+                                Please enter a valid price.
+                            </div>
+                        </div>
+
+                        <div class="mb-3 d-flex flex-column">
+                            <label for="images" class="form-label">Upload images</label>
+                            <input type="file" id="images" name="images" accept="image/*" multiple class="form-control" required onchange="listFileNames()">
+                            <div class="invalid-feedback">
+                                Please enter a valid image-file.
+                            </div>
+                        </div>
+
+                        <!-- Uploaded Filenames -->
+                        <div class="mb-3" id="fileNames"></div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <button type="button" id="edit-backBtn" class="btn btn-secondary" style="display: none;">Back</button>
+                        <button type="button" id = "edit-nextBtn" class="btn btn-primary">Next</button>
+                        <button type="submit" id="edit-submitBtn" class="btn btn-primary" style="display: none;">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</template>
 <script src="/js/toast.js"></script>
 <script src="/js/eventSearch.js"></script>
 <script src="/js/eventApi.js"></script>

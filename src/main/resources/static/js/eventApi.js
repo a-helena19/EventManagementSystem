@@ -56,7 +56,23 @@ function checkValidation(next) {
     }
 }
 
+function openEditModal(ev, modalEl) {
+    const editTemplate = document.getElementById("editModalTemplate");
+    const editContent = editTemplate.content.cloneNode(true);
+    const editModalEl = editContent.querySelector(".modal");
 
+    const detailsBsModal = bootstrap.Modal.getInstance(modalEl);
+    detailsBsModal.hide();
+
+    editModalEl.addEventListener("hidden.bs.modal", () => {
+        editModalEl.remove();
+        detailsBsModal.show();
+    });
+
+    document.body.appendChild(editModalEl);
+    const bsEditModal = new bootstrap.Modal(editModalEl);
+    bsEditModal.show();
+}
 // Open shared Book Modal
 function openBookModal(ev, onCloseCallback) {
     const bookTemplate = document.getElementById("bookModalTemplate");
@@ -286,16 +302,22 @@ function openDetailsModal(ev) {
     const bookSection = modalEl.querySelector(".book-section");
     const bookBtn = modalEl.querySelector(".btn-open-book");
 
+    const editSection = modalEl.querySelector(".edit-section");
+    const editBtn = modalEl.querySelector(".btn-open-edit");
+
     if (ev.status && ev.status.toLowerCase() === "cancelled") {
         cancelSection.style.display = "none";
         bookSection.style.display = "none";
+        editSection.style.display = "none";
         cancelReasonEl.style.display = "block"; // show reason
         cancelReasonEl.querySelector("span").textContent = ev.cancellationReason || "-";
     } else {
         cancelSection.style.display = "block"; // show cancel button
         bookSection.style.display = "block";
+        editSection.style.display ="block";
         cancelReasonEl.style.display = "none";
 
+        editBtn.addEventListener("click", () => openEditModal(ev, modalEl))
         //Booking handler
         bookBtn.addEventListener("click", () => {
             const detailsBsModal = bootstrap.Modal.getInstance(modalEl);
