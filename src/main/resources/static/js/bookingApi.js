@@ -24,13 +24,30 @@ function renderBookings(bookings) {
 
     container.innerHTML = "";
 
-    bookings.forEach(booking => {
+    bookings.forEach(async booking => {
         // Create card from template
         const card = template.content.cloneNode(true);
         const el = card.querySelector(".booking-card");
 
         // Fill booking data
-        el.querySelector(".card-title").textContent = `${booking.firstname} ${booking.lastname}`;
+        // Erstmal Platzhalter
+        el.querySelector(".card-title").textContent = "Loading...";
+
+        // Event-Daten laden
+        try {
+            const eventRes = await fetch("/api/events");
+            if (eventRes.ok) {
+                const events = await eventRes.json();
+                const event = events.find(e => e.id === booking.eventId);
+                if (event) {
+                    el.querySelector(".card-title").textContent = event.name;
+                }
+            }
+        } catch (error) {
+            el.querySelector(".card-title").textContent = "Event not found";
+        }
+
+        el.querySelector(".card-name").textContent = `${booking.firstname} ${booking.lastname}`;
         el.querySelector(".card-email").textContent = booking.email;
         el.querySelector(".card-date").textContent = booking.bookingDate;
 
@@ -139,10 +156,12 @@ async function openDetailsModal(booking) {
 }
 
 // Filter bookings based on search input and checkboxes
+// Filter bookings based on search input and checkboxes
 function filterBookings() {
     const searchInput = document.getElementById('searchInput').value.toLowerCase();
     const hideCancelled = document.getElementById('hideCancelledCheckbox').checked;
     const cards = document.querySelectorAll(".booking-card");
+    const searchCount = document.getElementById('searchCount');
 
     let visibleCount = 0;
 
@@ -168,6 +187,14 @@ function filterBookings() {
 
         if (visible) visibleCount++;
     });
+
+    // Update search count badge
+    if (searchInput || hideCancelled) {
+        searchCount.textContent = `${visibleCount} booking${visibleCount !== 1 ? 's' : ''} found`;
+        searchCount.style.display = 'inline';
+    } else {
+        searchCount.style.display = 'none';
+    }
 
     // Show/hide "no results" message
     document.getElementById("noResults").style.display = visibleCount === 0 ? "block" : "none";

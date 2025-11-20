@@ -3,6 +3,7 @@ function filterEvents() {
     const searchInput = document.getElementById('searchInput').value.toLowerCase();
     const hideCancelled = document.getElementById('hideCancelledCheckbox').checked;
     const cards = document.querySelectorAll(".event-card");
+    const searchCount = document.getElementById('searchCount');
 
     let visibleCount = 0;
 
@@ -21,5 +22,14 @@ function filterEvents() {
         if (visible) visibleCount++;
     });
 
+    // Update search count badge
+    if (searchInput || hideCancelled) {
+        searchCount.textContent = `${visibleCount} event${visibleCount !== 1 ? 's' : ''} found`;
+        searchCount.style.display = 'inline';
+    } else {
+        searchCount.style.display = 'none';
+    }
+
+    // Show/hide no results message
     document.getElementById("noResults").style.display = visibleCount === 0 ? "block" : "none";
 }
