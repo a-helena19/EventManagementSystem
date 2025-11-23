@@ -425,11 +425,13 @@ function openCancelModal(ev, modalEl, cancelReasonEl, cancelSection, bookSection
             await loadEvents();
             filterEvents();
 
-            // Update UI
+            // Update UI status and cancellation reason
             ev.status = "CANCELLED";
             ev.cancellationReason = reason;
 
-            modalEl.querySelector(".d-status").textContent = ev.status;
+            const statusBadge = modalEl.querySelector(".d-status");
+            statusBadge.textContent = ev.status;
+            statusBadge.classList.add("bg-danger");
             cancelReasonEl.style.display = "block";
             cancelReasonEl.querySelector("span").textContent = reason;
             cancelSection.style.display = "none";
@@ -476,7 +478,21 @@ function renderEvents(events) {
         el.querySelector(".card-title").textContent = ev.name;
         el.querySelector(".card-location").textContent = formatLocation(ev.location);
         el.querySelector(".card-price").textContent = ev.price.toFixed(2) + " €";
-        el.querySelector(".card-status").textContent = ev.status;
+
+        // Status badge styling
+        const statusBadge = el.querySelector(".card-status");
+        statusBadge.textContent = ev.status;
+
+        // Add badge color based on status
+        if (ev.status === "ACTIVE") {
+            statusBadge.classList.add("bg-success");
+        } else if (ev.status === "CANCELLED") {
+            statusBadge.classList.add("bg-danger");
+        } else if (ev.status === "EXPIRED") {
+            statusBadge.classList.add("bg-warning");
+        }
+
+
         el.dataset.status = ev.status.toLowerCase();
         el.dataset.location = formatLocation(ev.location).toLowerCase();
 
@@ -522,7 +538,19 @@ function openDetailsModal(ev) {
     modalEl.querySelector(".d-location").textContent = formatLocation(ev.location);
     modalEl.querySelector(".d-date").textContent = ev.date;
     modalEl.querySelector(".d-price").textContent = ev.price.toFixed(2) + " €";
-    modalEl.querySelector(".d-status").textContent = ev.status;
+
+    // Status badge
+    const statusBadge = modalEl.querySelector(".d-status");
+    statusBadge.textContent = ev.status;
+
+    // Add badge color based on status
+    if (ev.status === "ACTIVE") {
+        statusBadge.classList.add("bg-success");
+    } else if (ev.status === "CANCELLED") {
+        statusBadge.classList.add("bg-danger");
+    } else if (ev.status === "EXPIRED") {
+        statusBadge.classList.add("bg-warning");
+    }
 
     // Images gallery
     const gallery = modalEl.querySelector(".gallery");
