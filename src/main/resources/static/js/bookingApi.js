@@ -4,7 +4,7 @@ async function loadBookings() {
         const res = await fetch("/api/bookings");
         if (!res.ok) throw new Error("Failed to load bookings");
         const bookings = await res.json();
-        renderBookings(bookings);
+        await renderBookings(bookings);
     } catch (e) {
         console.error(e);
         showToast("error", "Could not load bookings");
@@ -17,33 +17,42 @@ function formatAddress(address) {
     return `${address.street} ${address.houseNumber}, ${address.postalCode} ${address.city}`;
 }
 
+// Format event location from event object
+function formatEventLocation(location) {
+    if (!location) return "-";
+    return `${location.street} ${location.houseNumber}, ${location.postalCode} ${location.city}, ${location.state}, ${location.country}`;
+}
+
 // Render booking cards and attach click listener to open details modal
-function renderBookings(bookings) {
+async function renderBookings(bookings) {
     const container = document.getElementById("bookingsContainer");
     const template = document.getElementById("bookingCardTemplate");
 
     container.innerHTML = "";
 
-    bookings.forEach(async booking => {
+    // Load all events first
+    let events = [];
+    try {
+        const eventRes = await fetch("/api/events");
+        if (eventRes.ok) {
+            events = await eventRes.json();
+        }
+    } catch (error) {
+        console.error("Failed to load events:", error);
+    }
+
+    bookings.forEach(booking => {
         // Create card from template
         const card = template.content.cloneNode(true);
         const el = card.querySelector(".booking-card");
 
-        // Fill booking data
-        // Erstmal Platzhalter
-        el.querySelector(".card-title").textContent = "Loading...";
+        // Find the corresponding event
+        const event = events.find(e => e.id === booking.eventId);
 
-        // Event-Daten laden
-        try {
-            const eventRes = await fetch("/api/events");
-            if (eventRes.ok) {
-                const events = await eventRes.json();
-                const event = events.find(e => e.id === booking.eventId);
-                if (event) {
-                    el.querySelector(".card-title").textContent = event.name;
-                }
-            }
-        } catch (error) {
+        // Fill booking data
+        if (event) {
+            el.querySelector(".card-title").textContent = event.name;
+        } else {
             el.querySelector(".card-title").textContent = "Event not found";
         }
 
@@ -60,6 +69,15 @@ function renderBookings(bookings) {
         el.dataset.name = `${booking.firstname} ${booking.lastname}`.toLowerCase();
         el.dataset.email = booking.email.toLowerCase();
         el.dataset.eventid = booking.eventId;
+
+        // Add event name and location for search
+        if (event) {
+            el.dataset.eventname = event.name.toLowerCase();
+            el.dataset.eventlocation = formatEventLocation(event.location).toLowerCase();
+        } else {
+            el.dataset.eventname = "";
+            el.dataset.eventlocation = "";
+        }
 
         // Add badge color based on status
         if (booking.status === "ACTIVE") {
@@ -84,12 +102,6 @@ function renderBookings(bookings) {
 
         container.appendChild(card);
     });
-}
-
-// Format event location from event object
-function formatEventLocation(location) {
-    if (!location) return "-";
-    return `${location.street} ${location.houseNumber}, ${location.postalCode} ${location.city}, ${location.state}, ${location.country}`;
 }
 
 // Open details modal and populate booking information
@@ -160,7 +172,6 @@ async function openDetailsModal(booking) {
 }
 
 // Filter bookings based on search input and checkboxes
-// Filter bookings based on search input and checkboxes
 function filterBookings() {
     const searchInput = document.getElementById('searchInput').value.toLowerCase();
     const hideCancelled = document.getElementById('hideCancelledCheckbox').checked;
@@ -171,19 +182,21 @@ function filterBookings() {
 
     // Loop through all booking cards
     cards.forEach(card => {
-        const name = card.dataset.name;
-        const email = card.dataset.email;
-        const eventId = card.dataset.eventid;
-        const status = card.dataset.status;
+        const name = card.dataset.name || "";
+        const email = card.dataset.email || "";
+        const eventName = card.dataset.eventname || "";
+        const eventLocation = card.dataset.eventlocation || "";
+        const status = card.dataset.status || "";
 
-        // Check if matches search
+        // Check if matches search - now includes event name and location
         const matchesSearch =
             name.includes(searchInput) ||
             email.includes(searchInput) ||
-            eventId.includes(searchInput);
+            eventName.includes(searchInput) ||
+            eventLocation.includes(searchInput);
 
-        // Check if should be hidden based on status
-        const matchesStatus = !(hideCancelled && status === "cancelled");
+        // Check if should be hidden based on status - hide both CANCELLED and EVENTCANCELLED
+        const matchesStatus = !(hideCancelled && (status === "cancelled" || status === "eventcancelled"));
 
         // Show or hide card
         const visible = matchesSearch && matchesStatus;

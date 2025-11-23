@@ -9,10 +9,11 @@ function filterEvents() {
 
     // Loop through all event cards
     cards.forEach(card => {
-        const name = card.querySelector(".card-title").textContent.toLowerCase();
-        const location = card.dataset.location;
-        const status = card.dataset.status.toLowerCase();
+        const name = card.querySelector(".card-title")?.textContent.toLowerCase() || "";
+        const location = card.dataset.location || "";
+        const status = card.dataset.status?.toLowerCase() || "";
 
+        // Check if matches search - searches in event name and location
         const matchesSearch = name.includes(searchInput) || location.includes(searchInput);
         const matchesStatus = !(hideCancelled && status === "cancelled");
 

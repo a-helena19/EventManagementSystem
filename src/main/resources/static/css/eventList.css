@@ -247,7 +247,7 @@ body {
 
 /* images in edit event form for next step */
 .readonly-file {
-    pointer-events: none !important;   /* disable Mouse-Interaktion */
+    pointer-events: none !important;
     opacity: 0.6;
     cursor: not-allowed !important;
 }
