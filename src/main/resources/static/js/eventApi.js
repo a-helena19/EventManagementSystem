@@ -202,6 +202,13 @@ function openEditModal(ev, modalEl) {
     date.value = ev.date;
     price.value = ev.price;
 
+    // Set min date to today
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const dd = String(today.getDate()).padStart(2, '0');
+    date.setAttribute("min", `${yyyy}-${mm}-${dd}`);
+
     let imagesToDelete = [];
     const existingImagesContainer = editModalEl.querySelector("#existingImages");
     existingImagesContainer.innerHTML = "";
