@@ -61,6 +61,7 @@ public class Event {
     public LocalDate getDate() { return date; }
     public BigDecimal getPrice() { return price; }
     public EventStatus getStatus() { return status; }
+    public void setStatus(EventStatus status) { this.status = status; }
     public String getCancellationReason() { return cancellationReason; }
 
     public List<EventImage> getImages() {

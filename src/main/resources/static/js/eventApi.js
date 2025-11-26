@@ -585,12 +585,14 @@ function openDetailsModal(ev) {
     const editSection = modalEl.querySelector(".edit-section");
     const editBtn = modalEl.querySelector(".btn-open-edit");
 
-    if (ev.status && ev.status.toLowerCase() === "cancelled") {
+    if (ev.status && ev.status.toLowerCase() === "cancelled" || ev.status && ev.status.toLowerCase() === "expired") {
         cancelSection.style.display = "none";
         bookSection.style.display = "none";
         editSection.style.display = "none";
-        cancelReasonEl.style.display = "block"; // show reason
-        cancelReasonEl.querySelector("span").textContent = ev.cancellationReason || "-";
+        if (ev.status && ev.status.toLowerCase() === "cancelled") {
+            cancelReasonEl.style.display = "block"; // show reason
+            cancelReasonEl.querySelector("span").textContent = ev.cancellationReason || "-";
+        }
     } else {
         cancelSection.style.display = "block"; // show cancel button
         bookSection.style.display = "block";
