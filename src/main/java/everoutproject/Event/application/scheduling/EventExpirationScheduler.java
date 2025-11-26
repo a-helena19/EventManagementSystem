@@ -24,7 +24,7 @@ public class EventExpirationScheduler {
         this.bookingRepository = bookingRepository;
     }
 
-    // Läuft einmal täglich um 00:01
+    // runs every 10 sec
     @Scheduled(fixedRate = 10000)
     @Transactional
     public void expireOldEvents() {
