@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import javax.management.relation.RoleUnresolved;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Optional;
@@ -24,14 +25,16 @@ public class UserService {
     }
 
 
-    public UserDTO createUser(String email, String password, String firstName, String lastName, String role){
+    public UserDTO createUser(String email, String password, String firstName, String lastName){
         Optional<User> existingUser = userRepository.findByEmail(email);
         if (existingUser.isPresent()) {
             throw new RuntimeException("User with this email already exists");
         }
 
-        UserRole userRole = UserRole.valueOf(role.toUpperCase());
+        UserRole userRole = UserRole.USER;
+        LocalDate createdAt = LocalDate.now();
         User newUser = new User(email, password, firstName, lastName, userRole);
+        newUser.setCreatedAt(createdAt);
 
         userRepository.addNewUser(newUser);
 
