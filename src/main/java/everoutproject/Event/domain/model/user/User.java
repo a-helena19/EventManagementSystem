@@ -1,6 +1,6 @@
 package everoutproject.Event.domain.model.user;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class User {
     private final Long id;
@@ -9,8 +9,8 @@ public class User {
     private String firstName;
     private String lastName;
     private UserRole role;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private LocalDate createdAt;
+    private LocalDate updatedAt;
 
     // Constructor for new user (no ID yet)
     public User(String email,
@@ -18,7 +18,7 @@ public class User {
                 String firstName,
                 String lastName,
                 UserRole role) {
-        this(null, email, password, firstName, lastName, role, LocalDateTime.now(), LocalDateTime.now());
+        this(null, email, password, firstName, lastName, role, LocalDate.now(), LocalDate.now());
     }
 
     // Constructor for reconstruction (e.g. from persistence)
@@ -28,8 +28,8 @@ public class User {
                 String firstName,
                 String lastName,
                 UserRole role,
-                LocalDateTime createdAt,
-                LocalDateTime updatedAt) {
+                LocalDate createdAt,
+                LocalDate updatedAt) {
         this.id = id;
         this.email = email;
         this.password = password;
@@ -47,24 +47,26 @@ public class User {
     public String getFirstName() { return firstName; }
     public String getLastName() { return lastName; }
     public UserRole getRole() { return role; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public LocalDate getCreatedAt() { return createdAt; }
+    public LocalDate getUpdatedAt() { return updatedAt; }
 
+    // Setter
+    public void setCreatedAt(LocalDate createdAt) {this.createdAt = createdAt;}
     // Domain behavior
     public void updateProfile(String firstName, String lastName) {
         this.firstName = firstName;
         this.lastName = lastName;
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = LocalDate.now();
     }
 
     public void updatePassword(String newPassword) {
         this.password = newPassword;
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = LocalDate.now();
     }
 
     public void updateRole(UserRole newRole) {
         this.role = newRole;
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = LocalDate.now();
     }
 
     @Override

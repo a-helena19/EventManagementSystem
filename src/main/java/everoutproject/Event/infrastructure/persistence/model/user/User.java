@@ -42,6 +42,7 @@ public class User {
     private LocalDateTime updatedAt;
 
     // Default constructor required by JPA
+    //Default constructor is usually empty
     public User() {}
 
     // Constructor without id (auto-generated)

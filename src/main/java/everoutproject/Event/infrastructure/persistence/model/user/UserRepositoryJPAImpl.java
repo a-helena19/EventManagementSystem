@@ -21,9 +21,7 @@ public class UserRepositoryJPAImpl implements UserRepository {
     @Override
     public void addNewUser(User domainUser) {
         everoutproject.Event.infrastructure.persistence.model.user.User entity = UserMapper.toEntity(domainUser);
-        everoutproject.Event.infrastructure.persistence.model.user.User savedEntity = userJPARepository.save(entity);
-
-
+        userJPARepository.save(entity);
     }
 
     @Override
