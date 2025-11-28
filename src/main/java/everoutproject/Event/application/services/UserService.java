@@ -5,11 +5,11 @@ import everoutproject.Event.domain.model.user.UserRepository;
 import everoutproject.Event.domain.model.user.User;
 import everoutproject.Event.rest.dtos.user.UserDTO;
 import everoutproject.Event.domain.model.user.UserRole;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
-import javax.management.relation.RoleUnresolved;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,9 +19,11 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository){
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder){
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
 
@@ -33,14 +35,16 @@ public class UserService {
 
         UserRole userRole = UserRole.USER;
         LocalDate createdAt = LocalDate.now();
-        User newUser = new User(email, password, firstName, lastName, userRole);
+
+        //Hash password
+        String hashpassword = passwordEncoder.encode(password);
+
+        User newUser = new User(email, hashpassword, firstName, lastName, userRole);
         newUser.setCreatedAt(createdAt);
 
         userRepository.addNewUser(newUser);
 
-        User persistedUser = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found after save"));
-        return UserMapperDTO.toDTO(persistedUser);
+        return UserMapperDTO.toDTO(newUser);
 
     }
 

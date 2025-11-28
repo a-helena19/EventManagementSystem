@@ -3,7 +3,7 @@ package everoutproject.Event.domain.model.user;
 import java.time.LocalDate;
 
 public class User {
-    private final Long id;
+    private Long id;
     private String email;
     private String password;
     private String firstName;
@@ -52,6 +52,7 @@ public class User {
 
     // Setter
     public void setCreatedAt(LocalDate createdAt) {this.createdAt = createdAt;}
+    public void setId(Long id) {this.id = id;}
     // Domain behavior
     public void updateProfile(String firstName, String lastName) {
         this.firstName = firstName;
