@@ -3,8 +3,8 @@
     border-bottom: 1px solid lightgray;
     position: sticky;
     top: 0;
-    overflow: hidden;
-    z-index: 100;
+    z-index: 5000;
+    height: 75px;
 }
 
 #navbar ul {
@@ -12,7 +12,7 @@
     margin: 0;
     padding-left: 10px;
     padding-right: 10px;
-    overflow: hidden;
+    overflow: visible;
     width: 100%;
     font-size: 1rem;
 }
@@ -45,10 +45,11 @@
 
 .links {
     color: black;
-    padding: 100% 15px;
+    padding: 0 15px;
     text-decoration: none;
-    text-align: center;
-    vertical-align: center;
+    display: flex;
+    align-items: center;
+    height: 75px;
 }
 
 .links:hover {
@@ -72,4 +73,45 @@
 #favorites:hover {
     cursor: pointer;
     opacity: 0.7;
+}
+
+/*logged in profile icon*/
+.profile-circle {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background-color: gray;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+#loggedOutProfile {
+    width: 42px;
+    height: 42px;
+}
+
+.navbarRight.dropdown {
+    position: relative;
+}
+.dropdown-menu {
+    min-width: 150px;
+    z-index: 1200;
+    position: absolute;
+    top: 100%;
+    right: 0;
+}
+
+#navbar::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+#logout {
+    color: white;
+    background-color: darkred;
 }

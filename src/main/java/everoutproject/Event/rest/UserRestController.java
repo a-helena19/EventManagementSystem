@@ -50,4 +50,25 @@ public class UserRestController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(
+            @RequestParam String email,
+            @RequestParam String password
+    ) {
+        try {
+            UserDTO userDTO = userService.loginUser(email, password);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Login successful",
+                    "id", userDTO.id(),
+                    "name", userDTO.firstName() + " " + userDTO.lastName()
+            ));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
+
 }
