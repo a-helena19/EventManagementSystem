@@ -26,7 +26,9 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-
+    /**
+     * Create user in database and return it as DTO
+     */
     public UserDTO createUser(String email, String password, String firstName, String lastName){
         Optional<User> existingUser = userRepository.findByEmail(email);
         if (existingUser.isPresent()) {
@@ -47,6 +49,19 @@ public class UserService {
         return UserMapperDTO.toDTO(newUser);
 
     }
+
+    /**
+     * Log in user and return it as DTO
+     */
+    public UserDTO loginUser(String email, String password){
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User with this email does not exist"));
+        if (!passwordEncoder.matches(password, user.getPassword())){
+            throw new RuntimeException("Incorrect password");
+        }
+
+        return UserMapperDTO.toDTO(user);
+    }
+
 
     /**
      * Get all users as DTOs.
