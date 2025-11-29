@@ -45,7 +45,8 @@
     <ul>
         <li class="navbarLeft"><a href="/homepage"><img class="logo" src="/images/icons/EVERout_Logo_dunkel_v3.png" alt="Home button"></a></li>
         <li class="navbarLeft"><a class="links" href="/events">EVENTS</a></li>
-        <li class="navbarRight"><a href="/user"><img id="profile" src="/images/icons/Profile.png" alt="profile-account"></a></li>
+        <li class="navbarRight" id= "loggedOutContainer"><a href="/user"><img id="loggedOutProfile" src="/images/icons/Profile.png" alt="profile-account"></a></li>
+        <li class="navbarRight" id= "loggedInContainer" style="display: none"><div id="loggedInProfile" class="profile-circle"></div></li>
         <li class="navbarRight"><a><img id="cart" src="/images/icons/shoppingCart.png" alt="cart"></a></li>
         <li class="navbarRight"><a><img id="favorites" src="/images/icons/favorites.png" alt="favorites"></a></li>
     </ul>
@@ -85,8 +86,8 @@
                 <a href="#" class="icon"><i class="fa-brands fa-linkedin-in"></i></a>
             </div>
             <span>or use your email password</span>
-            <input type="email" placeholder="Email">
-            <input type="password" placeholder="Password">
+            <input type="email" id="login-email" name="login-email" placeholder="Email" required>
+            <input type="password" id="login-password" name="login-password" placeholder="Password" required>
             <a href="#">Forget Your Password?</a>
             <button type="submit" id="signInBtn">Sign In</button>
         </form>
@@ -107,6 +108,7 @@
     </div>
 </div>
 
+<script src="/js/loginUserIcon.js"></script>
 <script src="/js/toast.js"></script>
 <script src="/js/userApi.js?v=1"></script>
 </body>
