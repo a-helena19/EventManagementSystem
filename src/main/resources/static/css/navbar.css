@@ -110,3 +110,8 @@
     display: table;
     clear: both;
 }
+
+#logout {
+    color: white;
+    background-color: darkred;
+}

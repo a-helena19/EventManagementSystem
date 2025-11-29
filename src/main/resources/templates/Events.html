@@ -45,7 +45,17 @@
         <li class="navbarLeft"><a href="/homepage"><img class="logo" src="/images/icons/EVERout_Logo_dunkel_v3.png" alt="Home button"></a></li>
         <li class="navbarLeft"><a class="links" href="/events">EVENTS</a></li>
         <li class="navbarLeft"><a class="links" href="/bookings">BOOKINGS</a></li>
-        <li class="navbarRight"><a href="/user"><img id="profile" src="/images/icons/Profile.png" alt="profile-account"></a></li>
+        <li class="navbarRight" id= "loggedOutContainer"><a href="/user"><img id="loggedOutProfile" src="/images/icons/Profile.png" alt="profile-account"></a></li>
+        <li class="navbarRight dropdown" id="loggedInContainer" style="display: none;">
+            <a class="d-flex align-items-center text-decoration-none dropdown-toggle" href="#" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <div id="loggedInProfile" class="profile-circle"></div>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                <li><span class="dropdown-item-text" id="userNameDisplay"></span></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><button class="dropdown-item" id="logout" onclick="logout()">Logout</button></li>
+            </ul>
+        </li>
         <li class="navbarRight"><a><img id="cart" src="/images/icons/shoppingCart.png" alt="cart"></a></li>
         <li class="navbarRight"><a><img id="favorites" src="/images/icons/favorites.png" alt="favorites"></a></li>
     </ul>
@@ -370,6 +380,8 @@
         </div>
     </div>
 </template>
+
+<script src="/js/loginUserIcon.js"></script>
 <script src="/js/toast.js"></script>
 <script src="/js/eventSearch.js"></script>
 <script src="/js/eventApi.js"></script>
