@@ -5,6 +5,8 @@
     background-position: center;
     height: 600px;
     border-bottom: 1px solid lightgray;
+    position: relative;
+    z-index: 1;
 }
 
 .dim {
