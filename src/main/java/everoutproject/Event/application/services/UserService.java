@@ -90,15 +90,25 @@ public class UserService {
         return UserMapperDTO.toDTO(user);
     }
 
-    /**
-     * Update user profile.
-     */
-    public void updateUserProfile(Long id, String firstName, String lastName) {
+
+
+    public User updateUserProfile(Long id, String firstName, String lastName, String email) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-         user.updateProfile(firstName, lastName);
-         userRepository.save(user);
+        user.updateProfile(firstName, lastName);
+        user.setEmail(email);
+        userRepository.save(user);
+        return user;
+    }
+
+    public User getCurrentUser() {
+        // TODO: Replace with actual logged-in user - for now using first user
+        List<User> allUsers = userRepository.findAll();
+        if (allUsers.isEmpty()) {
+            throw new RuntimeException("No users found");
+        }
+        return allUsers.get(0); // Temporary - get first user
     }
 
     /**
@@ -129,47 +139,6 @@ public class UserService {
             throw new RuntimeException("User not found");
         }
         userRepository.delete(id);
-    }
-
-    /**
-     * Get current user profile
-     */
-    public User getCurrentUser() {
-        // TODO: Replace with actual logged-in user - for now using first user
-        List<User> allUsers = userRepository.findAll();
-        if (allUsers.isEmpty()) {
-            throw new RuntimeException("No users found");
-        }
-        return allUsers.get(0); // Temporary - get first user
-    }
-
-    /**
-     * Update user profile for current user
-     */
-    public User updateUserProfile(String firstName, String lastName, String email) {
-        // TODO: Replace with actual logged-in user - for now using first user
-        List<User> allUsers = userRepository.findAll();
-        if (allUsers.isEmpty()) {
-            throw new RuntimeException("No users found");
-        }
-
-        User user = allUsers.get(0); // Temporary - get first user
-        user.updateProfile(firstName, lastName);
-        user.setEmail(email);
-
-        userRepository.save(user);
-        return user;
-    }
-
-    public void deleteCurrentUser() {
-        // TODO: Replace with actual logged-in user - for now using first user
-        List<User> allUsers = userRepository.findAll();
-        if (allUsers.isEmpty()) {
-            throw new RuntimeException("No users found");
-        }
-
-        User user = allUsers.get(0); // Temporary - get first user
-        userRepository.delete(user.getId());
     }
 
     /**

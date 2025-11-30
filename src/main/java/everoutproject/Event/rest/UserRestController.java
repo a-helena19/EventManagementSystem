@@ -93,7 +93,6 @@ public class UserRestController {
         }
     }
 
-
     @PutMapping("/profile")
     public ResponseEntity<?> updateProfile(
             @RequestParam String firstName,
@@ -101,7 +100,13 @@ public class UserRestController {
             @RequestParam String email
     ) {
         try {
-            User user = userService.updateUserProfile(firstName, lastName, email);
+            // First get the current user to get their ID
+            User currentUser = userService.getCurrentUser();
+            Long userId = currentUser.getId();
+
+            // Then update using that ID
+            User user = userService.updateUserProfile(userId, firstName, lastName, email);
+
             return ResponseEntity.ok(Map.of(
                     "id", user.getId(),
                     "email", user.getEmail(),
@@ -117,16 +122,7 @@ public class UserRestController {
         }
     }
 
-    @DeleteMapping("/profile")
-    public ResponseEntity<?> deleteProfile() {
-        try {
-            userService.deleteCurrentUser();
-            return ResponseEntity.ok(Map.of("message", "Account deleted successfully"));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Failed to delete account: " + e.getMessage()));
-        }
-    }
+
 
 
 
