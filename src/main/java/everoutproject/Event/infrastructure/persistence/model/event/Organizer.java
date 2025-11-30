@@ -22,6 +22,7 @@ public class Organizer {
     }
 
     public Long getId() { return id; }
+    public void setId(Long id) {this.id = id;}
     public String getName() { return name; }
     public String getContactEmail() { return contactEmail; }
     public String getPhone() { return phone; }

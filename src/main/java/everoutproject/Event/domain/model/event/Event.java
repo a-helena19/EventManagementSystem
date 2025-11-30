@@ -65,8 +65,7 @@ public class Event {
                 category,
                 new ArrayList<>(),
                 organizer,
-                null,
-                new ArrayList<>()
+                null
         );
     }
 
@@ -88,8 +87,7 @@ public class Event {
                  EventCategory category,
                  List<AdditionalPackage> additionalPackages,
                  Organizer organizer,
-                 Integer durationInDays,
-                 List<EventImage> images) {
+                 Integer durationInDays) {
 
         this.id = id;
         this.name = name;
@@ -109,9 +107,6 @@ public class Event {
         if (additionalPackages != null) this.additionalPackages.addAll(additionalPackages);
         this.organizer = organizer;
         this.durationInDays = durationInDays;
-        if (images != null) {
-            this.images.addAll(images);
-        }
     }
 
     // getters / setters (only important ones shown; add more as needed)

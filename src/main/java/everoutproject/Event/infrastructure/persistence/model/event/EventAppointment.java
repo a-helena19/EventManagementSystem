@@ -33,6 +33,7 @@ public class EventAppointment {
     public LocalDate getStartDate() { return startDate; }
     public LocalDate getEndDate() { return endDate; }
     public boolean isSeasonal() { return seasonal; }
+    public void setSeasonal(boolean seasonal) {this.seasonal = seasonal;}
     public Event getEvent() { return event; }
     public void setEvent(Event event) { this.event = event; }
     public void setStartDate(LocalDate startDate) { this.startDate = startDate; }

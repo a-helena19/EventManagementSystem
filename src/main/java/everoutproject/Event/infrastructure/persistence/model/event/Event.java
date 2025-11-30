@@ -306,7 +306,7 @@ public class Event {
             str.append("[").append(p.toString()).append("], ");
         }
 
-        str.append("ctegory=").append(category.toString());
+        str.append("category=").append(category.toString());
 
         str.append("feedback=");
         for (EventFeedback f: feedback) {
