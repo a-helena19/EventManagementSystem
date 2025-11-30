@@ -209,13 +209,13 @@ body{
     transform: translateX(200%);
 }
 
-/* Fehlermeldung kleiner & weniger Abstand */
+/* Error message smaller & less space */
 .invalid-feedback {
     font-size: 0.75rem;
     margin-top: 2px;
 }
 
-/* Abstand nach unten bei Inputs verringern */
+/* Reduce the downward distance at inputs */
 form .form-control {
     margin-bottom: 4px;
 }

@@ -10,13 +10,13 @@ registerBtn.addEventListener('click', () => {
     form.addEventListener("submit", (async (e) => {
         e.preventDefault();
 
-        //HTML5/Bootstrap Validierung ausführen
+        //HTML5/Bootstrap do Validation
         if (!form.checkValidity()) {
             form.classList.add("was-validated");
-            return; //-> Formular ist ungültig, also API nicht aufrufen
+            return; //-> The form is invalid, so do not call the API.
         }
 
-        //Falls gültig: Daten auslesen
+        //If Valid: Read data
         const data = {
             email: form.querySelector("#email").value,
             password: form.querySelector("#password").value,
