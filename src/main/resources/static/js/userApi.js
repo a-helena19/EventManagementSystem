@@ -10,6 +10,13 @@ registerBtn.addEventListener('click', () => {
     form.addEventListener("submit", (async (e) => {
         e.preventDefault();
 
+        //HTML5/Bootstrap Validierung ausführen
+        if (!form.checkValidity()) {
+            form.classList.add("was-validated");
+            return; //-> Formular ist ungültig, also API nicht aufrufen
+        }
+
+        //Falls gültig: Daten auslesen
         const data = {
             email: form.querySelector("#email").value,
             password: form.querySelector("#password").value,
@@ -37,6 +44,7 @@ registerBtn.addEventListener('click', () => {
 
             // Reset UI
             form.reset();
+            form.classList.remove("was-validated");
         }
         catch (err) {
             console.error(err);
@@ -55,6 +63,11 @@ const loginForm = document.getElementById("sign-in-form");
 if (loginForm) {
     loginForm.addEventListener("submit", async (e) => {
         e.preventDefault();
+
+        if (!loginForm.checkValidity()) {
+            loginForm.classList.add("was-validated");
+            return;
+        }
 
         const email = loginForm.querySelector("#login-email").value;
         const password = loginForm.querySelector("#login-password").value;

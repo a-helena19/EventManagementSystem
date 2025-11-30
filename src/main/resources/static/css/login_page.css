@@ -208,3 +208,14 @@ body{
 .container.active .toggle-right{
     transform: translateX(200%);
 }
+
+/* Fehlermeldung kleiner & weniger Abstand */
+.invalid-feedback {
+    font-size: 0.75rem;
+    margin-top: 2px;
+}
+
+/* Abstand nach unten bei Inputs verringern */
+form .form-control {
+    margin-bottom: 4px;
+}
