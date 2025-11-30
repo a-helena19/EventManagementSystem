@@ -54,6 +54,9 @@ public class Booking {
     @Column(name = "event_id", nullable = false)
     private Long eventId;
 
+    @Column(nullable = true)
+    private Long userId;
+
 
     // Default constructor required by JPA
     public Booking() {}
@@ -70,7 +73,8 @@ public class Booking {
                  String phoneNumber,
                  String email,
                  BookingStatus status,
-                   Long eventId) {
+                   Long eventId,
+                   Long userId) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.birthDate = birthDate;
@@ -83,6 +87,7 @@ public class Booking {
         this.email = email;
         this.status = status;
         this.eventId = eventId;
+        this.userId = userId;
     }
 
 
@@ -155,12 +160,16 @@ public class Booking {
 
     public void setEventId(Long eventId) {this.eventId = eventId;}
 
+    public Long getUserId() {return userId;}
+
+    public void setUserId(Long userId) {this.userId = userId;}
+
 
     @Override
     public String toString() {
         return "Booking [id=" + id + ", full name=" + firstname + " " + lastname + ", birth date=" + birthDate + ", booking date=" + bookingDate
                 + ", address=" + street + " " + houseNumber + ", " + postalCode + " " + city + ", phone number=" + phoneNumber +
-                ", email=" + email + ", booking status=" + status + ", event id=" + eventId + "]";
+                ", email=" + email + ", booking status=" + status + ", event id=" + eventId + ", user id=" + userId + "]";
     }
 }
 

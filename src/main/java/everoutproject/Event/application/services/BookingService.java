@@ -21,9 +21,9 @@ public class BookingService {
     }
 
 
-    public BookingDTO createBooking(String firstname, String lastname, LocalDate birthDate, BookingAddress address, String phoneNumber, String email, Long eventId) {
+    public BookingDTO createBooking(String firstname, String lastname, LocalDate birthDate, BookingAddress address, String phoneNumber, String email, Long userId, Long eventId) {
 
-        Booking newBooking = new Booking(firstname, lastname, birthDate, LocalDate.now(), address, phoneNumber, email, BookingStatus.ACTIVE, eventId);
+        Booking newBooking = new Booking(firstname, lastname, birthDate, LocalDate.now(), address, phoneNumber, email, BookingStatus.ACTIVE, eventId, userId);
 
         // Persist event
         bookingRepository.addNewEvent(newBooking);
@@ -33,6 +33,18 @@ public class BookingService {
 
     public List<BookingDTO> getAllBookingsDTO() {
         return bookingRepository.findAll().stream()
+                .map(BookingMapperDTO::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<BookingDTO> getBookingsByEmail(String email) {
+        return bookingRepository.findByEmail(email).stream()
+                .map(BookingMapperDTO::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<BookingDTO> getBookingsByUserId(Long userId) {
+        return bookingRepository.findByUserId(userId).stream()
                 .map(BookingMapperDTO::toDTO)
                 .collect(Collectors.toList());
     }
