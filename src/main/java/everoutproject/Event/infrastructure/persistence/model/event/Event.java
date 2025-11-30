@@ -79,7 +79,7 @@ public class Event {
     @JoinColumn(name = "organizer_id")
     private Organizer organizer;
 
-    @Column(name = "category")
+    @Column(name = "category", nullable = false)
     @Enumerated(EnumType.STRING)
     private EventCategory category;
 
