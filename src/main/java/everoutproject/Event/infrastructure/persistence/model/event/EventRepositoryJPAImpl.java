@@ -3,11 +3,11 @@ package everoutproject.Event.infrastructure.persistence.model.event;
 import everoutproject.Event.domain.model.event.EventRepository;
 import everoutproject.Event.domain.model.event.EventImage;
 import everoutproject.Event.infrastructure.mapper.EventMapper;
+import everoutproject.Event.infrastructure.mapper.OrganizerMapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 public class EventRepositoryJPAImpl implements EventRepository {
@@ -22,9 +22,11 @@ public class EventRepositoryJPAImpl implements EventRepository {
     }
 
     @Override
-    public void addNewEvent(everoutproject.Event.domain.model.event.Event domainEvent) {
+    public everoutproject.Event.domain.model.event.Event addNewEvent(everoutproject.Event.domain.model.event.Event domainEvent) {
         everoutproject.Event.infrastructure.persistence.model.event.Event entity = EventMapper.toEntity(domainEvent);
-        eventJpaRepository.save(entity);
+        everoutproject.Event.infrastructure.persistence.model.event.Event savedEntity = eventJpaRepository.save(entity);
+
+       return EventMapper.toDomain(savedEntity);
     }
 
     @Override
@@ -37,7 +39,7 @@ public class EventRepositoryJPAImpl implements EventRepository {
     public List<everoutproject.Event.domain.model.event.Event> findAll() {
         return eventJpaRepository.findAll().stream()
                 .map(EventMapper::toDomain)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Override
@@ -58,10 +60,71 @@ public class EventRepositoryJPAImpl implements EventRepository {
                     entity.setState(domainEvent.getLocation().getState());
                     entity.setCountry(domainEvent.getLocation().getCountry());
 
-                    entity.setDate(domainEvent.getDate());
+                    entity.setStartDate(domainEvent.getStartDate());
+                    entity.setEndDate(domainEvent.getEndDate());
+
                     entity.setPrice(domainEvent.getPrice());
                     entity.setStatus(EventMapper.toEntityStatus(domainEvent.getStatus()));
                     entity.setCancellationReason(domainEvent.getCancellationReason());
+
+                    entity.setCategory(EventMapper.toEntityCategory(domainEvent.getCategory()));
+                    entity.setOrganizer(
+                            OrganizerMapper.toEntity(domainEvent.getOrganizer())
+                    );
+
+
+                    entity.getAppointments().clear();
+                    domainEvent.getAppointments()
+                            .forEach(a -> entity.addAppointment(
+                                    new EventAppointment(
+                                            a.getId(),
+                                            a.getStartDate(),
+                                            a.getEndDate(),
+                                            a.isSeasonal(),
+                                            entity
+                                    )
+                            ));
+                    // ========================
+                    // UPDATE REQUIREMENTS
+                    // ========================
+                    entity.getRequirements().clear();
+                    domainEvent.getRequirements()
+                            .forEach(r -> entity.addRequirement(
+                                    new Requirement(
+                                            r.getId(),
+                                            r.getDescription(),
+                                            entity
+                                    )
+                            ));
+
+                    // ========================
+                    // UPDATE EQUIPMENT
+                    // ========================
+                    entity.getEquipments().clear();
+                    domainEvent.getEquipment()
+                            .forEach(eq -> entity.addEquipment(
+                                    new EventEquipment(
+                                            eq.getId(),
+                                            eq.getName(),
+                                            eq.isRentable(),
+                                            entity
+                                    )
+                            ));
+
+                    // ========================
+                    // UPDATE PACKAGES
+                    // ========================
+                    entity.getAdditionalPackages().clear();
+                    domainEvent.getAdditionalPackages()
+                            .forEach(p -> entity.addAdditionalPackage(
+                                    new AdditionalPackage(
+                                            p.getId(),
+                                            p.getTitle(),
+                                            p.getDescription(),
+                                            p.getPrice(),
+                                            entity
+                                    )
+                            ));
 
                     // ================
                     // UPDATE IMAGES (MERGE, DO NOT RECREATE!)
@@ -100,7 +163,8 @@ public class EventRepositoryJPAImpl implements EventRepository {
 
                 }, () -> {
                     // If event does not exist, insert new one
-                    eventJpaRepository.save(EventMapper.toEntity(domainEvent));
+                    Event newEntity = EventMapper.toEntity(domainEvent);
+                    eventJpaRepository.save(newEntity);
                 });
     }
 

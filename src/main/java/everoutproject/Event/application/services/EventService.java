@@ -4,15 +4,14 @@ import everoutproject.Event.domain.model.booking.Booking;
 import everoutproject.Event.domain.model.booking.BookingRepository;
 import everoutproject.Event.domain.model.booking.BookingStatus;
 import everoutproject.Event.domain.model.event.*;
+import everoutproject.Event.rest.dtos.event.CreateEventRequestDTO;
+import everoutproject.Event.rest.dtos.event.EditEventRequestDTO;
 import everoutproject.Event.rest.dtos.event.EventDTO;
 import everoutproject.Event.application.dtos.EventMapperDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,47 +20,80 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final BookingRepository bookingRepository;
+    private final OrganizerRepository organizerRepository;
 
-    public EventService(EventRepository eventRepository, BookingRepository bookingRepository) {
+    public EventService(EventRepository eventRepository, BookingRepository bookingRepository, OrganizerRepository organizerRepository) {
         this.eventRepository = eventRepository;
         this.bookingRepository = bookingRepository;
+        this.organizerRepository = organizerRepository;
     }
 
     /**
      * Create a new Event with optional images.
      */
-    public EventDTO createEvent(String name, String description, EventLocation location, LocalDate date,
-                                BigDecimal price, List<MultipartFile> images) throws Exception {
+    @Transactional
+    public EventDTO createEvent(CreateEventRequestDTO dto, List<MultipartFile> images) {
 
-        // Convert uploaded files to domain EventImage
-        List<EventImage> imageList = images != null
-                ? images.stream()
-                .filter(file -> !file.isEmpty())
-                .map(file -> {
+        Organizer organizer = organizerRepository.findById(dto.organizerId())
+                .orElseThrow(() -> new RuntimeException("Organizer not found"));
+
+        EventCategory category = EventCategory.valueOf(dto.category());
+
+        EventLocation location = new EventLocation(
+                dto.location().street(),
+                dto.location().houseNumber(),
+                dto.location().city(),
+                dto.location().postalCode(),
+                dto.location().state(),
+                dto.location().country()
+        );
+
+        Event newEvent = new Event(
+                dto.name(),
+                dto.description(),
+                location,
+                dto.startDate(),
+                dto.endDate(),
+                dto.price(),
+                EventStatus.ACTIVE,
+                category,
+                organizer
+        );
+        // Add children
+        dto.appointments().forEach(a ->
+                newEvent.addAppointment(new EventAppointment(null, a.startDate(), a.endDate(), a.seasonal()))
+        );
+
+        dto.requirements().forEach(r ->
+                newEvent.addRequirement(new Requirement(null, r.description()))
+        );
+
+        dto.equipment().forEach(e ->
+                newEvent.addEquipment(new EventEquipment(null, e.name(), e.rentable()))
+        );
+
+        dto.additionalPackages().forEach(p ->
+                newEvent.addPackage(new AdditionalPackage(null, p.title(), p.description(), p.price()))
+        );
+
+        // Handle images
+        if (images != null) {
+            for (MultipartFile file : images) {
+                if (!file.isEmpty()) {
                     try {
-                        return new EventImage(null, file.getBytes());
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
+                        newEvent.addImage(new EventImage(null, file.getBytes()));
+                    } catch (Exception ex) {
+                        throw new RuntimeException("Failed to process image", ex);
                     }
-                })
-                .collect(Collectors.toList())
-                : List.of();
-
-        // Create domain Event
-        Event newEvent = new Event(name, description, location, date, price, EventStatus.ACTIVE);
-        imageList.forEach(newEvent::addImage);
+                }
+            }
+        }
 
         // Persist event
         eventRepository.addNewEvent(newEvent);
 
-        // Retrieve the persisted event from the repository to ensure IDs are set
-        Event persistedEvent = eventRepository.findAll().stream()
-                .filter(e -> e.getName().equals(name) && e.getDate().equals(date))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Event not found after save"));
-
         // Return DTO
-        return EventMapperDTO.toDTO(persistedEvent);
+        return EventMapperDTO.toDTO(newEvent);
     }
 
     /**
@@ -105,21 +137,51 @@ public class EventService {
     /**
      * Edit and Save an Event
      */
-    public void editEvent(Long id, String name, String description, EventLocation location, LocalDate date,
-                          BigDecimal price, EventStatus status, List<MultipartFile> images, List<Long> idsToDelete) throws Exception {
+    @Transactional
+    public EventDTO editEvent(Long id, EditEventRequestDTO dto, List<MultipartFile> images, List<Long> idsToDelete) throws Exception {
+
         Event eventToEdit = eventRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
 
-        // Convert uploaded files to domain EventImage
-        List<EventImage> imageList = new ArrayList<>();
+        Organizer organizer = organizerRepository.findById(dto.organizerId())
+                .orElseThrow(() -> new RuntimeException("Organizer not found"));
 
-        if (images != null) {
-            for (MultipartFile file : images) {
-                if (file != null && !file.isEmpty()) {
-                    imageList.add(new EventImage(null, file.getBytes()));
-                }
-            }
-        }
+        EventCategory category = EventCategory.valueOf(dto.category());
+
+        EventLocation location = new EventLocation(
+                dto.location().street(),
+                dto.location().houseNumber(),
+                dto.location().city(),
+                dto.location().postalCode(),
+                dto.location().state(),
+                dto.location().country()
+        );
+
+        // --- Appointments ---
+        List<EventAppointment> appointments = dto.appointments().stream()
+                .map(a -> new EventAppointment(
+                        a.id(),        // keep existing ID if present!
+                        a.startDate(),
+                        a.endDate(),
+                        a.seasonal()
+                ))
+                .toList();
+
+        // --- Requirements ---
+        List<Requirement> requirements = dto.requirements().stream()
+                .map(r -> new Requirement(r.id(), r.description()))
+                .toList();
+
+        // --- Equipment ---
+        List<EventEquipment> equipment = dto.equipment().stream()
+                .map(e -> new EventEquipment(e.id(), e.name(), e.rentable()))
+                .toList();
+
+        // --- Packages ---
+        List<AdditionalPackage> packages = dto.additionalPackages().stream()
+                .map(p -> new AdditionalPackage(p.id(), p.title(), p.description(), p.price()))
+                .toList();
+
 
         // Remove images that were marked for deletion
         if (idsToDelete != null && !idsToDelete.isEmpty()) {
@@ -130,13 +192,43 @@ public class EventService {
             toRemove.forEach(eventToEdit::removeImage);
         }
 
-        List<EventImage> mergedImages = eventToEdit.getImages() != null
-                ? new java.util.ArrayList<>(eventToEdit.getImages())
-                : new java.util.ArrayList<>();
-        mergedImages.addAll(imageList);
+        if (images != null) {
+            for (MultipartFile file : images) {
+                if (file != null && !file.isEmpty()) {
+                    try {
+                        eventToEdit.addImage(new EventImage(null, file.getBytes()));
+                    } catch (Exception e) {
+                        throw new RuntimeException("Failed to process image", e);
+                    }
 
-        eventToEdit.edit(name, description, location, date, price, status, mergedImages);
+                }
+            }
+        }
+
+        // --- Apply changes ---
+        eventToEdit.edit(
+                dto.name(),
+                dto.description(),
+                location,
+                dto.startDate(),
+                dto.endDate(),
+                appointments,
+                dto.price(),
+                eventToEdit.getStatus(),   // status stays unchanged here
+                dto.minParticipants(),
+                dto.maxParticipants(),
+                requirements,
+                equipment,
+                category,
+                packages,
+                organizer,
+                eventToEdit.getDurationInDays(),
+                eventToEdit.getImages()    // merged list
+        );
+
         eventRepository.save(eventToEdit);
+
+        return EventMapperDTO.toDTO(eventToEdit);
     }
 
     /**

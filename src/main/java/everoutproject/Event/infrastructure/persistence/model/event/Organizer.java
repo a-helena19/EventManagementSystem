@@ -18,8 +18,18 @@ public class Organizer {
 
     public Organizer() {}
     public Organizer(String name, String contactEmail, String phone) {
-        this.name = name; this.contactEmail = contactEmail; this.phone = phone;
+        this.name = name;
+        this.contactEmail = contactEmail;
+        this.phone = phone;
     }
+
+    public Organizer(Long id, String name, String contactEmail, String phone) {
+        this.id = id;
+        this.name = name;
+        this.contactEmail = contactEmail;
+        this.phone = phone;
+    }
+
 
     public Long getId() { return id; }
     public void setId(Long id) {this.id = id;}

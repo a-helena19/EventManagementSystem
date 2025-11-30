@@ -23,6 +23,12 @@ public class Requirement {
         this.event = event;
     }
 
+    public Requirement(Long id, String description, Event event) {
+        this.id = id;
+        this.description = description;
+        this.event = event;
+    }
+
     public Long getId() { return id; }
     public String getDescription() { return description; }
     public Event getEvent() { return event; }

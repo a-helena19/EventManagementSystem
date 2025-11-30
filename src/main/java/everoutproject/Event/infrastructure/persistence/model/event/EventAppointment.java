@@ -25,9 +25,20 @@ public class EventAppointment {
 
 
     public EventAppointment() {}
-    public EventAppointment(LocalDate startDate, LocalDate endDate, boolean recurring) {
-        this.startDate = startDate; this.endDate = endDate; this.seasonal = recurring;
+    public EventAppointment(LocalDate startDate, LocalDate endDate, boolean seasonal) {
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.seasonal = seasonal;
     }
+
+    public EventAppointment(Long id, LocalDate startDate, LocalDate endDate, boolean seasonal, Event event) {
+        this.id = id;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.seasonal = seasonal;
+        this.event = event;
+    }
+
 
     public Long getId() { return id; }
     public LocalDate getStartDate() { return startDate; }

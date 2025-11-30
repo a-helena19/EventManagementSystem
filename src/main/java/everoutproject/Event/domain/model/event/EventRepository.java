@@ -5,7 +5,7 @@ import java.util.Optional;
 
 public interface EventRepository {
 
-    void addNewEvent(Event domainEvent);
+    Event addNewEvent(Event domainEvent);
     Optional<Event> findById(Long id);
     List<Event> findAll();
     void save(Event domainEvent);

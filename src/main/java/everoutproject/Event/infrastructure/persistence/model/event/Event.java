@@ -270,6 +270,22 @@ public class Event {
         image.setEvent(null);
     }
 
+    public void addAdditionalPackage(AdditionalPackage add) {
+        additionalPackages.add(add);
+        add.setEvent(this);
+    }
+
+    public void addEquipment(EventEquipment eq) {
+        equipments.add(eq);
+        eq.setEvent(this);
+    }
+
+    public void addRequirement(Requirement req) {
+        requirements.add(req);
+        req.setEvent(this);
+    }
+
+
     @Override
     public String toString() {
 

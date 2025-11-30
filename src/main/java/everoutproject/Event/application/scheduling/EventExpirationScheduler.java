@@ -34,7 +34,7 @@ public class EventExpirationScheduler {
         List<Event> events = eventRepository.findAll();
 
         for (Event event : events) {
-            if (event.getDate().isBefore(today) && event.getStatus() == EventStatus.ACTIVE) {
+            if (event.getEndDate().isBefore(today) && event.getStatus() == EventStatus.ACTIVE) {
 
                 // set Event status on EXPIRED
                 event.setStatus(EventStatus.EXPIRED);
@@ -44,8 +44,11 @@ public class EventExpirationScheduler {
 
                 // set Booking status on EXPIRED
                 for (Booking booking : bookings) {
-                    booking.setStatus(BookingStatus.EXPIRED);
-                    bookingRepository.save(booking);
+                    if (booking.getStatus() != BookingStatus.CANCELLED) {
+                        booking.setStatus(BookingStatus.EXPIRED);
+                        bookingRepository.save(booking);
+                    }
+
                 }
 
                 System.out.println("Event expired: " + event.getId());

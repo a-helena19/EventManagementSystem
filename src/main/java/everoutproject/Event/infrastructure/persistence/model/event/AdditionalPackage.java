@@ -33,6 +33,14 @@ public class AdditionalPackage {
         this.event = event;
     }
 
+    public AdditionalPackage(Long id, String title, String description, BigDecimal price, Event event) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.price = price;
+        this.event = event;
+    }
+
     public Long getId() { return id; }
     public String getTitle() { return title; }
     public String getDescription() { return description; }

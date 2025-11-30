@@ -28,6 +28,13 @@ public class EventEquipment {
         this.event = event;
     }
 
+    public EventEquipment(Long id, String name, boolean rentable, Event event) {
+        this.id = id;
+        this.name = name;
+        this.rentable = rentable;
+        this.event = event;
+    }
+
     public Long getId() { return id; }
     public String getName() { return name; }
     public boolean isRentable() { return rentable; }

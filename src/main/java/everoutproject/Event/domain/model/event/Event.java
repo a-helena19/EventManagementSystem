@@ -7,7 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class Event {
-    private final Long id;
+    private Long id;
     private String name;
     private String description;
     private EventLocation location;
@@ -111,6 +111,7 @@ public class Event {
 
     // getters / setters (only important ones shown; add more as needed)
     public Long getId() { return id; }
+    public void setId(Long id) {this.id = id;}
     public String getName() { return name; }
     public String getDescription() { return description; }
     public EventLocation getLocation() { return location; }

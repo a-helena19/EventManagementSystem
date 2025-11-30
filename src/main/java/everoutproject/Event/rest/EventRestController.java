@@ -2,6 +2,8 @@ package everoutproject.Event.rest;
 
 import everoutproject.Event.application.services.EventService;
 import everoutproject.Event.domain.model.event.EventStatus;
+import everoutproject.Event.rest.dtos.event.CreateEventRequestDTO;
+import everoutproject.Event.rest.dtos.event.EditEventRequestDTO;
 import everoutproject.Event.rest.dtos.event.EventDTO;
 import everoutproject.Event.rest.dtos.event.CancelRequestDTO;
 import everoutproject.Event.domain.model.event.EventLocation;
@@ -32,29 +34,18 @@ public class EventRestController {
     }
 
     // Create a new event
-    @PostMapping("/create")
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createEvent(
-            @RequestParam String name,
-            @RequestParam(required = false) String description,
-            @RequestParam String street,
-            @RequestParam String houseNumber,
-            @RequestParam String city,
-            @RequestParam String postalCode,
-            @RequestParam String state,
-            @RequestParam String country,
-            @RequestParam LocalDate date,
-            @RequestParam BigDecimal price,
-            @RequestParam List<MultipartFile> images
+            @RequestPart("event") CreateEventRequestDTO dto,
+            @RequestPart(value = "images") List<MultipartFile> images
     ) {
         try {
-            EventLocation location = new EventLocation(street, houseNumber, city, postalCode, state, country);
-            EventDTO eventDTO = eventService.createEvent(name, description, location, date, price, images);
-
+            EventDTO created = eventService.createEvent(dto, images);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of(
                             "message", "Event created successfully",
-                            "id", eventDTO.id(),
-                            "name", eventDTO.name()
+                            "id", created.id(),
+                            "name", created.name()
                     ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -100,35 +91,15 @@ public class EventRestController {
     // Edit an event
     @PutMapping("/edit/{id}/status/{status}")
     public ResponseEntity<?> editEvent(@PathVariable Long id,
-                                       @PathVariable String status,
-                                       @RequestParam String name,
-                                       @RequestParam(required = false) String description,
-                                       @RequestParam String street,
-                                       @RequestParam String houseNumber,
-                                       @RequestParam String city,
-                                       @RequestParam String postalCode,
-                                       @RequestParam String state,
-                                       @RequestParam String country,
-                                       @RequestParam LocalDate date,
-                                       @RequestParam BigDecimal price,
-                                       @RequestPart(required = false) List<MultipartFile> images,
-                                       @RequestParam(required = false) String deleteImageIds) {
+                                       @RequestPart("event") EditEventRequestDTO dto,
+                                       @RequestPart(value =  "images", required = false) List<MultipartFile> images,
+                                       @RequestParam(value = "deleteImageIds", required = false) List<Long> deleteImageIds) {
         try {
-            EventLocation location = new EventLocation(street, houseNumber, city, postalCode, state, country);
-            EventStatus eventStatus = EventStatus.valueOf(status);
-
-
-            // Optional: parse IDs to delete
-            List<Long> idsToDelete = null;
-            if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
-                idsToDelete = new ObjectMapper().readValue(deleteImageIds, new TypeReference<List<Long>>() {});
-            }
-
-            eventService.editEvent(id, name, description, location, date, price, eventStatus, images, idsToDelete);
+            eventService.editEvent(id, dto, images, deleteImageIds);
             return ResponseEntity.ok(Map.of(
                     "message", "Event was edited successfully",
                     "id", id,
-                    "name", name));
+                    "name", dto.name()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Failed to edit event: " + e.getMessage()));

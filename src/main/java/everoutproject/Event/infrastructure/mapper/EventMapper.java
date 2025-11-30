@@ -190,4 +190,8 @@ public class EventMapper {
             everoutproject.Event.infrastructure.persistence.model.event.EventStatus jpaStatus) {
         return EventStatus.valueOf(jpaStatus.name());
     }
+
+    public static everoutproject.Event.infrastructure.persistence.model.event.EventCategory toEntityCategory (EventCategory domainCategory) {
+        return everoutproject.Event.infrastructure.persistence.model.event.EventCategory.valueOf(domainCategory.name());
+    }
 }
