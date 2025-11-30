@@ -132,6 +132,47 @@ public class UserService {
     }
 
     /**
+     * Get current user profile
+     */
+    public User getCurrentUser() {
+        // TODO: Replace with actual logged-in user - for now using first user
+        List<User> allUsers = userRepository.findAll();
+        if (allUsers.isEmpty()) {
+            throw new RuntimeException("No users found");
+        }
+        return allUsers.get(0); // Temporary - get first user
+    }
+
+    /**
+     * Update user profile for current user
+     */
+    public User updateUserProfile(String firstName, String lastName, String email) {
+        // TODO: Replace with actual logged-in user - for now using first user
+        List<User> allUsers = userRepository.findAll();
+        if (allUsers.isEmpty()) {
+            throw new RuntimeException("No users found");
+        }
+
+        User user = allUsers.get(0); // Temporary - get first user
+        user.updateProfile(firstName, lastName);
+        user.setEmail(email);
+
+        userRepository.save(user);
+        return user;
+    }
+
+    public void deleteCurrentUser() {
+        // TODO: Replace with actual logged-in user - for now using first user
+        List<User> allUsers = userRepository.findAll();
+        if (allUsers.isEmpty()) {
+            throw new RuntimeException("No users found");
+        }
+
+        User user = allUsers.get(0); // Temporary - get first user
+        userRepository.delete(user.getId());
+    }
+
+    /**
      * For debugging/logging purposes: prints all events to console.
      */
     @Transactional

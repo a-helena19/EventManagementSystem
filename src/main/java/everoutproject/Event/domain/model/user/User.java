@@ -53,6 +53,8 @@ public class User {
     // Setter
     public void setCreatedAt(LocalDate createdAt) {this.createdAt = createdAt;}
     public void setId(Long id) {this.id = id;}
+    public void setEmail(String email) {this.email = email; this.updatedAt = LocalDate.now();}
+
     // Domain behavior
     public void updateProfile(String firstName, String lastName) {
         this.firstName = firstName;
