@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Reset form when modal is opened
     modalEl.addEventListener('show.bs.modal', () => {
         resetForm();
+        loadOrganizers();
     });
 
     // Form submission to backend
@@ -20,7 +21,39 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
         await submitEvent();
     });
+    // min/max participant validation
+    document.getElementById("minParticipants").addEventListener("input", validateParticipants);
+    document.getElementById("maxParticipants").addEventListener("input", validateParticipants);
+
+    // Event date validation
+    document.getElementById("startDate").addEventListener("change", validateDates);
+    document.getElementById("endDate").addEventListener("change", validateDates);
+
+    // Appointment date validation
+    document.getElementById("apptStart").addEventListener("change", validateAppointmentDates);
+    document.getElementById("apptEnd").addEventListener("change", validateAppointmentDates);
+
+    // Single-day toggle
+    document.getElementById("singleDayCheckbox").addEventListener("change", toggleEndDate);
 });
+
+// ===========================
+// CHECKBOX END DATE LOGIC
+// ===========================
+function toggleEndDate() {
+    const wrapper = document.getElementById("endDateWrapper");
+    const endDate = document.getElementById("endDate");
+    const checked = document.getElementById("singleDayCheckbox").checked;
+
+    if (checked) {
+        wrapper.style.display = "none";
+        endDate.value = "";
+        endDate.removeAttribute("required");
+    } else {
+        wrapper.style.display = "block";
+        endDate.setAttribute("required", "true");
+    }
+}
 
 // ===========================
 // RESET FORM (Modal open)
@@ -60,28 +93,108 @@ function resetForm() {
 }
 
 // ===========================
+// LOAD ORGANIZERS INTO SELECT
+// ===========================
+async function loadOrganizers() {
+    const select = document.getElementById("organizerSelect");
+    select.innerHTML = `<option value="">Select Organizer</option>`;
+
+    try {
+        const res = await fetch("/api/organizers");
+        const list = await res.json();
+
+        list.forEach(o => {
+            const opt = document.createElement("option");
+            opt.value = o.id;
+            opt.textContent = `${o.name} (${o.email})`;
+            select.appendChild(opt);
+        });
+    } catch (err) {
+        console.warn("Could not load organizers:", err);
+    }
+}
+// ===========================
+// ADD NEW ORGANIZER TOGGLE
+// ===========================
+function toggleNewOrganizer() {
+    const box = document.getElementById("newOrganizerFields");
+    box.style.display = box.style.display === "none" ? "block" : "none";
+}
+// ===========================
 // NEXT / BACK BUTTON LOGIC
 // ===========================
 function nextStep(disable) {
-    const inputs = document.querySelectorAll("#event-form input, #event-form textarea, #event-form select");
+
+    const form = document.getElementById("event-form");
+
+    // Alle Inputs (nur lesen)
+    const inputs = form.querySelectorAll("input, textarea, select");
+
+    // Buttons für Adds/Removes
+    const addButtons = form.querySelectorAll("button[onclick^='add'], button[onclick^='remove']");
+    const removeButtons = form.querySelectorAll(".btn-close");
+
+    // File input
+    const fileInput = document.getElementById("images");
 
     if (disable) {
+        // --- Lock all text inputs ---
         inputs.forEach(el => {
-            el.setAttribute("readonly", "");
+            el.setAttribute("readonly", "true");
             el.style.backgroundColor = "#e9ecef";
+            el.style.cursor = "not-allowed";
         });
-        document.getElementById("images").style.pointerEvents = "none";
 
+        // Disable selects correctly (select has no readonly)
+        form.querySelectorAll("select").forEach(sel => {
+            sel.setAttribute("disabled", "true");
+        });
+
+        // Hide all ADD buttons
+        addButtons.forEach(btn => {
+            btn.style.display = "none";
+        });
+
+        // Hide remove buttons (small X)
+        removeButtons.forEach(btn => {
+            btn.style.display = "none";
+        });
+
+        // Disable file upload
+        fileInput.disabled = true;
+
+        // Toggle visible buttons
         document.getElementById("nextBtn").style.display = "none";
         document.getElementById("backBtn").style.display = "inline-block";
         document.getElementById("submitBtn").style.display = "inline-block";
+
     } else {
+        // Unlock text inputs
         inputs.forEach(el => {
             el.removeAttribute("readonly");
             el.style.backgroundColor = "white";
+            el.style.cursor = "auto";
         });
-        document.getElementById("images").style.pointerEvents = "auto";
 
+        // Re-enable selects
+        form.querySelectorAll("select").forEach(sel => {
+            sel.removeAttribute("disabled");
+        });
+
+        // Show add buttons
+        addButtons.forEach(btn => {
+            btn.style.display = "inline-block";
+        });
+
+        // Show remove buttons
+        removeButtons.forEach(btn => {
+            btn.style.display = "inline-block";
+        });
+
+        // Enable file upload
+        fileInput.disabled = false;
+
+        // Restore visible buttons
         document.getElementById("nextBtn").style.display = "inline-block";
         document.getElementById("backBtn").style.display = "none";
         document.getElementById("submitBtn").style.display = "none";
@@ -97,6 +210,74 @@ function checkValidation(next) {
         form.classList.add("was-validated");
     }
 }
+// ===========================
+// VALIDATE MIN/MAX PARTICIPANTS
+// ===========================
+function validateParticipants() {
+    const minField = document.getElementById("minParticipants");
+    const maxField = document.getElementById("maxParticipants");
+
+    const min = parseInt(minField.value);
+    const max = parseInt(maxField.value);
+
+    // If one field empty → reset errors
+    if (!min || !max) {
+        minField.setCustomValidity("");
+        maxField.setCustomValidity("");
+        return true;
+    }
+
+    if (max < min) {
+        maxField.setCustomValidity("Max participants cannot be lower than min participants.");
+        return false;
+    }
+
+    maxField.setCustomValidity("");
+    return true;
+}
+
+// ===========================
+// VALIDATE END DATES
+// ===========================
+function validateDates() {
+    const start = document.getElementById("startDate");
+    const end = document.getElementById("endDate");
+    const single = document.getElementById("singleDayCheckbox").checked;
+
+    if (single || !end.value) {
+        end.setCustomValidity("");
+        return true;
+    }
+
+    if (end.value < start.value) {
+        end.setCustomValidity("End date cannot be earlier than start date");
+        return false;
+    }
+
+    end.setCustomValidity("");
+    return true;
+}
+
+// ===========================
+// VALIDATE Appointments END DATES
+// ===========================
+function validateAppointmentDates() {
+    const start = document.getElementById("apptStart");
+    const end = document.getElementById("apptEnd");
+
+    if (!start.value || !end.value) {
+        end.setCustomValidity("");
+        return;
+    }
+
+    if (end.value < start.value) {
+        end.setCustomValidity("End date cannot be earlier than start date");
+    } else {
+        end.setCustomValidity("");
+    }
+}
+
+
 
 // ===========================
 // ADD / REMOVE REQUIREMENTS
@@ -202,6 +383,18 @@ function removeAppointment(id) {
 }
 
 // ===========================
+// Add new Organizer
+// ===========================
+function toggleNewOrganizer() {
+    const box = document.getElementById("newOrganizerFields");
+    box.style.display = box.style.display === "none" ? "block" : "none";
+
+    if (box.style.display === "block") {
+        document.getElementById("organizerSelect").value = "";
+    }
+}
+
+// ===========================
 // BADGE TEMPLATE
 // ===========================
 function badgeTemplate(id, text, removeFn) {
@@ -243,7 +436,19 @@ async function submitEvent() {
             endDate: document.getElementById("endDate").value,
             price: parseFloat(document.getElementById("price").value),
             category: document.getElementById("category").value,
-            organizerId: parseInt(document.getElementById("organizerId").value),
+            // Organizer (existing OR new)
+            organizerId: document.getElementById("newOrganizerFields").style.display === "none"
+                ? parseInt(document.getElementById("organizerSelect").value) || null
+                : null,
+
+            newOrganizer: document.getElementById("newOrganizerFields").style.display === "block"
+                ? {
+                    name: document.getElementById("orgName").value,
+                    email: document.getElementById("orgEmail").value,
+                    phone: document.getElementById("orgPhone").value
+                }
+                : null,
+
             minParticipants: parseInt(document.getElementById("minParticipants").value),
             maxParticipants: parseInt(document.getElementById("maxParticipants").value),
 

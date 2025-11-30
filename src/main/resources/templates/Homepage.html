@@ -90,7 +90,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="event-form" enctype="multipart/form-data">
+                <form id="event-form" enctype="multipart/form-data" novalidate>
 
                     <div class="row">
                         <!-- LEFT SIDE – Main Event Data (2/3) -->
@@ -113,6 +113,10 @@
 
                             <!-- Dates -->
                             <div class="row">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="singleDayCheckbox">
+                                    <label class="form-check-label">This is a single-day event</label>
+                                </div>
                                 <div class="col-md-6 mb-3">
                                     <label>Start Date</label>
                                     <input type="date" id="startDate" class="form-control" required>
@@ -120,11 +124,11 @@
                                         Please enter a valid date.
                                     </div>
                                 </div>
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-6 mb-3" id="endDateWrapper">
                                     <label>End Date</label>
                                     <input type="date" id="endDate" class="form-control" required>
                                     <div class="invalid-feedback">
-                                        Please enter a valid date.
+                                        End date is required and must be later than start date.
                                     </div>
                                 </div>
                             </div>
@@ -133,7 +137,7 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label>Price (€)</label>
-                                    <input type="number" id="price" class="form-control" required>
+                                    <input type="number" id="price" class="form-control" required step="0.01">
                                     <div class="invalid-feedback">
                                         Please enter a valid price.
                                     </div>
@@ -268,29 +272,20 @@
                         <!-- RIGHT SIDE – Secondary Info (1/3) -->
                         <div class="col-lg-4 col-md-5 col-12" id="rightColumn">
 
-                            <!-- Organizer -->
-                            <div class="mb-3">
-                                <label>Organizer ID</label>
-                                <input type="number" id="organizerId" class="form-control" required>
-                                <div class="invalid-feedback">
-                                    Please enter a valid Organizer.
-                                </div>
-                            </div>
-
                             <!-- Participants -->
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label>Min Participants</label>
-                                    <input type="number" id="minParticipants" class="form-control" required>
+                                    <input type="number" id="minParticipants" class="form-control" min="0" required>
                                     <div class="invalid-feedback">
                                         Please enter a valid number.
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label>Max Participants</label>
-                                    <input type="number" id="maxParticipants" class="form-control" required>
+                                    <input type="number" id="maxParticipants" class="form-control" min="0" required>
                                     <div class="invalid-feedback">
-                                        Please enter a valid number.
+                                        A valid number is required and must be greater than min participants.
                                     </div>
                                 </div>
                             </div>
@@ -321,6 +316,32 @@
                             <h5 class="mt-4">Images</h5>
                             <input type="file" id="images" multiple class="form-control" accept="image/*" required>
                             <div id="fileNames" class="mt-2"></div>
+
+                            <!-- Organizer -->
+                            <h5 class="mt-4">Organizer</h5>
+
+                            <select id="organizerSelect" class="form-select mb-3">
+                                <option value="">Select Organizer</option>
+                            </select>
+
+                            <button type="button" class="btn btn-outline-primary mb-3" onclick="toggleNewOrganizer()">
+                                + Add New Organizer
+                            </button>
+
+                            <div id="newOrganizerFields" style="display:none;">
+                                <div class="mb-3">
+                                    <label>Name</label>
+                                    <input type="text" id="orgName" class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label>Email</label>
+                                    <input type="email" id="orgEmail" class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label>Phone</label>
+                                    <input type="text" id="orgPhone" class="form-control">
+                                </div>
+                            </div>
 
                         </div>
                     </div>

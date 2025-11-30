@@ -4,7 +4,7 @@
 }
 
 .modal-dialog{
-    max-width: 90%;
+    max-width: 90% !important;
 }
 
 #event-form {
@@ -33,6 +33,14 @@
     width: 100%;
 }
 
+/* Fix checkbox spacing + alignment */
+#event-form input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    padding: 0 !important;
+}
+
 /* Focus effects */
 #event-form input:focus,
 #event-form textarea:focus,
@@ -40,6 +48,20 @@
     border-color: #007bff !important;
     box-shadow: 0 0 4px rgba(0,123,255,0.4);
     outline: none;
+}
+
+/* When a field is valid */
+#event-form input:valid,
+#event-form textarea:valid,
+#event-form select:valid {
+    border-color: green !important; /* grün, wenn alles korrekt */
+}
+
+/* When a field is invalid */
+#event-form input:invalid:focus,
+#event-form textarea:invalid:focus,
+#event-form select:invalid:focus {
+    border-color: red  !important; /* rot, wenn falsch/fokusiert */
 }
 
 #nextBtn {
@@ -58,21 +80,6 @@
 #nextBtn:hover {
     background-color: #0056b3;
 }
-
-/* When a field is valid */
-#event-form input:valid,
-#event-form textarea:valid,
-#event-form select:valid {
-    border-color: green !important; /* grün, wenn alles korrekt */
-}
-
-/* When a field is invalid */
-#event-form input:invalid:focus,
-#event-form textarea:invalid:focus,
-#event-form select:invalid:focus {
-    border-color: red  !important; /* rot, wenn falsch/fokusiert */
-}
-
 
 /* Container for Back & Submit buttons */
 #backBtn,
@@ -153,6 +160,12 @@
     padding: 6px 10px;
 }
 
+.remove-item {
+    cursor: pointer;
+    margin-left: 8px;
+    font-weight: bold;
+}
+
 #requirementsContainer,
 #equipmentContainer,
 #packagesContainer,
@@ -176,4 +189,21 @@
 
 .input-group .btn {
     flex: 0 0 auto !important;
+}
+
+/* Readonly Mode */
+.readonly input,
+.readonly textarea,
+.readonly select {
+    pointer-events: none;
+    background-color: #e9ecef !important;
+    border: 1px solid #bbb !important;
+}
+
+.readonly .btn-outline-primary {
+    display: none !important;
+}
+
+.readonly .remove-item {
+    display: none !important;
 }
