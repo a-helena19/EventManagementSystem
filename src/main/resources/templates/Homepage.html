@@ -92,88 +92,238 @@
             <div class="modal-body">
                 <form id="event-form" enctype="multipart/form-data">
 
-                    <div class="mb-3 d-flex flex-column">
-                        <label for="name" class="form-label">Name</label>
-                        <input type="text" id="name" name="name" class="form-control" required>
-                        <div class="invalid-feedback">
-                            Please enter a valid name.
-                        </div>
-                    </div>
-
-                    <div class="mb-3 d-flex flex-column">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea id="description" name="description" class="form-control"></textarea>
-                    </div>
-
-                    <!-- Location fields -->
                     <div class="row">
-                        <div class="col-md-8 mb-3">
-                            <label for="street" class="form-label">Street</label>
-                            <input type="text" id="street" name="street" class="form-control" required>
-                            <div class="invalid-feedback">Please enter a valid street.</div>
+                        <!-- LEFT SIDE – Main Event Data (2/3) -->
+                        <div class="col-lg-8 col-md-7 col-12" id="leftColumn">
+
+                            <!-- Name -->
+                            <div class="mb-3">
+                                <label class="form-label">Name</label>
+                                <input type="text" id="name" class="form-control" required>
+                                <div class="invalid-feedback">
+                                    Please enter a valid name.
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea id="description" class="form-control"></textarea>
+                            </div>
+
+                            <!-- Dates -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label>Start Date</label>
+                                    <input type="date" id="startDate" class="form-control" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a valid date.
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label>End Date</label>
+                                    <input type="date" id="endDate" class="form-control" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a valid date.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Price & Category -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label>Price (€)</label>
+                                    <input type="number" id="price" class="form-control" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a valid price.
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label>Category</label>
+                                    <select id="category" class="form-select" required>
+                                        <option value="">Select Category</option>
+                                        <option value="CANYONING">Canyoning</option>
+                                        <option value="CAMPING">Camping</option>
+                                        <option value="TREKKING">Trekking</option>
+                                        <option value="GUIDED_HIKES">Guided Hikes</option>
+                                        <option value="FOOTBALL_TOURNAMENT">Football Tournament</option>
+                                        <option value="GLACIER_COURSE">Glacier Course</option>
+                                        <option value="AVALANCHE_COURSE">Avalanche Course</option>
+                                        <option value="SKI_COURSE">Ski Course</option>
+                                        <option value="OTHER">Other</option>
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Please choose a valid category.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Location -->
+                            <h5 class="mt-4">Location</h5>
+                            <div class="row">
+                                <div class="col-md-8 mb-3">
+                                    <label>Street</label>
+                                    <input type="text" id="street" class="form-control" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a valid street.
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label>House Number</label>
+                                    <input type="text" id="houseNumber" class="form-control" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a valid house number.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-8 mb-3">
+                                    <label>City</label>
+                                    <input type="text" id="city" class="form-control" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a valid city.
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label>Postal Code</label>
+                                    <input type="text" id="postalCode" class="form-control" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a valid postal code.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label>State</label>
+                                    <input type="text" id="state" class="form-control" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a valid state.
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label>Country</label>
+                                    <input type="text" id="country" class="form-control" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a valid country.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Appointments -->
+                            <h5 class="mt-4">Appointments</h5>
+                            <div id="appointmentsContainer"></div>
+                            <!-- appointment input row ... -->
+                            <div class="row align-items-end mb-3">
+                                <div class="col-md-5">
+                                    <label>Start</label>
+                                    <input type="date" id="apptStart" class="form-control">
+                                </div>
+                                <div class="col-md-5">
+                                    <label>End</label>
+                                    <input type="date" id="apptEnd" class="form-control">
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <label>Seasonal</label><br>
+                                    <input type="checkbox" id="apptSeasonal" class="form-check-input mt-2">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <button type="button" class="btn btn-outline-primary" onclick="addAppointment()">Add Appointment</button>
+                            </div>
+
+
+                            <!-- Packages -->
+                            <h5 class="mt-4">Additional Packages</h5>
+                            <div id="packagesContainer"></div>
+                            <!-- package input row ... -->
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label>Title</label>
+                                    <input type="text" id="packageTitleInput" class="form-control">
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label>Description</label>
+                                    <input type="text" id="packageDescInput" class="form-control">
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label>Price (€)</label>
+                                    <input type="number" id="packagePriceInput" class="form-control" step="0.01" min="0">
+                                </div>
+
+                                <div class="col-md-1 d-flex align-items-end">
+                                    <button type="button" class="btn btn-outline-primary w-100" onclick="addPackage()">
+                                        Add
+                                    </button>
+                                </div>
+                            </div>
+
                         </div>
 
-                        <div class="col-md-4 mb-3">
-                            <label for="houseNumber" class="form-label">House Number</label>
-                            <input type="text" id="houseNumber" name="houseNumber" class="form-control" required>
-                            <div class="invalid-feedback">Please enter a valid house number.</div>
+
+                        <!-- RIGHT SIDE – Secondary Info (1/3) -->
+                        <div class="col-lg-4 col-md-5 col-12" id="rightColumn">
+
+                            <!-- Organizer -->
+                            <div class="mb-3">
+                                <label>Organizer ID</label>
+                                <input type="number" id="organizerId" class="form-control" required>
+                                <div class="invalid-feedback">
+                                    Please enter a valid Organizer.
+                                </div>
+                            </div>
+
+                            <!-- Participants -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label>Min Participants</label>
+                                    <input type="number" id="minParticipants" class="form-control" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a valid number.
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label>Max Participants</label>
+                                    <input type="number" id="maxParticipants" class="form-control" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a valid number.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Requirements -->
+                            <h5 class="mt-4">Requirements</h5>
+                            <div id="requirementsContainer"></div>
+
+                            <div class="input-group mb-3">
+                                <input id="requirementInput" class="form-control" placeholder="Add requirement">
+                                <button type="button" class="btn btn-outline-primary" onclick="addRequirement()">Add</button>
+                            </div>
+
+                            <!-- Equipment -->
+                            <h5 class="mt-4">Equipment</h5>
+                            <div id="equipmentContainer"></div>
+
+                            <div class="input-group mb-3">
+                                <input id="equipmentNameInput" class="form-control" placeholder="Name">
+                                <select id="equipmentRentableInput" class="form-select">
+                                    <option value="true">Rentable</option>
+                                    <option value="false">Not Rentable</option>
+                                </select>
+                                <button type="button" class="btn btn-outline-primary" onclick="addEquipment()">Add</button>
+                            </div>
+
+                            <!-- Images -->
+                            <h5 class="mt-4">Images</h5>
+                            <input type="file" id="images" multiple class="form-control" accept="image/*" required>
+                            <div id="fileNames" class="mt-2"></div>
+
                         </div>
                     </div>
-
-                    <div class="row">
-                        <div class="col-md-8 mb-3">
-                            <label for="city" class="form-label">City</label>
-                            <input type="text" id="city" name="city" class="form-control" required>
-                            <div class="invalid-feedback">Please enter a valid city.</div>
-                        </div>
-
-                        <div class="col-md-4 mb-3">
-                            <label for="postalCode" class="form-label">Postal Code</label>
-                            <input type="text" id="postalCode" name="postalCode" class="form-control" required>
-                            <div class="invalid-feedback">Please enter a valid postal code.</div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="state" class="form-label">State</label>
-                            <input type="text" id="state" name="state" class="form-control" required>
-                            <div class="invalid-feedback">Please enter a valid state.</div>
-                        </div>
-
-                        <div class="col-md-6 mb-3">
-                            <label for="country" class="form-label">Country</label>
-                            <input type="text" id="country" name="country" class="form-control" required>
-                            <div class="invalid-feedback">Please enter a valid country.</div>
-                        </div>
-                    </div>
-
-                    <div class="mb-3 d-flex flex-column">
-                        <label for="date" class="form-label">Date</label>
-                        <input type="date" id="date" name="date" class="form-control" required>
-                        <div class="invalid-feedback">
-                            Please enter a valid date.
-                        </div>
-                    </div>
-
-                    <div class="mb-3 d-flex flex-column">
-                        <label for="price" class="form-label">Price (€)</label>
-                        <input type="number" id="price" name="price" step="0.01" min="0.00" max="99999999.99" class="form-control" required>
-                        <div class="invalid-feedback">
-                            Please enter a valid price.
-                        </div>
-                    </div>
-
-                    <div class="mb-3 d-flex flex-column">
-                        <label for="images" class="form-label">Upload images</label>
-                        <input type="file" id="images" name="images" accept="image/*" multiple class="form-control" required onchange="listFileNames()">
-                        <div class="invalid-feedback">
-                            Please enter a valid image-file.
-                        </div>
-                    </div>
-
-                    <!-- Uploaded Filenames -->
-                    <div class="mb-3" id="fileNames"></div>
 
                     <div class="d-flex justify-content-between">
                         <button type="button" id="nextBtn" class="btn btn-primary" onclick="checkValidation(true)">Next</button>

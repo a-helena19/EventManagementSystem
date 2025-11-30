@@ -1,45 +1,46 @@
+#createEventModal{
+    margin-top: 75px;
+    max-height: 90%;
+}
+
+.modal-dialog{
+    max-width: 90%;
+}
+
 #event-form {
-    max-width: 600px;
-    margin: 50px auto; /* centers it horizontally */
+    width: 100%;
     padding: 20px;
     background-color: #f9f9f9;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* Every row */
-.form-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-/* Label-Styling */
-.form-row label {
-    width: 150px; /* feste Breite der Labels */
+#event-form label {
     font-weight: 600;
     color: #333;
+    margin-bottom: 4px;
+    display: block; /* ensures label is always above */
 }
 
-/* Inputs und Textarea-Styling */
-.form-row input,
-.form-row textarea {
-    flex: 1; /* same width for all */
-    padding: 8px 10px;
+#event-form input,
+#event-form textarea,
+#event-form select {
     border: 1px solid #ccc;
     border-radius: 6px;
+    padding: 10px 12px !important; /* Force consistent padding */
     font-size: 14px;
     transition: border-color 0.3s, box-shadow 0.3s;
+    width: 100%;
 }
 
-/* Hover- und Fokus-Effects */
-.form-row input:focus,
-.form-row textarea:focus {
-    border-color: #007bff;
+/* Focus effects */
+#event-form input:focus,
+#event-form textarea:focus,
+#event-form select:focus {
+    border-color: #007bff !important;
     box-shadow: 0 0 4px rgba(0,123,255,0.4);
     outline: none;
 }
-
 
 #nextBtn {
     display: block;
@@ -58,20 +59,17 @@
     background-color: #0056b3;
 }
 
-input, textarea, select {
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    padding: 8px;
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
-
 /* When a field is valid */
-input:valid, textarea:valid, select:valid {
+#event-form input:valid,
+#event-form textarea:valid,
+#event-form select:valid {
     border-color: green !important; /* grün, wenn alles korrekt */
 }
 
 /* When a field is invalid */
-input:invalid:focus, textarea:invalid:focus, select:invalid:focus {
+#event-form input:invalid:focus,
+#event-form textarea:invalid:focus,
+#event-form select:invalid:focus {
     border-color: red  !important; /* rot, wenn falsch/fokusiert */
 }
 
@@ -140,4 +138,42 @@ input:invalid:focus, textarea:invalid:focus, select:invalid:focus {
     list-style-type: disc;
     padding-left: 20px;
     margin: 0;
+}
+
+#leftColumn h5,
+#rightColumn h5 {
+    font-weight: 600;
+    margin-top: 25px;
+    margin-bottom: 10px;
+}
+
+/* Small extra spacing between badges/lists (requirements, equipment, packages) */
+.badge {
+    font-size: 13px;
+    padding: 6px 10px;
+}
+
+#requirementsContainer,
+#equipmentContainer,
+#packagesContainer,
+#appointmentsContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+#appointmentsContainer .badge,
+#packagesContainer .badge {
+    margin-bottom: 6px;
+}
+
+
+.input-group input,
+.input-group select {
+    width: auto !important;
+    flex: 1 !important;
+}
+
+.input-group .btn {
+    flex: 0 0 auto !important;
 }
