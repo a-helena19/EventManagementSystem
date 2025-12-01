@@ -58,7 +58,7 @@ function nameToColor(name) {
 function logout() {
     // delete user from storage
     localStorage.removeItem("userInfo");
-    window.location.reload();
+    window.location.href = "/homepage";
 }
 
 
