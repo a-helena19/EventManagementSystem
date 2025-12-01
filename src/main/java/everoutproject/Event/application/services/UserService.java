@@ -50,6 +50,34 @@ public class UserService {
 
     }
 
+
+
+    private String currentUserEmail = null;  // Use email instead of ID
+
+    public void setCurrentUser(String email) {
+        this.currentUserEmail = email;
+    }
+
+    public User getCurrentUser() {
+        System.out.println("=== DEBUG getCurrentUser ===");
+        System.out.println("currentUserEmail: " + currentUserEmail);
+
+        if (currentUserEmail == null) {
+            System.out.println("FALLBACK: Using first user from database");
+            List<User> allUsers = userRepository.findAll();
+            if (allUsers.isEmpty()) {
+                throw new RuntimeException("No users found");
+            }
+            User firstUser = allUsers.get(0);
+            System.out.println("First user email: " + firstUser.getEmail());
+            return firstUser;
+        }
+
+        System.out.println("Using currentUserEmail: " + currentUserEmail);
+        return userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
     /**
      * Log in user and return it as DTO
      */
@@ -61,6 +89,8 @@ public class UserService {
 
         return UserMapperDTO.toDTO(user);
     }
+
+
 
 
     /**
@@ -92,23 +122,23 @@ public class UserService {
 
 
 
-    public User updateUserProfile(Long id, String firstName, String lastName, String email) {
+    public User updateUserProfile(Long id, String firstName, String lastName, String newEmail) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        user.updateProfile(firstName, lastName);
-        user.setEmail(email);
-        userRepository.save(user);
-        return user;
-    }
+        String oldEmail = user.getEmail(); // Alte Email speichern
 
-    public User getCurrentUser() {
-        // TODO: Replace with actual logged-in user - for now using first user
-        List<User> allUsers = userRepository.findAll();
-        if (allUsers.isEmpty()) {
-            throw new RuntimeException("No users found");
+        user.updateProfile(firstName, lastName);
+        user.setEmail(newEmail);
+        userRepository.save(user);
+
+        // WICHTIG: currentUserEmail aktualisieren!
+        if (currentUserEmail != null && currentUserEmail.equals(oldEmail)) {
+            this.currentUserEmail = newEmail;
+            System.out.println("=== Updated currentUserEmail to: " + newEmail);
         }
-        return allUsers.get(0); // Temporary - get first user
+
+        return user;
     }
 
     /**
@@ -135,10 +165,12 @@ public class UserService {
      * Delete user.
      */
     public void deleteUser(Long id) {
-        if(!userRepository.findById(id).isPresent()){
-            throw new RuntimeException("User not found");
-        }
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
         userRepository.delete(id);
+        if (currentUserEmail != null && currentUserEmail.equals(user.getEmail())) {
+            this.currentUserEmail = null;
+        }
     }
 
     /**

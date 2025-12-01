@@ -58,9 +58,11 @@ public class UserRestController {
     public ResponseEntity<?> login(
             @RequestParam String email,
             @RequestParam String password
+
     ) {
         try {
             UserDTO userDTO = userService.loginUser(email, password);
+            userService.setCurrentUser(email);
 
             return ResponseEntity.ok(Map.of(
                     "message", "Login successful",
@@ -120,7 +122,31 @@ public class UserRestController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Failed to update profile: " + e.getMessage()));
         }
+
+
     }
+
+    @DeleteMapping("/profile")
+    public ResponseEntity<?> deleteProfile() {
+        try {
+            System.out.println("=== DELETE Profile Called ===");
+
+            // Get current user first
+            User currentUser = userService.getCurrentUser();
+            System.out.println("Deleting user: " + currentUser.getEmail());
+
+            Long userId = currentUser.getId();
+            userService.deleteUser(userId);
+
+            System.out.println("User deleted successfully");
+            return ResponseEntity.ok(Map.of("message", "Account deleted successfully"));
+        } catch (Exception e) {
+            System.out.println("Delete error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Failed to delete account: " + e.getMessage()));
+        }
+    }
+
 
 
 
