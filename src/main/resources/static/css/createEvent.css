@@ -64,6 +64,11 @@
     border-color: red  !important; /* rot, wenn falsch/fokusiert */
 }
 
+.is-invalid {
+    border-color: red !important;
+    box-shadow: 0 0 4px rgba(255,0,0,0.4) !important;
+}
+
 #nextBtn {
     display: block;
     margin: 20px auto 0 auto;
@@ -158,6 +163,30 @@
 .badge {
     font-size: 13px;
     padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.icon-btn {
+    border: none;
+    background: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 0 6px;
+}
+
+.icon-btn.save {
+    color: #28a745;
+}
+
+.icon-btn.cancel {
+    color: #dc3545;
+}
+
+.icon-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
 .remove-item {
@@ -180,6 +209,30 @@
     margin-bottom: 6px;
 }
 
+.add-requirement-btn,
+.add-equipment-btn,
+.add-package-btn,
+.add-appointment-btn {
+    margin-top: 5px;
+}
+
+/* Ensure dynamic input rows look aligned */
+#requirementInputs,
+#equipmentInputs,
+#appointmentInputs,
+#packageInputs {
+    align-items: center;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+/* Smaller buttons inside inline rows */
+#requirementInputs .btn,
+#equipmentInputs .btn,
+#appointmentInputs .btn,
+#packageInputs .btn {
+    padding: 6px 14px;
+}
 
 .input-group input,
 .input-group select {

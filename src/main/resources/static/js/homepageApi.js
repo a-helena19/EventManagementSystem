@@ -37,6 +37,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("singleDayCheckbox").addEventListener("change", toggleEndDate);
 });
 
+document.getElementById("organizerSelect").addEventListener("change", handleOrganizerSelection);
+
 // ===========================
 // CHECKBOX END DATE LOGIC
 // ===========================
@@ -64,9 +66,19 @@ function resetForm() {
     [
         "name", "description", "startDate", "endDate",
         "street", "houseNumber", "city", "postalCode",
-        "state", "country", "price", "organizerId",
-        "minParticipants", "maxParticipants", "category"
-    ].forEach(id => document.getElementById(id).value = "");
+        "state", "country", "price", "organizerSelect",
+        "minParticipants", "maxParticipants", "category", "apptStart",
+        "apptEnd", "apptSeasonal", "packageTitleInput", "packageDescInput",
+        "packagePriceInput", "requirementInput", "equipmentNameInput",
+        "equipmentRentableInput", "orgName", "orgEmail", "orgPhone",
+        "depositPercent"
+    ].forEach(id => {
+        if (id === "depositPercent") {
+            document.getElementById(id).value = 30;
+        } else {
+            document.getElementById(id).value = "";
+        }
+    });
 
     document.getElementById("images").value = "";
     document.getElementById("fileNames").innerHTML = "";
@@ -81,6 +93,11 @@ function resetForm() {
     document.getElementById("equipmentContainer").innerHTML = "";
     document.getElementById("packagesContainer").innerHTML = "";
     document.getElementById("appointmentsContainer").innerHTML = "";
+
+    cancelRequirement();
+    cancelEquipment();
+    cancelAppointment();
+    cancelPackage();
 
     // Restart multi-step
     document.getElementById("event-form").classList.remove("was-validated");
@@ -97,7 +114,10 @@ function resetForm() {
 // ===========================
 async function loadOrganizers() {
     const select = document.getElementById("organizerSelect");
-    select.innerHTML = `<option value="">Select Organizer</option>`;
+
+    select.innerHTML = `<option value="">Select Organizer</option>
+                        <option value="NEW">Add New Organizer</option>
+    `;
 
     try {
         const res = await fetch("/api/organizers");
@@ -110,100 +130,170 @@ async function loadOrganizers() {
             select.appendChild(opt);
         });
     } catch (err) {
-        console.warn("Could not load organizers:", err);
+        showToast("error", "Could not load organizers");
     }
 }
-// ===========================
-// ADD NEW ORGANIZER TOGGLE
-// ===========================
-function toggleNewOrganizer() {
-    const box = document.getElementById("newOrganizerFields");
-    box.style.display = box.style.display === "none" ? "block" : "none";
-}
+
 // ===========================
 // NEXT / BACK BUTTON LOGIC
 // ===========================
 function nextStep(disable) {
-
     const form = document.getElementById("event-form");
-
-    // Alle Inputs (nur lesen)
-    const inputs = form.querySelectorAll("input, textarea, select");
-
-    // Buttons für Adds/Removes
-    const addButtons = form.querySelectorAll("button[onclick^='add'], button[onclick^='remove']");
-    const removeButtons = form.querySelectorAll(".btn-close");
-
-    // File input
     const fileInput = document.getElementById("images");
 
+    // Buttons / UI controls
+    const nextBtn = document.getElementById("nextBtn");
+    const backBtn = document.getElementById("backBtn");
+    const submitBtn = document.getElementById("submitBtn");
+
+    // Inputs without file-input
+    const textInputs = Array.from(form.querySelectorAll("input, textarea"))
+        .filter(el => el.type !== "file");
+
+    // Selects + Checkboxes
+    const selectAndChecks = form.querySelectorAll("select, input[type='checkbox'], input[type='radio']");
+
+    // Add-buttons (klassenbasiert, robust)
+    const addButtons = form.querySelectorAll(".add-requirement-btn, .add-equipment-btn, .add-package-btn, .add-appointment-btn");
+
+    // Remove buttons inside dynamic containers (die kleinen X)
+    const removeButtons = form.querySelectorAll("#requirementsContainer .btn-close, #equipmentContainer .btn-close, #packagesContainer .btn-close, #appointmentsContainer .btn-close");
+
+    // Ensure form is positioned for overlay
+    if (getComputedStyle(form).position === "static") {
+        form.style.position = "relative";
+    }
+
     if (disable) {
-        // --- Lock all text inputs ---
-        inputs.forEach(el => {
+        //    Visueller "readonly" Zustand (CSS `.readonly` existiert schon in deinem CSS)
+        form.classList.add("readonly");
+
+        //    Input/Textarea -> readonly (keine Veränderung der Werte, aber kein Fokus)
+        textInputs.forEach(el => {
             el.setAttribute("readonly", "true");
             el.style.backgroundColor = "#e9ecef";
-            el.style.cursor = "not-allowed";
         });
 
-        // Disable selects correctly (select has no readonly)
-        form.querySelectorAll("select").forEach(sel => {
-            sel.setAttribute("disabled", "true");
+        //    Selects + checkboxes -> pointer-events none (keine Änderung, Werte bleiben)
+        selectAndChecks.forEach(el => {
+            el.style.pointerEvents = "none";
+            el.setAttribute("aria-disabled", "true");
+            el.style.backgroundColor = "#e9ecef";
         });
 
-        // Hide all ADD buttons
-        addButtons.forEach(btn => {
-            btn.style.display = "none";
-        });
+        //    File input -> verhindern, dass Nutzer neue Dateien hinzufügen (aber vorhandene Dateien bleiben)
+        if (fileInput) {
+            fileInput.classList.add("readonly-file");
+            fileInput.style.pointerEvents = "none";
+            fileInput.style.cursor = "not-allowed";
+            // keep fileInput.disabled = false so files still submit; pointer-events blocks interaction
+        }
 
-        // Hide remove buttons (small X)
-        removeButtons.forEach(btn => {
-            btn.style.display = "none";
-        });
+        //    Hide add buttons and remove-buttons
+        addButtons.forEach(btn => btn.style.display = "none");
+        removeButtons.forEach(btn => btn.style.display = "none");
 
-        // Disable file upload
-        fileInput.disabled = true;
+        document.getElementById("requirementInputs").style.display = "none";
+        document.getElementById("equipmentInputs").style.display = "none";
+        document.getElementById("packageInputs").style.display = "none";
+        document.getElementById("appointmentInputs").style.display = "none";
 
-        // Toggle visible buttons
-        document.getElementById("nextBtn").style.display = "none";
-        document.getElementById("backBtn").style.display = "inline-block";
-        document.getElementById("submitBtn").style.display = "inline-block";
+        //    Add an invisible overlay that blocks clicks over the form content,
+        //    but leaves the bottom area (buttons) accessible.
+        //    We leave 80px at the bottom for Back/Submit area (adjust if needed).
+        const existingOverlay = document.getElementById("formOverlay");
+        if (!existingOverlay) {
+            const overlay = document.createElement("div");
+            overlay.id = "formOverlay";
+            Object.assign(overlay.style, {
+                position: "absolute",
+                top: "0",
+                left: "0",
+                right: "0",
+                bottom: "80px",            // leave space at bottom for Back/Submit
+                background: "transparent",
+                zIndex: "999",             // above inputs, below modal header/footer
+            });
+            form.appendChild(overlay);
+        }
+
+        // 7) Toggle navigation buttons
+        if (nextBtn) nextBtn.style.display = "none";
+        if (backBtn) backBtn.style.display = "inline-block";
+        if (submitBtn) submitBtn.style.display = "inline-block";
 
     } else {
-        // Unlock text inputs
-        inputs.forEach(el => {
+        // ---- Re-enable / Undo readonly ----
+        form.classList.remove("readonly");
+
+        // remove readonly on inputs & restore visuals
+        textInputs.forEach(el => {
             el.removeAttribute("readonly");
-            el.style.backgroundColor = "white";
-            el.style.cursor = "auto";
+            el.style.backgroundColor = "";
         });
 
-        // Re-enable selects
-        form.querySelectorAll("select").forEach(sel => {
-            sel.removeAttribute("disabled");
+        // restore selects / checkboxes interaction
+        selectAndChecks.forEach(el => {
+            el.style.pointerEvents = "";
+            el.removeAttribute("aria-disabled");
+            el.style.backgroundColor = "";
         });
 
-        // Show add buttons
-        addButtons.forEach(btn => {
-            btn.style.display = "inline-block";
-        });
+        // file input
+        if (fileInput) {
+            fileInput.classList.remove("readonly-file");
+            fileInput.style.pointerEvents = "";
+            fileInput.style.cursor = "";
+        }
 
-        // Show remove buttons
-        removeButtons.forEach(btn => {
-            btn.style.display = "inline-block";
-        });
+        // show add/remove buttons again
+        addButtons.forEach(btn => btn.style.display = "inline-block");
+        removeButtons.forEach(btn => btn.style.display = "inline-block");
 
-        // Enable file upload
-        fileInput.disabled = false;
+        // remove overlay if present
+        const existingOverlay = document.getElementById("formOverlay");
+        if (existingOverlay) existingOverlay.remove();
 
-        // Restore visible buttons
-        document.getElementById("nextBtn").style.display = "inline-block";
-        document.getElementById("backBtn").style.display = "none";
-        document.getElementById("submitBtn").style.display = "none";
+        form.querySelectorAll(".is-invalid").forEach(el => el.classList.remove("is-invalid"));
+
+        // restore buttons visibility
+        if (nextBtn) nextBtn.style.display = "inline-block";
+        if (backBtn) backBtn.style.display = "none";
+        if (submitBtn) submitBtn.style.display = "none";
     }
 }
 
 // For NEXT button
 function checkValidation(next) {
     const form = document.getElementById("event-form");
+
+    // --- Organizer validation BEFORE nextStep ---
+    if (next === true) {
+        const organizerSelect = document.getElementById("organizerSelect");
+        const newOrgVisible = organizerSelect.value === "NEW";
+
+        if (newOrgVisible) {
+            let valid = true;
+
+            const name = document.getElementById("orgName");
+            const email = document.getElementById("orgEmail");
+
+            if (!name.value.trim()) {
+                name.classList.add("is-invalid");
+                valid = false;
+            } else name.classList.remove("is-invalid");
+
+            if (!email.value.trim() || !email.value.includes("@")) {
+                email.classList.add("is-invalid");
+                valid = false;
+            } else email.classList.remove("is-invalid");
+
+            if (!valid) return;
+
+        }
+    }
+
+    // ---Normal HTML validation ---
     if (form.checkValidity()) {
         nextStep(next);
     } else {
@@ -277,64 +367,154 @@ function validateAppointmentDates() {
     }
 }
 
-
+function isVisible(el) {
+    return el && el.style.display !== "none";
+}
 
 // ===========================
-// ADD / REMOVE REQUIREMENTS
+// SHOW / REMOVE / SAVE REQUIREMENTS
 // ===========================
-function addRequirement() {
+function showRequirementInputs() {
+    document.getElementById("requirementInputs").style.display = "flex";
+    document.querySelector(".add-requirement-btn").style.display = "none";
+}
+
+function cancelRequirement() {
+    document.getElementById("requirementInput").value = "";
+    document.getElementById("requirementInputs").style.display = "none";
+
+    document.querySelector(".add-requirement-btn").style.display = "inline-block";
+}
+
+function saveRequirement() {
     const input = document.getElementById("requirementInput");
     const value = input.value.trim();
-    if (!value) return;
+
+    if (!isVisible(document.getElementById("requirementInputs"))) return;
+
+    if (!value) {
+        input.classList.add("is-invalid");
+        return;
+    }
+
+    input.classList.remove("is-invalid");
 
     const id = Date.now();
     requirements.push({ id, description: value });
 
-    const container = document.getElementById("requirementsContainer");
-    container.insertAdjacentHTML("beforeend", badgeTemplate(id, value, "removeRequirement"));
+    document.getElementById("requirementsContainer")
+        .insertAdjacentHTML("beforeend",
+            badgeTemplate(id, value, "removeRequirement")
+        );
 
-    input.value = "";
+    cancelRequirement();
 }
 
 function removeRequirement(id) {
     requirements = requirements.filter(r => r.id !== id);
-    document.getElementById("req-" + id)?.remove();
+    const el = document.getElementById("req-" + id);
+    if (el) el.remove();
 }
 
-// ===========================
-// ADD / REMOVE EQUIPMENT
-// ===========================
-function addEquipment() {
-    const name = document.getElementById("equipmentNameInput").value.trim();
-    const rentable = document.getElementById("equipmentRentableInput").value === "true";
 
-    if (!name) return;
+// ===========================
+// SHOW / REMOVE / SAVE EQUIPMENT
+// ===========================
+function showEquipmentInputs() {
+    document.getElementById("equipmentInputs").style.display = "flex";
+    document.querySelector(".add-equipment-btn").style.display = "none";
+}
+
+function cancelEquipment() {
+    document.getElementById("equipmentNameInput").value = "";
+    document.getElementById("equipmentRentableInput").value = "";
+    document.getElementById("equipmentInputs").style.display = "none";
+    document.querySelector(".add-equipment-btn").style.display = "inline-block";
+}
+
+function saveEquipment() {
+    const name = document.getElementById("equipmentNameInput").value.trim();
+    const rentable = document.getElementById("equipmentRentableInput").value;
+
+    if (!isVisible(document.getElementById("equipmentInputs"))) return;
+
+    let valid = true;
+
+    if (!name) {
+        document.getElementById("equipmentNameInput").classList.add("is-invalid");
+        valid = false;
+    } else {
+        document.getElementById("equipmentNameInput").classList.remove("is-invalid");
+    }
+
+    if (!rentable) {
+        document.getElementById("equipmentRentableInput").classList.add("is-invalid");
+        valid = false;
+    } else {
+        document.getElementById("equipmentRentableInput").classList.remove("is-invalid");
+    }
+
+    if (!valid) return;
 
     const id = Date.now();
-    equipment.push({ id, name, rentable });
+    equipment.push({ id, name, rentable: rentable === "true" });
 
-    const container = document.getElementById("equipmentContainer");
-    container.insertAdjacentHTML("beforeend",
-        badgeTemplate(id, (rentable ? "Rentable: " : "Required: ") + name, "removeEquipment")
-    );
+    document.getElementById("equipmentContainer")
+        .insertAdjacentHTML("beforeend",
+            badgeTemplate(id, (rentable === "true" ? "Rentable: " : "Required: ") + name, "removeEquipment")
+        );
 
-    document.getElementById("equipmentNameInput").value = "";
+    cancelEquipment();
 }
 
 function removeEquipment(id) {
     equipment = equipment.filter(e => e.id !== id);
-    document.getElementById("eq-" + id)?.remove();
+    const el = document.getElementById("eq-" + id);
+    if (el) el.remove();
 }
 
+
 // ===========================
-// ADD / REMOVE PACKAGES
+// SHOW / REMOVE / SAVE PACKAGES
 // ===========================
-function addPackage() {
+function showPackageInputs() {
+    document.getElementById("packageInputs").style.display = "flex";
+    document.querySelector(".add-package-btn").style.display = "none";
+}
+
+function cancelPackage() {
+    document.getElementById("packageTitleInput").value = "";
+    document.getElementById("packageDescInput").value = "";
+    document.getElementById("packagePriceInput").value = "";
+    document.getElementById("packageInputs").style.display = "none";
+    document.querySelector(".add-package-btn").style.display = "inline-block";
+}
+
+function savePackage() {
     const title = document.getElementById("packageTitleInput").value.trim();
     const desc = document.getElementById("packageDescInput").value.trim();
     const price = parseFloat(document.getElementById("packagePriceInput").value);
 
-    if (!title || isNaN(price)) return;
+    if (!isVisible(document.getElementById("packageInputs"))) return;
+
+    let valid = true;
+
+    if (!title) {
+        document.getElementById("packageTitleInput").classList.add("is-invalid");
+        valid = false;
+    } else document.getElementById("packageTitleInput").classList.remove("is-invalid");
+
+    if (!desc) {
+        document.getElementById("packageDescInput").classList.add("is-invalid");
+        valid = false;
+    } else document.getElementById("packageDescInput").classList.remove("is-invalid");
+
+    if (!price || isNaN(price) || price < 0) {
+        document.getElementById("packagePriceInput").classList.add("is-invalid");
+        valid = false;
+    } else document.getElementById("packagePriceInput").classList.remove("is-invalid");
+
+    if (!valid) return;
 
     const id = Date.now();
     packagesList.push({ id, title, description: desc, price });
@@ -344,37 +524,66 @@ function addPackage() {
             badgeTemplate(id, `${title} (€${price})`, "removePackage")
         );
 
-    document.getElementById("packageTitleInput").value = "";
-    document.getElementById("packageDescInput").value = "";
-    document.getElementById("packagePriceInput").value = "";
+    cancelPackage();
 }
 
 function removePackage(id) {
     packagesList = packagesList.filter(p => p.id !== id);
-    document.getElementById("pack-" + id)?.remove();
+    const el = document.getElementById("pack-" + id);
+    if (el) el.remove();
 }
 
 // ===========================
-// ADD / REMOVE APPOINTMENTS
+// SHOW / REMOVE / SAVE APPOINTMENTS
 // ===========================
-function addAppointment() {
+function showAppointmentInputs() {
+    document.getElementById("appointmentInputs").style.display = "flex";
+    document.querySelector(".add-appointment-btn").style.display = "none";
+}
+
+function cancelAppointment() {
+    document.getElementById("apptStart").value = "";
+    document.getElementById("apptEnd").value = "";
+    document.getElementById("apptSeasonal").checked = false;
+    document.getElementById("appointmentInputs").style.display = "none";
+    document.querySelector(".add-appointment-btn").style.display = "inline-block";
+}
+
+function saveAppointment() {
     const start = document.getElementById("apptStart").value;
     const end = document.getElementById("apptEnd").value;
     const seasonal = document.getElementById("apptSeasonal").checked;
 
-    if (!start || !end) return;
+    if (!isVisible(document.getElementById("appointmentInputs"))) return;
+
+    let valid = true;
+
+    if (!start) {
+        document.getElementById("apptStart").classList.add("is-invalid");
+        valid = false;
+    } else document.getElementById("apptStart").classList.remove("is-invalid");
+
+    if (!end) {
+        document.getElementById("apptEnd").classList.add("is-invalid");
+        valid = false;
+    } else document.getElementById("apptEnd").classList.remove("is-invalid");
+
+    if (start && end && end < start) {
+        document.getElementById("apptEnd").classList.add("is-invalid");
+        valid = false;
+    }
+
+    if (!valid) return;
 
     const id = Date.now();
     appointments.push({ id, startDate: start, endDate: end, seasonal });
 
-    const container = document.getElementById("appointmentsContainer");
-    container.insertAdjacentHTML("beforeend",
-        badgeTemplate(id, `${start} → ${end} (${seasonal ? "Seasonal" : "Fixed"})`, "removeAppointment")
-    );
+    document.getElementById("appointmentsContainer")
+        .insertAdjacentHTML("beforeend",
+            badgeTemplate(id, `${start} → ${end} (${seasonal ? "Seasonal" : "Fixed"})`, "removeAppointment")
+        );
 
-    document.getElementById("apptStart").value = "";
-    document.getElementById("apptEnd").value = "";
-    document.getElementById("apptSeasonal").checked = false;
+    cancelAppointment();
 }
 
 function removeAppointment(id) {
@@ -383,16 +592,27 @@ function removeAppointment(id) {
 }
 
 // ===========================
-// Add new Organizer
+// Selection handler for adding new Organizer
 // ===========================
-function toggleNewOrganizer() {
-    const box = document.getElementById("newOrganizerFields");
-    box.style.display = box.style.display === "none" ? "block" : "none";
+function handleOrganizerSelection() {
+    const selectValue = document.getElementById("organizerSelect").value;
+    const newOrgBox = document.getElementById("newOrganizerFields");
 
-    if (box.style.display === "block") {
-        document.getElementById("organizerSelect").value = "";
+    if (selectValue === "NEW") {
+        // Show inputs
+        newOrgBox.style.display = "block";
+
+        // Clear previous text
+        document.getElementById("orgName").value = "";
+        document.getElementById("orgEmail").value = "";
+        document.getElementById("orgPhone").value = "";
+
+    } else {
+        // Hide inputs
+        newOrgBox.style.display = "none";
     }
 }
+
 
 // ===========================
 // BADGE TEMPLATE
@@ -435,6 +655,7 @@ async function submitEvent() {
             startDate: document.getElementById("startDate").value,
             endDate: document.getElementById("endDate").value,
             price: parseFloat(document.getElementById("price").value),
+            depositPercent: parseInt(document.getElementById("depositPercent").value) || 30,
             category: document.getElementById("category").value,
             // Organizer (existing OR new)
             organizerId: document.getElementById("newOrganizerFields").style.display === "none"
