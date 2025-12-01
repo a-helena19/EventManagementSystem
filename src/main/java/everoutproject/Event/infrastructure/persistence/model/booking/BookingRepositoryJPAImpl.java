@@ -40,6 +40,20 @@ public class BookingRepositoryJPAImpl implements BookingRepository {
     }
 
     @Override
+    public List<everoutproject.Event.domain.model.booking.Booking> findByEmail(String email) {
+        return bookingJPARepository.findByEmail(email).stream()
+                .map(BookingMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<everoutproject.Event.domain.model.booking.Booking> findByUserId(Long userId) {
+        return bookingJPARepository.findByUserId(userId).stream()
+                .map(BookingMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public void save(everoutproject.Event.domain.model.booking.Booking booking) {
         everoutproject.Event.infrastructure.persistence.model.booking.Booking entity = BookingMapper.toEntity(booking);
         entity.setId(booking.getId());
