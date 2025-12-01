@@ -1,3 +1,8 @@
+.modal-dialog{
+    margin-top: 75px;
+    max-height: 90%;
+}
+
 .book-section {
     padding-top: 1rem;
 }
