@@ -39,7 +39,7 @@ public class Booking {
     private String postalCode;
 
     @Column(nullable = true)
-    @Pattern(regexp = "^\\+[0-9 ]{6,20}$")
+    @Pattern(regexp = "^$|^\\+[0-9 ]{6,20}$")
     private String phoneNumber;
 
     @Column(nullable = false)
