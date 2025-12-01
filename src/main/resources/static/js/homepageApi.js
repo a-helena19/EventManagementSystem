@@ -35,9 +35,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Single-day toggle
     document.getElementById("singleDayCheckbox").addEventListener("change", toggleEndDate);
-});
 
-document.getElementById("organizerSelect").addEventListener("change", handleOrganizerSelection);
+    // Organizer-select handler
+    document.getElementById("organizerSelect").addEventListener("change", handleOrganizerSelection);
+});
 
 // ===========================
 // CHECKBOX END DATE LOGIC
@@ -263,6 +264,11 @@ function nextStep(disable) {
     }
 }
 
+// check email validation
+function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 // For NEXT button
 function checkValidation(next) {
     const form = document.getElementById("event-form");
@@ -283,7 +289,7 @@ function checkValidation(next) {
                 valid = false;
             } else name.classList.remove("is-invalid");
 
-            if (!email.value.trim() || !email.value.includes("@")) {
+            if (!email.value.trim() || !isValidEmail(email.value.trim())) {
                 email.classList.add("is-invalid");
                 valid = false;
             } else email.classList.remove("is-invalid");
@@ -311,7 +317,7 @@ function validateParticipants() {
     const max = parseInt(maxField.value);
 
     // If one field empty → reset errors
-    if (!min || !max) {
+    if (isNaN(min) || isNaN(max)) {
         minField.setCustomValidity("");
         maxField.setCustomValidity("");
         return true;
@@ -368,7 +374,7 @@ function validateAppointmentDates() {
 }
 
 function isVisible(el) {
-    return el && el.style.display !== "none";
+    return !!(el && (el.offsetParent !== null)); //style.display = "none" could be blocked by css
 }
 
 // ===========================
@@ -649,13 +655,14 @@ document.getElementById("images")?.addEventListener("change", () => {
 async function submitEvent() {
     try {
         // Build JSON DTO
+        const dpVal = parseInt(document.getElementById("depositPercent").value, 10);
         const dto = {
             name: document.getElementById("name").value,
             description: document.getElementById("description").value,
             startDate: document.getElementById("startDate").value,
             endDate: document.getElementById("endDate").value,
             price: parseFloat(document.getElementById("price").value),
-            depositPercent: parseInt(document.getElementById("depositPercent").value) || 30,
+            depositPercent:isNaN(dpVal) ? 30 : dpVal,
             category: document.getElementById("category").value,
             // Organizer (existing OR new)
             organizerId: document.getElementById("newOrganizerFields").style.display === "none"
