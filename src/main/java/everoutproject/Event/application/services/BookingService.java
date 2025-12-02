@@ -56,4 +56,16 @@ public class BookingService {
                 .map(BookingMapperDTO::toDTO)
                 .collect(Collectors.toList());
     }
+
+    public List<BookingDTO> getBookingsByEmail(String email) {
+        return bookingRepository.findByEmail(email).stream()
+                .map(BookingMapperDTO::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    public List<BookingDTO> getBookingsByUserId(Long userId) {
+        return bookingRepository.findByUserId(userId).stream()
+                .map(BookingMapperDTO::toDTO)
+                .collect(Collectors.toList());
+    }
 }

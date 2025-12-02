@@ -26,7 +26,8 @@ public class BookingMapper {
                 entity.getPhoneNumber(),
                 entity.getEmail(),
                 BookingStatus.valueOf(entity.getStatus().name()),
-                entity.getEventId()
+                entity.getEventId(),
+                entity.getUserId()
         );
         domain.setEventId(entity.getEventId());
         domain.setId(entity.getId());
@@ -50,7 +51,8 @@ public class BookingMapper {
                 domain.getPhoneNumber(),
                 domain.getEmail(),
                 everoutproject.Event.infrastructure.persistence.model.booking.BookingStatus.valueOf(domain.getStatus().name()),
-                domain.getEventId()
+                domain.getEventId(),
+                domain.getUserId()
         );
         entity.setId(domain.getId());
         return entity;

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +43,8 @@ public class UserRestController {
                     .body(Map.of(
                             "message", "User created successfully",
                             "id", userDTO.id(),
-                            "name", userDTO.firstName() + " " + userDTO.lastName()
+                            "name", userDTO.firstName() + " " + userDTO.lastName(),
+                            "role", userDTO.role()
                     ));
         } catch (Exception e) {
             Map<String, String> response = new HashMap<>();
@@ -62,11 +64,44 @@ public class UserRestController {
             return ResponseEntity.ok(Map.of(
                     "message", "Login successful",
                     "id", userDTO.id(),
-                    "name", userDTO.firstName() + " " + userDTO.lastName()
+                    "name", userDTO.firstName() + " " + userDTO.lastName(),
+                    "role", userDTO.role()
             ));
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @GetMapping
+    public ResponseEntity<?> getAllUsers() {
+        try {
+            return ResponseEntity.ok(userService.getAllUserDTO());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{id}/role")
+    public ResponseEntity<?> updateUserRole(
+            @PathVariable Long id,
+            @RequestParam String role
+    ) {
+        try {
+            String normalizedRole = role.toUpperCase();
+            userService.updateUserRole(id, normalizedRole);
+            return ResponseEntity.ok(Map.of(
+                    "message", "User role updated successfully",
+                    "id", id,
+                    "role", normalizedRole
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Invalid role provided"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", e.getMessage()));
         }
     }

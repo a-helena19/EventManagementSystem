@@ -7,5 +7,7 @@ public interface BookingRepository {
     void addNewBooking(Booking domainBooking);
     List<Booking> findAll();
     List<Booking> findByEventId(Long eventId);
+    List<Booking> findByEmail(String email);
+    List<Booking> findByUserId(Long userId);
     void save(Booking booking);
 }

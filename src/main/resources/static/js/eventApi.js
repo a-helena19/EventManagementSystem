@@ -109,6 +109,13 @@ function openBookModal(ev, onCloseCallback) {
         const formData = new FormData();
         for (const k in data) formData.append(k, data[k]);
 
+        // Attach the logged-in user's id so bookings remain visible even if a different email is entered
+        const userInfoRaw = localStorage.getItem("userInfo");
+        const user = userInfoRaw ? JSON.parse(userInfoRaw) : null;
+        if (user?.id) {
+            formData.append("userId", user.id);
+        }
+
         try {
             const res = await fetch('/api/bookings/create', {
                 method: "POST",
@@ -218,6 +225,8 @@ function formatLocation(location) {
 function renderEvents(events) {
     const container = document.getElementById("eventsContainer");
     const template = document.getElementById("eventCardTemplate");
+    const role = typeof getCurrentUserRole === "function" ? getCurrentUserRole() : "GUEST";
+    const canBook = ["ADMIN", "BACKOFFICE", "FRONTOFFICE", "USER"].includes(role);
 
 
     container.innerHTML = "";
@@ -262,7 +271,7 @@ function renderEvents(events) {
         const bookSection = el.querySelector(".book-section");
         const bookBtn = el.querySelector(".btn-open-book");
 
-        if (ev.status && ev.status.toLowerCase() === "active") {
+        if (ev.status && ev.status.toLowerCase() === "active" && canBook) {
             bookSection.style.display = "block";
 
             bookBtn.addEventListener("click", (e) => {
@@ -283,6 +292,9 @@ function openDetailsModal(ev) {
     const detailsTemplate = document.getElementById("detailsModalTemplate");
     const modalContent = detailsTemplate.content.cloneNode(true);
     const modalEl = modalContent.querySelector(".modal");
+    const role = typeof getCurrentUserRole === "function" ? getCurrentUserRole() : "GUEST";
+    const canManageEvents = role === "ADMIN" || role === "BACKOFFICE";
+    const canBook = ["ADMIN", "BACKOFFICE", "FRONTOFFICE", "USER"].includes(role);
 
     modalEl.querySelector(".modal-title").textContent = ev.name;
     modalEl.querySelector(".d-name").textContent = ev.name;
@@ -339,27 +351,31 @@ function openDetailsModal(ev) {
             cancelReasonEl.querySelector("span").textContent = ev.cancellationReason || "-";
         }
     } else {
-        cancelSection.style.display = "block"; // show cancel button
-        bookSection.style.display = "block";
-        editSection.style.display ="block";
+        cancelSection.style.display = canManageEvents ? "block" : "none"; // show cancel button
+        bookSection.style.display = canBook ? "block" : "none";
+        editSection.style.display = canManageEvents ? "block" : "none";
         cancelReasonEl.style.display = "none";
 
-        editBtn.addEventListener("click", () => openEditModal(ev, modalEl))
-        //Booking handler
-        bookBtn.addEventListener("click", () => {
-            const detailsBsModal = bootstrap.Modal.getInstance(modalEl);
-            detailsBsModal.hide();
+        if (canManageEvents) {
+            editBtn.addEventListener("click", () => openEditModal(ev, modalEl))
+            cancelBtn.addEventListener("click", () => openCancelModal(ev, modalEl, cancelReasonEl, cancelSection, bookSection, editSection));
+        }
 
-            openBookModal(ev, () => {
-                // Das wird ausgeführt, wenn Book-Modal geschlossen wird!
-                detailsBsModal.show();})
+        if (canBook) {
+            //Booking handler
+            bookBtn.addEventListener("click", () => {
+                const detailsBsModal = bootstrap.Modal.getInstance(modalEl);
+                detailsBsModal.hide();
 
-        });
+                openBookModal(ev, () => {
+                    // Das wird ausgeführt, wenn Book-Modal geschlossen wird!
+                    detailsBsModal.show();})
 
-        // Cancel handler
-        cancelBtn.addEventListener("click", () => openCancelModal(ev, modalEl, cancelReasonEl, cancelSection, bookSection, editSection));
+            });
+        }
 
     }
+
 
     document.body.appendChild(modalEl);
     const bsModal = new bootstrap.Modal(modalEl);
