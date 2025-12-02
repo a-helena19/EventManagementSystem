@@ -23,7 +23,15 @@ public class BookingRestController {
     }
 
     @GetMapping
-    public ResponseEntity<List<BookingDTO>> getAllBookings() {
+    public ResponseEntity<List<BookingDTO>> getAllBookings(
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) Long userId) {
+        if (userId != null) {
+            return ResponseEntity.ok(bookingService.getBookingsByUserId(userId));
+        }
+        if (email != null && !email.isBlank()) {
+            return ResponseEntity.ok(bookingService.getBookingsByEmail(email));
+        }
         return ResponseEntity.ok(bookingService.getAllBookingsDTO());
     }
 
@@ -38,11 +46,12 @@ public class BookingRestController {
             @RequestParam String postalCode,
             @RequestParam String phone,
             @RequestParam String email,
-            @RequestParam Long eventId
+            @RequestParam Long eventId,
+            @RequestParam(required = false) Long userId
     ) {
         try {
             BookingAddress address = new BookingAddress(street, houseNumber, city, postalCode);
-            BookingDTO bookingDTO = bookingService.createBooking(firstname, lastname, birthdate, address, phone, email, eventId);
+            BookingDTO bookingDTO = bookingService.createBooking(firstname, lastname, birthdate, address, phone, email, userId, eventId);
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of(

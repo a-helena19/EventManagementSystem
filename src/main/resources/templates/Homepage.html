@@ -45,6 +45,7 @@
         <li class="navbarLeft"><a href="/homepage"><img class="logo" src="/images/icons/EVERout_Logo_dunkel_v3.png" alt="Home button"></a></li>
         <li class="navbarLeft"><a class="links" href="/events">EVENTS</a></li>
         <li class="navbarLeft"><a class="links" href="/bookings">BOOKINGS</a></li>
+        <li class="navbarLeft" id="adminNav" style="display: none;"><a class="links" href="/admin">ADMIN</a></li>
         <li class="navbarRight" id= "loggedOutContainer"><a href="/user"><img id="loggedOutProfile" src="/images/icons/Profile.png" alt="profile-account"></a></li>
         <li class="navbarRight dropdown" id="loggedInContainer" style="display: none;">
             <a class="d-flex align-items-center text-decoration-none dropdown-toggle" href="#" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -71,7 +72,7 @@
         </label>
         <br><br>
         <!-- Create Event Button -->
-        <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#createEventModal">
+        <button type="button" id="createEventButton" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#createEventModal">
             Create New Event
         </button>
     </div>

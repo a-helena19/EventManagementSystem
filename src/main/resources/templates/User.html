@@ -45,6 +45,8 @@
     <ul>
         <li class="navbarLeft"><a href="/homepage"><img class="logo" src="/images/icons/EVERout_Logo_dunkel_v3.png" alt="Home button"></a></li>
         <li class="navbarLeft"><a class="links" href="/events">EVENTS</a></li>
+        <li class="navbarLeft"><a class="links" href="/bookings">BOOKINGS</a></li>
+        <li class="navbarLeft" id="adminNav" style="display: none;"><a class="links" href="/admin">ADMIN</a></li>
         <li class="navbarRight" id= "loggedOutContainer"><a href="/user"><img id="loggedOutProfile" src="/images/icons/Profile.png" alt="profile-account"></a></li>
         <li class="navbarRight dropdown" id="loggedInContainer" style="display: none;">
             <a class="d-flex align-items-center text-decoration-none dropdown-toggle" href="#" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -64,8 +66,8 @@
 
 <div class="container" id="container">
     <div class="form-container sign-up">
-        <form id="sign-up-form">
-            <h1>Create Account</h1>
+        <form id="sign-up-form" novalidate>
+            <h2>Create Account</h2>
             <div class="social-icons">
                 <a href="#" class="icon"><i class="fa-brands fa-google-plus-g"></i></a>
                 <a href="#" class="icon"><i class="fa-brands fa-facebook-f"></i></a>
@@ -75,20 +77,32 @@
             <span>or use your email for registeration</span>
             <div class="row">
                 <div class="col-md-6">
-                    <input type="text" id="firstName" name="firstName" placeholder="First Name">
+                    <input type="text" id="firstName" name="firstName" placeholder="First Name" required>
+                    <div class="invalid-feedback">
+                        No valid Firstname.
+                    </div>
                 </div>
                 <div class="col-md-6">
-                    <input type="text" id="lastName" name="lastName" placeholder="Last Name">
+                    <input type="text" id="lastName" name="lastName" placeholder="Last Name" required>
+                    <div class="invalid-feedback">
+                        No valid Lastname.
+                    </div>
                 </div>
             </div>
-            <input type="email" id="email" name="email" placeholder="Email">
-            <input type="password" id="password" name="password" placeholder="Password">
+            <input type="email" id="email" name="email" placeholder="Email" required>
+            <div class="invalid-feedback">
+                Please enter a valid email.
+            </div>
+            <input type="password" id="password" name="password" placeholder="Password" minlength="6" required>
+            <div class="invalid-feedback">
+                Password must be at least 6 characters long
+            </div>
             <button type="submit" id="signUpBtn">Sign Up </button>
         </form>
     </div>
     <div class="form-container sign-in">
-        <form id="sign-in-form">
-            <h1>Sign In</h1>
+        <form id="sign-in-form" novalidate>
+            <h2>Sign In</h2>
             <div class="social-icons">
                 <a href="#" class="icon"><i class="fa-brands fa-google-plus-g"></i></a>
                 <a href="#" class="icon"><i class="fa-brands fa-facebook-f"></i></a>
@@ -97,7 +111,13 @@
             </div>
             <span>or use your email password</span>
             <input type="email" id="login-email" name="login-email" placeholder="Email" required>
+            <div class="invalid-feedback">
+                Please enter a valid login email.
+            </div>
             <input type="password" id="login-password" name="login-password" placeholder="Password" required>
+            <div class="invalid-feedback">
+                Please enter a valid login password.
+            </div>
             <a href="#">Forget Your Password?</a>
             <button type="submit" id="signInBtn">Sign In</button>
         </form>
