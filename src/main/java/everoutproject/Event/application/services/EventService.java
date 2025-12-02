@@ -76,6 +76,7 @@ public class EventService {
 
         newEvent.setMinParticipants(dto.minParticipants);
         newEvent.setMaxParticipants(dto.maxParticipants);
+        newEvent.calculateDuration();
 
         // Add children
         if (dto.appointments != null) {
@@ -271,6 +272,8 @@ public class EventService {
                 eventToEdit.getDurationInDays(),
                 eventToEdit.getImages()    // merged list
         );
+
+        eventToEdit.calculateDuration();
 
         eventRepository.save(eventToEdit);
 

@@ -250,6 +250,26 @@ public class Event {
         images.remove(image);
     }
 
+    public void calculateDuration() {
+        if (startDate == null) {
+            this.durationInDays = null;
+            return;
+        }
+
+        // Single-day event
+        if (endDate == null) {
+            this.durationInDays = 1;
+            return;
+        }
+
+        // Multi-day event
+        this.durationInDays = (int) (java.time.Duration.between(
+                startDate.atStartOfDay(),
+                endDate.atStartOfDay()
+        ).toDays() + 1);
+    }
+
+
     @Override
     public String toString() {
         return "Event [id=" + id +
