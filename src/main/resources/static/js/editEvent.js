@@ -258,7 +258,7 @@
         window.editSaveRequirement = () => {
             const v = $("#edit_requirementInput").value.trim();
             if (!v) { $("#edit_requirementInput").classList.add("is-invalid"); return; }
-            editRequirements.push({ id: Date.now() + Math.random(), description: v });
+            editRequirements.push({ id: null, description: v });
             window.editCancelRequirement();
             renderBadges();
         };
@@ -268,7 +268,7 @@
         window.editSaveEquipment = () => {
             const n = $("#edit_equipmentNameInput").value.trim(); const r = $("#edit_equipmentRentableInput").value;
             if (!n || !r) { if(!n) $("#edit_equipmentNameInput").classList.add("is-invalid"); if(!r) $("#edit_equipmentRentableInput").classList.add("is-invalid"); return; }
-            editEquipment.push({ id: Date.now() + Math.random(), name: n, rentable: r === "true" });
+            editEquipment.push({ id: null, name: n, rentable: r === "true" });
             window.editCancelEquipment();
             renderBadges();
         };
@@ -278,7 +278,7 @@
         window.editSavePackage = () => {
             const t = $("#edit_packageTitleInput").value.trim(); const d = $("#edit_packageDescInput").value.trim(); const p = parseFloat($("#edit_packagePriceInput").value);
             if (!t || !d || isNaN(p) || p < 0) { if(!t) $("#edit_packageTitleInput").classList.add("is-invalid"); if(!d) $("#edit_packageDescInput").classList.add("is-invalid"); if(isNaN(p) || p<0) $("#edit_packagePriceInput").classList.add("is-invalid"); return; }
-            editPackages.push({ id: Date.now() + Math.random(), title: t, description: d, price: p });
+            editPackages.push({ id: null, title: t, description: d, price: p });
             window.editCancelPackage();
             renderBadges();
         };
@@ -288,7 +288,7 @@
         window.editSaveAppointment = () => {
             const s = $("#edit_apptStart").value; const e = $("#edit_apptEnd").value; const seasonal = $("#edit_apptSeasonal").checked;
             if (!s || !e || e < s) { if(!s) $("#edit_apptStart").classList.add("is-invalid"); if(!e || e < s) $("#edit_apptEnd").classList.add("is-invalid"); return; }
-            editAppointments.push({ id: Date.now() + Math.random(), startDate: s, endDate: e, seasonal });
+            editAppointments.push({ id: null, startDate: s, endDate: e, seasonal });
             window.editCancelAppointment();
             renderBadges();
         };
@@ -399,14 +399,14 @@
                     country: countryEl.value || null
                 },
                 appointments: editAppointments.map(a => ({
-                    id: a.id && typeof a.id === "number" ? a.id : null,
+                    id: Number.isInteger(a.id) ? a.id : null,
                     startDate: a.startDate,
                     endDate: a.endDate,
                     seasonal: !!a.seasonal
                 })),
-                requirements: editRequirements.map(r => ({ id: r.id && typeof r.id === "number" ? r.id : null, description: r.description })),
-                equipment: editEquipment.map(e => ({ id: e.id && typeof e.id === "number" ? e.id : null, name: e.name, rentable: !!e.rentable })),
-                additionalPackages: editPackages.map(p => ({ id: p.id && typeof p.id === "number" ? p.id : null, title: p.title, description: p.description, price: p.price }))
+                requirements: editRequirements.map(r => ({ id: Number.isInteger(r.id) ? r.id : null, description: r.description })),
+                equipment: editEquipment.map(e => ({ id: Number.isInteger(e.id) ? e.id : null, name: e.name, rentable: !!e.rentable })),
+                additionalPackages: editPackages.map(p => ({ id: Number.isInteger(p.id) ? p.id : null, title: p.title, description: p.description, price: p.price }))
             };
 
             const formData = new FormData();

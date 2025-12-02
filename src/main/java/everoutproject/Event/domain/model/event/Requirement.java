@@ -2,7 +2,7 @@ package everoutproject.Event.domain.model.event;
 
 public class Requirement {
     private final Long id;
-    private final String description;
+    private String description;
 
     public Requirement(Long id, String description) {
         this.id = id;
@@ -11,4 +11,6 @@ public class Requirement {
 
     public Long getId() { return id; }
     public String getDescription() { return description; }
+
+    public void setDescription(String description) {this.description = description;}
 }

@@ -207,27 +207,78 @@ public class EventService {
 
         // --- Appointments ---
         List<EventAppointment> appointments = dto.appointments.stream()
-                .map(a -> new EventAppointment(
-                        a.id,        // keep existing ID if present!
-                        a.startDate,
-                        a.endDate,
-                        a.seasonal
-                ))
+                .map(a -> {
+                    if (a.id == null) {
+                        // NEW appointment
+                        return new EventAppointment(null, a.startDate, a.endDate, a.seasonal);
+                    } else {
+                        // EXISTING appointment
+                        EventAppointment existing = eventToEdit.getAppointments().stream()
+                                .filter(ap -> ap.getId().equals(a.id))
+                                .findFirst()
+                                .orElseThrow(() -> new RuntimeException("Appointment not found: " + a.id));
+
+                        existing.setStartDate(a.startDate);
+                        existing.setEndDate(a.endDate);
+                        existing.setSeasonal(a.seasonal);
+                        return existing;
+                    }
+
+                })
                 .toList();
 
         // --- Requirements ---
         List<Requirement> requirements = dto.requirements.stream()
-                .map(r -> new Requirement(r.id, r.description))
+                .map(r -> {
+                    if (r.id == null) {
+                        return new Requirement(null, r.description);
+                    } else {
+                        Requirement existing = eventToEdit.getRequirements().stream()
+                                .filter(req -> req.getId().equals(r.id))
+                                .findFirst()
+                                .orElseThrow(() -> new RuntimeException("Requirement not found: " + r.id));
+
+                        existing.setDescription(r.description);
+                        return existing;
+                    }
+                })
                 .toList();
 
         // --- Equipment ---
         List<EventEquipment> equipment = dto.equipment.stream()
-                .map(e -> new EventEquipment(e.id, e.name, e.rentable))
+                .map(e -> {
+                    if (e.id == null) {
+                        return new EventEquipment(null, e.name, e.rentable);
+                    } else {
+                        EventEquipment existing = eventToEdit.getEquipment().stream()
+                                .filter(eq -> eq.getId().equals(e.id))
+                                .findFirst()
+                                .orElseThrow(() -> new RuntimeException("Equipment not found: " + e.id));
+
+                        existing.setName(e.name);
+                        existing.setRentable(e.rentable);
+                        return existing;
+                    }
+                })
                 .toList();
 
         // --- Packages ---
         List<AdditionalPackage> packages = dto.additionalPackages.stream()
-                .map(p -> new AdditionalPackage(p.id, p.title, p.description, p.price))
+                .map(p -> {
+                    if (p.id == null) {
+                        return new AdditionalPackage(null, p.title, p.description, p.price);
+                    } else {
+                        AdditionalPackage existing = eventToEdit.getAdditionalPackages().stream()
+                                .filter(pack -> pack.getId().equals(p.id))
+                                .findFirst()
+                                .orElseThrow(() -> new RuntimeException("Package not found: " + p.id));
+
+                        existing.setTitle(p.title);
+                        existing.setDescription(p.description);
+                        existing.setPrice(p.price);
+                        return existing;
+                    }
+                })
                 .toList();
 
 

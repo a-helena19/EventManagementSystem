@@ -4,9 +4,9 @@ import java.time.LocalDate;
 
 public class EventAppointment {
     private final Long id;
-    private final LocalDate startDate;
-    private final LocalDate endDate;
-    private final boolean seasonal;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private boolean seasonal;
 
     public EventAppointment(Long id, LocalDate startDate, LocalDate endDate, boolean recurring) {
         this.id = id;
@@ -19,4 +19,8 @@ public class EventAppointment {
     public LocalDate getStartDate() { return startDate; }
     public LocalDate getEndDate() { return endDate; }
     public boolean isSeasonal() { return seasonal; }
+
+    public void setStartDate(LocalDate startDate) {this.startDate = startDate;}
+    public void setEndDate(LocalDate endDate) {this.endDate = endDate;}
+    public void setSeasonal(boolean seasonal) {this.seasonal = seasonal;}
 }
