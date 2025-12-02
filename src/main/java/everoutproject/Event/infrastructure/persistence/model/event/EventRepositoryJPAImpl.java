@@ -28,16 +28,28 @@ public class EventRepositoryJPAImpl implements EventRepository {
 
     @Override
     public everoutproject.Event.domain.model.event.Event addNewEvent(everoutproject.Event.domain.model.event.Event domainEvent) {
-        everoutproject.Event.infrastructure.persistence.model.event.Event entity = EventMapper.toEntity(domainEvent);
 
+        if (domainEvent.getOrganizer() == null || domainEvent.getOrganizer().getId() == null) {
+            throw new IllegalStateException("Organizer is missing in event creation");
+        }
+
+        // Domain -> Entity (WITHOUT organizer!)
+        everoutproject.Event.infrastructure.persistence.model.event.Event entity =
+                EventMapper.toEntityWithoutOrganizer(domainEvent);
+
+        // Load organizer as managed JPA entity
         Organizer organizerEntity =
                 organizerJPARepository.getReferenceById(domainEvent.getOrganizer().getId());
 
         entity.setOrganizer(organizerEntity);
-        everoutproject.Event.infrastructure.persistence.model.event.Event savedEntity = eventJpaRepository.save(entity);
 
-       return EventMapper.toDomain(savedEntity);
+        // Persist
+        var savedEntity = eventJpaRepository.save(entity);
+
+        // Return domain object
+        return EventMapper.toDomain(savedEntity);
     }
+
 
     @Override
     public Optional<everoutproject.Event.domain.model.event.Event> findById(Long id) {

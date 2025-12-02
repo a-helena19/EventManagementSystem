@@ -196,4 +196,75 @@ public class EventMapper {
     public static everoutproject.Event.infrastructure.persistence.model.event.EventCategory toEntityCategory (EventCategory domainCategory) {
         return everoutproject.Event.infrastructure.persistence.model.event.EventCategory.valueOf(domainCategory.name());
     }
+
+    public static everoutproject.Event.infrastructure.persistence.model.event.Event
+    toEntityWithoutOrganizer(everoutproject.Event.domain.model.event.Event domain) {
+
+        // Create entity WITHOUT organizer (will be injected later!)
+        var entity = new everoutproject.Event.infrastructure.persistence.model.event.Event(
+                domain.getName(),
+                domain.getDescription(),
+                domain.getLocation().getStreet(),
+                domain.getLocation().getHouseNumber(),
+                domain.getLocation().getCity(),
+                domain.getLocation().getPostalCode(),
+                domain.getLocation().getState(),
+                domain.getLocation().getCountry(),
+                domain.getStartDate(),
+                domain.getEndDate(),
+                domain.getPrice(),
+                domain.getDepositPercent(),
+                toEntityStatus(domain.getStatus()),
+                toEntityCategory(domain.getCategory())
+        );
+
+        entity.setDurationInDays(domain.getDurationInDays());
+        entity.setMinParticipants(domain.getMinParticipants());
+        entity.setMaxParticipants(domain.getMaxParticipants());
+        entity.setCancellationReason(domain.getCancellationReason());
+
+        // Appointments
+        domain.getAppointments().forEach(a -> {
+            var app = new everoutproject.Event.infrastructure.persistence.model.event.EventAppointment();
+            app.setStartDate(a.getStartDate());
+            app.setEndDate(a.getEndDate());
+            app.setSeasonal(a.isSeasonal());
+            entity.addAppointment(app);
+        });
+
+        // Requirements
+        domain.getRequirements().forEach(r -> {
+            var rr = new everoutproject.Event.infrastructure.persistence.model.event.Requirement();
+            rr.setDescription(r.getDescription());
+            entity.getRequirements().add(rr);
+            rr.setEvent(entity);
+        });
+
+        // Equipment
+        domain.getEquipment().forEach(e -> {
+            var ee = new everoutproject.Event.infrastructure.persistence.model.event.EventEquipment();
+            ee.setName(e.getName());
+            ee.setRentable(e.isRentable());
+            entity.getEquipments().add(ee);
+            ee.setEvent(entity);
+        });
+
+        // Packages
+        domain.getAdditionalPackages().forEach(p -> {
+            var pkg = new everoutproject.Event.infrastructure.persistence.model.event.AdditionalPackage();
+            pkg.setTitle(p.getTitle());
+            pkg.setDescription(p.getDescription());
+            pkg.setPrice(p.getPrice());
+            entity.getAdditionalPackages().add(pkg);
+            pkg.setEvent(entity);
+        });
+
+        // Images
+        domain.getImages().forEach(img -> {
+            everoutproject.Event.infrastructure.persistence.model.event.EventImage imgEntity = new everoutproject.Event.infrastructure.persistence.model.event.EventImage(img.getImageData(), entity);
+            entity.addImage(imgEntity);
+        });
+
+        return entity;
+    }
 }

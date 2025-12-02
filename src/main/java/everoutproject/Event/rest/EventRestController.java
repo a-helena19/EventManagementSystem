@@ -35,6 +35,8 @@ public class EventRestController {
     ) {
         try {
             EventDTO created = eventService.createEvent(dto, images);
+            System.out.println("Created event: " + created);
+            System.out.println("ID = " + created.id());
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of(
                             "message", "Event created successfully",
@@ -42,6 +44,7 @@ public class EventRestController {
                             "name", created.name()
                     ));
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Failed to create event: " + e.getMessage()));
         }

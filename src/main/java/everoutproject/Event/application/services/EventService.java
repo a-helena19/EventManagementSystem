@@ -123,10 +123,10 @@ public class EventService {
         }
 
         // Persist event
-        eventRepository.addNewEvent(newEvent);
+        Event saved = eventRepository.addNewEvent(newEvent);
 
         // Return DTO
-        return EventMapperDTO.toDTO(newEvent);
+        return EventMapperDTO.toDTO(saved);
     }
 
     /**

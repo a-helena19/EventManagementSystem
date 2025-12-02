@@ -24,6 +24,25 @@ public class EventExpirationScheduler {
         this.bookingRepository = bookingRepository;
     }
 
+    private void setExpiredStatus(Event event) {
+        // set Event status on EXPIRED
+        event.setStatus(EventStatus.EXPIRED);
+        eventRepository.save(event);
+
+        List<Booking> bookings = bookingRepository.findByEventId(event.getId());
+
+        // set Booking status on EXPIRED
+        for (Booking booking : bookings) {
+            if (booking.getStatus() != BookingStatus.CANCELLED) {
+                booking.setStatus(BookingStatus.EXPIRED);
+                bookingRepository.save(booking);
+            }
+
+        }
+
+        System.out.println("Event expired: " + event.getId());
+    }
+
     // runs every 10 sec
     @Scheduled(fixedRate = 10000)
     @Transactional
@@ -34,24 +53,19 @@ public class EventExpirationScheduler {
         List<Event> events = eventRepository.findAll();
 
         for (Event event : events) {
-            if (event.getEndDate().isBefore(today) && event.getStatus() == EventStatus.ACTIVE) {
+            LocalDate end = event.getEndDate();
+            LocalDate start = event.getStartDate();
 
-                // set Event status on EXPIRED
-                event.setStatus(EventStatus.EXPIRED);
-                eventRepository.save(event);
-
-                List<Booking> bookings = bookingRepository.findByEventId(event.getId());
-
-                // set Booking status on EXPIRED
-                for (Booking booking : bookings) {
-                    if (booking.getStatus() != BookingStatus.CANCELLED) {
-                        booking.setStatus(BookingStatus.EXPIRED);
-                        bookingRepository.save(booking);
+            if (event.getStatus() == EventStatus.ACTIVE) {
+                if (end == null) {
+                    if (start != null && start.isBefore(today)) {
+                        setExpiredStatus(event);
                     }
-
+                    continue;
                 }
-
-                System.out.println("Event expired: " + event.getId());
+                if (end.isBefore(today)) {
+                    setExpiredStatus(event);
+                }
             }
         }
     }
