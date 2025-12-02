@@ -71,6 +71,9 @@ public class Event {
     @Column(name = "max_participants")
     private Integer maxParticipants;
 
+    @Column(name = "booked_participants", nullable = false)
+    private Integer bookedParticipants = 0;
+
     // Relationships to supporting entities
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Requirement> requirements = new ArrayList<>();
@@ -231,6 +234,9 @@ public class Event {
 
     public Integer getMaxParticipants() { return maxParticipants; }
     public void setMaxParticipants(Integer maxParticipants) { this.maxParticipants = maxParticipants; }
+
+    public Integer getBookedParticipants() {return bookedParticipants;}
+    public void setBookedParticipants(Integer bookedParticipants) {this.bookedParticipants = bookedParticipants;}
 
     public List<Requirement> getRequirements() { return requirements; }
     public void setRequirements(List<Requirement> requirements) {

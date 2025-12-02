@@ -26,6 +26,7 @@ public class Event {
 
     private Integer minParticipants;
     private Integer maxParticipants;
+    private Integer bookedParticipants = 0;
 
     private List<Requirement> requirements = new ArrayList<>();
     private List<EventEquipment> equipments = new ArrayList<>();
@@ -134,6 +135,8 @@ public class Event {
     public void setMinParticipants(Integer minParticipants) {this.minParticipants = minParticipants;}
     public Integer getMaxParticipants() { return maxParticipants; }
     public void setMaxParticipants(Integer maxParticipants) {this.maxParticipants = maxParticipants;}
+    public Integer getBookedParticipants() {return bookedParticipants;}
+    public void setBookedParticipants(Integer bookedParticipants) {this.bookedParticipants = bookedParticipants;}
     public List<Requirement> getRequirements() { return Collections.unmodifiableList(requirements); }
     public List<EventEquipment> getEquipment() { return Collections.unmodifiableList(equipments); }
     public List<AdditionalPackage> getAdditionalPackages() { return Collections.unmodifiableList(additionalPackages); }
@@ -220,6 +223,14 @@ public class Event {
 
     public void addFeedback(EventFeedback fb) {
         this.feedback.add(fb);
+    }
+
+    public void increaseBookedParticipants(int amount) {
+        this.bookedParticipants += amount;
+    }
+
+    public void decreaseBookedParticipants(int amount) {
+        this.bookedParticipants = Math.max(0, this.bookedParticipants - amount);
     }
 
     public void removeAppointment(EventAppointment ap) {

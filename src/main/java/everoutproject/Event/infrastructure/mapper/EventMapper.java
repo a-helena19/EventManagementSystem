@@ -82,6 +82,7 @@ public class EventMapper {
 
         images.forEach(domain::addImage);
         feedback.forEach(domain::addFeedback);
+        domain.setBookedParticipants(entity.getBookedParticipants());
         return domain;
 
     }
@@ -170,6 +171,8 @@ public class EventMapper {
             EventImage imgEntity = new EventImage(img.getImageData(), entity);
             entity.addImage(imgEntity);
         });
+
+        entity.setBookedParticipants(domain.getBookedParticipants());
 
         return entity;
     }

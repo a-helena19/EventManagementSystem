@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface BookingRepository {
 
-    void addNewEvent(Booking domainBooking);
+    void addNewBooking(Booking domainBooking);
     List<Booking> findAll();
     List<Booking> findByEventId(Long eventId);
     void save(Booking booking);

@@ -22,6 +22,7 @@ public record EventDTO(
 
         Integer minParticipants,
         Integer maxParticipants,
+        Integer bookedParticipants,
 
         List<RequirementDTO> requirements,
         List<EventEquipmentDTO> equipment,

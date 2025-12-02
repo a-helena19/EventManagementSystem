@@ -180,6 +180,8 @@ public class EventRepositoryJPAImpl implements EventRepository {
                         }
                     }
 
+                    entity.setBookedParticipants(domainEvent.getBookedParticipants());
+
                     // Save updated event
                     eventJpaRepository.save(entity);
 

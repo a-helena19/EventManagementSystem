@@ -25,6 +25,7 @@ public class EventMapperDTO {
 
                 event.getMinParticipants(),
                 event.getMaxParticipants(),
+                event.getBookedParticipants(),
 
                 event.getRequirements().stream().map(EventMapperDTO::toRequirementDTO).toList(),
                 event.getEquipment().stream().map(EventMapperDTO::toEquipmentDTO).toList(),
