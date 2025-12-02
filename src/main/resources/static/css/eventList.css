@@ -270,3 +270,12 @@ body {
     opacity: 0.6;
     cursor: not-allowed !important;
 }
+
+.modal-backdrop {
+    z-index: 10000 !important;
+}
+
+/* Zwingt das Modal selbst noch weiter nach vorne */
+.modal {
+    z-index: 10001 !important;
+}
