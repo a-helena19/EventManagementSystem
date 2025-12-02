@@ -1,11 +1,11 @@
 package everoutproject.Event.infrastructure.mapper;
 
-import everoutproject.Event.domain.model.event.Organizer;
+import everoutproject.Event.domain.model.organizer.Organizer;
 
 public class OrganizerMapper {
 
     public static Organizer toDomain(
-            everoutproject.Event.infrastructure.persistence.model.event.Organizer entity) {
+            everoutproject.Event.infrastructure.persistence.model.organizer.Organizer entity) {
 
         return new Organizer(
                 entity.getId(),
@@ -15,10 +15,10 @@ public class OrganizerMapper {
         );
     }
 
-    public static everoutproject.Event.infrastructure.persistence.model.event.Organizer toEntity(
+    public static everoutproject.Event.infrastructure.persistence.model.organizer.Organizer toEntity(
             Organizer domain) {
 
-        return new everoutproject.Event.infrastructure.persistence.model.event.Organizer(
+        return new everoutproject.Event.infrastructure.persistence.model.organizer.Organizer(
                 domain.getId(),
                 domain.getName(),
                 domain.getContactEmail(),

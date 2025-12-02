@@ -127,7 +127,7 @@ async function loadOrganizers() {
         list.forEach(o => {
             const opt = document.createElement("option");
             opt.value = o.id;
-            opt.textContent = `${o.name} (${o.email})`;
+            opt.textContent = `${o.name} (${o.contactEmail})`;
             select.appendChild(opt);
         });
     } catch (err) {
@@ -650,12 +650,79 @@ document.getElementById("images")?.addEventListener("change", () => {
 });
 
 // ===========================
+// CREATE ORGANIZER
+// ===========================
+async function createOrganizer() {
+    try {
+        const Orgdto = {
+            name : document.getElementById("orgName").value,
+            email : document.getElementById("orgEmail").value,
+            phone : document.getElementById("orgPhone").value
+        }
+
+        const res = await fetch("/api/organizers/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(Orgdto)
+        });
+
+        if (res.ok) {
+            const created = await res.json();
+
+            // put new organizer into select
+            const select = document.getElementById("organizerSelect");
+            const option = document.createElement("option");
+            option.value = created.id;
+            option.textContent = `${created.name} (${created.contactEmail})`;
+
+            select.appendChild(option);
+            select.value = created.id;
+
+            showToast("success", "Organizer created!");
+
+            return created.id;
+        } else {
+            showToast("error", "Failed to create organizer");
+            return null;
+        }
+    }catch (e) {
+        showToast("error", "Network error: " + err.message);
+        return null;
+    }
+
+}
+// ===========================
 // SUBMIT EVENT (JSON + multipart)
 // ===========================
 async function submitEvent() {
     try {
-        // Build JSON DTO
+        let organizerId = null;
+
+        // ➤ If "Add New Organizer" selected → create first
+        if (document.getElementById("organizerSelect").value === "NEW") {
+
+            // Validate before creating
+            const name = document.getElementById("orgName").value.trim();
+            const email = document.getElementById("orgEmail").value.trim();
+
+            if (!name || !email) {
+                showToast("error", "Please provide organizer name and valid email");
+                return;
+            }
+
+            // --- organizer erstellen ---
+            organizerId = await createOrganizer();
+            if (!organizerId) {
+                showToast("error", "Organizer could not be created");
+                return;
+            }
+        }
+        else {
+            organizerId = parseInt(document.getElementById("organizerSelect").value);
+        }
+
         const dpVal = parseInt(document.getElementById("depositPercent").value, 10);
+        // Build JSON DTO
         const dto = {
             name: document.getElementById("name").value,
             description: document.getElementById("description").value,
@@ -664,18 +731,9 @@ async function submitEvent() {
             price: parseFloat(document.getElementById("price").value),
             depositPercent:isNaN(dpVal) ? 30 : dpVal,
             category: document.getElementById("category").value,
-            // Organizer (existing OR new)
-            organizerId: document.getElementById("newOrganizerFields").style.display === "none"
-                ? parseInt(document.getElementById("organizerSelect").value) || null
-                : null,
+            organizerId: organizerId, // ALWAYS VALID ID
 
-            newOrganizer: document.getElementById("newOrganizerFields").style.display === "block"
-                ? {
-                    name: document.getElementById("orgName").value,
-                    email: document.getElementById("orgEmail").value,
-                    phone: document.getElementById("orgPhone").value
-                }
-                : null,
+            newOrganizer: null, // REMOVED FROM BACKEND
 
             minParticipants: parseInt(document.getElementById("minParticipants").value),
             maxParticipants: parseInt(document.getElementById("maxParticipants").value),

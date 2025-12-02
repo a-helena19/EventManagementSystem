@@ -1,4 +1,4 @@
-package everoutproject.Event.rest.dtos.event;
+package everoutproject.Event.rest.dtos.event.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -16,6 +16,7 @@ public record EventDTO(
         List<EventAppointmentDTO> appointments,
 
         BigDecimal price,
+        Integer depositPercent,
         String status,
         String cancellationReason,
 

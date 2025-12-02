@@ -1,9 +1,8 @@
 package everoutproject.Event.application.dtos;
 
 import everoutproject.Event.domain.model.event.*;
-import everoutproject.Event.rest.dtos.event.*;
-
-import java.util.stream.Collectors;
+import everoutproject.Event.domain.model.organizer.Organizer;
+import everoutproject.Event.rest.dtos.event.response.*;
 
 public class EventMapperDTO {
 
@@ -20,6 +19,7 @@ public class EventMapperDTO {
                 event.getAppointments().stream().map(EventMapperDTO::toAppointmentDTO).toList(),
 
                 event.getPrice(),
+                event.getDepositPercent(),
                 event.getStatus().name(),
                 event.getCancellationReason(),
 

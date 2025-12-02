@@ -6,7 +6,7 @@ import everoutproject.Event.domain.model.event.EventAppointment;
 import everoutproject.Event.domain.model.event.EventEquipment;
 import everoutproject.Event.domain.model.event.EventFeedback;
 import everoutproject.Event.domain.model.event.EventStatus;
-import everoutproject.Event.domain.model.event.Organizer;
+import everoutproject.Event.domain.model.organizer.Organizer;
 import everoutproject.Event.domain.model.event.Requirement;
 import everoutproject.Event.domain.model.event.EventCategory;
 import everoutproject.Event.infrastructure.persistence.model.event.EventImage;
@@ -54,7 +54,7 @@ public class EventMapper {
 
         Organizer organizer = null;
         if (entity.getOrganizer() != null) {
-            everoutproject.Event.infrastructure.persistence.model.event.Organizer o = entity.getOrganizer();
+            everoutproject.Event.infrastructure.persistence.model.organizer.Organizer o = entity.getOrganizer();
             organizer = new Organizer(o.getId(), o.getName(), o.getContactEmail(), o.getPhone());
         }
 
@@ -67,6 +67,7 @@ public class EventMapper {
                 entity.getEndDate(),
                 appointments,
                 entity.getPrice(),
+                entity.getDepositPercent(),
                 EventStatus.valueOf(entity.getStatus().name()),
                 entity.getCancellationReason(),
                 entity.getMinParticipants(),
@@ -100,6 +101,7 @@ public class EventMapper {
                 domain.getStartDate(),
                 domain.getEndDate(),
                 domain.getPrice(),
+                domain.getDepositPercent(),
                 everoutproject.Event.infrastructure.persistence.model.event.EventStatus.valueOf(domain.getStatus().name()),
                 everoutproject.Event.infrastructure.persistence.model.event.EventCategory.valueOf(domain.getCategory().name())
         );
@@ -111,7 +113,7 @@ public class EventMapper {
 
         // organizer
         if (domain.getOrganizer() != null) {
-            everoutproject.Event.infrastructure.persistence.model.event.Organizer org = new everoutproject.Event.infrastructure.persistence.model.event.Organizer();
+            everoutproject.Event.infrastructure.persistence.model.organizer.Organizer org = new everoutproject.Event.infrastructure.persistence.model.organizer.Organizer();
             org.setId(domain.getOrganizer().getId());
             org.setName(domain.getOrganizer().getName());
             org.setContactEmail(domain.getOrganizer().getContactEmail());

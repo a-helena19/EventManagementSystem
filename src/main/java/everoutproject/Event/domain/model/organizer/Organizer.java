@@ -1,4 +1,4 @@
-package everoutproject.Event.domain.model.event;
+package everoutproject.Event.domain.model.organizer;
 
 public class Organizer {
     private final Long id;

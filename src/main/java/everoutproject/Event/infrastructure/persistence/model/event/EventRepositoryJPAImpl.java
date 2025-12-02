@@ -4,6 +4,8 @@ import everoutproject.Event.domain.model.event.EventRepository;
 import everoutproject.Event.domain.model.event.EventImage;
 import everoutproject.Event.infrastructure.mapper.EventMapper;
 import everoutproject.Event.infrastructure.mapper.OrganizerMapper;
+import everoutproject.Event.infrastructure.persistence.model.organizer.Organizer;
+import everoutproject.Event.infrastructure.persistence.model.organizer.OrganizerJPARepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -14,16 +16,24 @@ public class EventRepositoryJPAImpl implements EventRepository {
 
     private final EventJPARepository eventJpaRepository;
     private final EventImageJPARepository eventImageJpaRepository;
+    private final OrganizerJPARepository organizerJPARepository;
 
     public EventRepositoryJPAImpl(EventJPARepository eventJpaRepository,
-                                  EventImageJPARepository eventImageJpaRepository) {
+                                  EventImageJPARepository eventImageJpaRepository,
+                                  OrganizerJPARepository organizerJPARepository) {
         this.eventJpaRepository = eventJpaRepository;
         this.eventImageJpaRepository = eventImageJpaRepository;
+        this.organizerJPARepository = organizerJPARepository;
     }
 
     @Override
     public everoutproject.Event.domain.model.event.Event addNewEvent(everoutproject.Event.domain.model.event.Event domainEvent) {
         everoutproject.Event.infrastructure.persistence.model.event.Event entity = EventMapper.toEntity(domainEvent);
+
+        Organizer organizerEntity =
+                organizerJPARepository.getReferenceById(domainEvent.getOrganizer().getId());
+
+        entity.setOrganizer(organizerEntity);
         everoutproject.Event.infrastructure.persistence.model.event.Event savedEntity = eventJpaRepository.save(entity);
 
        return EventMapper.toDomain(savedEntity);

@@ -1,14 +1,10 @@
 package everoutproject.Event.rest;
 
 import everoutproject.Event.application.services.EventService;
-import everoutproject.Event.domain.model.event.EventStatus;
-import everoutproject.Event.rest.dtos.event.CreateEventRequestDTO;
-import everoutproject.Event.rest.dtos.event.EditEventRequestDTO;
-import everoutproject.Event.rest.dtos.event.EventDTO;
-import everoutproject.Event.rest.dtos.event.CancelRequestDTO;
-import everoutproject.Event.domain.model.event.EventLocation;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import everoutproject.Event.rest.dtos.event.request.CreateEventRequestDTO;
+import everoutproject.Event.rest.dtos.event.request.EditEventRequestDTO;
+import everoutproject.Event.rest.dtos.event.response.EventDTO;
+import everoutproject.Event.rest.dtos.event.request.CancelRequestDTO;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -17,9 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
-import java.math.BigDecimal;
 import java.net.URLConnection;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -89,17 +83,17 @@ public class EventRestController {
     }
 
     // Edit an event
-    @PutMapping("/edit/{id}/status/{status}")
+    @PutMapping(value = "/edit/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> editEvent(@PathVariable Long id,
                                        @RequestPart("event") EditEventRequestDTO dto,
                                        @RequestPart(value =  "images", required = false) List<MultipartFile> images,
                                        @RequestParam(value = "deleteImageIds", required = false) List<Long> deleteImageIds) {
         try {
-            eventService.editEvent(id, dto, images, deleteImageIds);
+            EventDTO updated = eventService.editEvent(id, dto, images, deleteImageIds);
             return ResponseEntity.ok(Map.of(
                     "message", "Event was edited successfully",
-                    "id", id,
-                    "name", dto.name()));
+                    "id", updated.id(),
+                    "name", updated.name()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Failed to edit event: " + e.getMessage()));

@@ -1,5 +1,7 @@
 package everoutproject.Event.domain.model.event;
 
+import everoutproject.Event.domain.model.organizer.Organizer;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -18,6 +20,7 @@ public class Event {
     private List<EventAppointment> appointments = new ArrayList<>();
 
     private BigDecimal price;
+    private Integer depositPercent;
     private EventStatus status;
     private String cancellationReason;
 
@@ -43,6 +46,7 @@ public class Event {
                  LocalDate startDate,
                  LocalDate endDate,
                  BigDecimal price,
+                 Integer depositPercent,
                  EventStatus status,
                  EventCategory category,
                  Organizer organizer) {
@@ -56,6 +60,7 @@ public class Event {
                 endDate,
                 new ArrayList<>(),
                 price,
+                depositPercent != null ? depositPercent : 30,
                 status,
                 null,
                 null,
@@ -78,6 +83,7 @@ public class Event {
                  LocalDate endDate,
                  List<EventAppointment> appointments,
                  BigDecimal price,
+                 Integer depositPercent,
                  EventStatus status,
                  String cancellationReason,
                  Integer minParticipants,
@@ -97,6 +103,7 @@ public class Event {
         this.endDate = endDate;
         if (appointments != null) this.appointments.addAll(appointments);
         this.price = price;
+        this.depositPercent = depositPercent;
         this.status = status;
         this.cancellationReason = cancellationReason;
         this.minParticipants = minParticipants;
@@ -119,11 +126,14 @@ public class Event {
     public LocalDate getEndDate() { return endDate; }
     public List<EventAppointment> getAppointments() { return Collections.unmodifiableList(appointments); }
     public BigDecimal getPrice() { return price; }
+    public Integer getDepositPercent() { return depositPercent; }
     public EventStatus getStatus() { return status; }
     public void setStatus(EventStatus status) { this.status = status; }
     public String getCancellationReason() { return cancellationReason; }
     public Integer getMinParticipants() { return minParticipants; }
+    public void setMinParticipants(Integer minParticipants) {this.minParticipants = minParticipants;}
     public Integer getMaxParticipants() { return maxParticipants; }
+    public void setMaxParticipants(Integer maxParticipants) {this.maxParticipants = maxParticipants;}
     public List<Requirement> getRequirements() { return Collections.unmodifiableList(requirements); }
     public List<EventEquipment> getEquipment() { return Collections.unmodifiableList(equipments); }
     public List<AdditionalPackage> getAdditionalPackages() { return Collections.unmodifiableList(additionalPackages); }
@@ -149,6 +159,7 @@ public class Event {
                      LocalDate endDate,
                      List<EventAppointment> appointments,
                      BigDecimal price,
+                     Integer depositPercent,
                      EventStatus status,
                      Integer minParticipants,
                      Integer maxParticipants,
@@ -164,14 +175,27 @@ public class Event {
         this.location = location;
         this.startDate = startDate;
         this.endDate = endDate;
-        if (appointments != null) this.appointments.addAll(appointments);
+        if (appointments != null) {
+            this.appointments.clear();
+            this.appointments.addAll(appointments);
+        }
         this.price = price;
+        this.depositPercent = depositPercent;
         this.status = status;
         this.minParticipants = minParticipants;
         this.maxParticipants = maxParticipants;
-        if (requirements != null) this.requirements.addAll(requirements);
-        if (equipments != null) this.equipments.addAll(equipments);
-        if (additionalPackages != null) this.additionalPackages.addAll(additionalPackages);
+        if (requirements != null) {
+            this.requirements.clear();
+            this.requirements.addAll(requirements);
+        }
+        if (equipments != null) {
+            this.equipments.clear();
+            this.equipments.addAll(equipments);
+        }
+        if (additionalPackages != null) {
+            this.additionalPackages.clear();
+            this.additionalPackages.addAll(additionalPackages);
+        }
         this.category = category;
         this.organizer = organizer;
         this.durationInDays = durationInDays;
@@ -228,49 +252,12 @@ public class Event {
 
     @Override
     public String toString() {
-        StringBuilder str = new StringBuilder("Event");
-        str.append(" [id=").append(id);
-        str.append(", name=").append(name);
-        str.append(", description=").append(description);
-        str.append(location.toString());
-        str.append(", start-date=").append(startDate);
-        str.append(", end-date=").append(endDate);
-
-        str.append(", appointments=");
-        for (EventAppointment a: appointments) {
-            str.append("[").append(a.toString()).append("], ");
-        }
-        str.append("price=").append(price);
-        str.append(", status=").append(status);
-        str.append(", cancellationReason=").append(cancellationReason);
-        str.append(", min-participants=").append(minParticipants);
-        str.append(", max-participants=").append(maxParticipants);
-
-        str.append(", requirements=");
-        for (Requirement e: requirements) {
-            str.append("[").append(e.toString()).append("], ");
-        }
-
-        str.append("equipments=");
-        for (EventEquipment e: equipments) {
-            str.append("[").append(e.toString()).append("], ");
-        }
-
-        str.append("additional-packages=");
-        for (AdditionalPackage p: additionalPackages) {
-            str.append("[").append(p.toString()).append("], ");
-        }
-
-        str.append("ctegory=").append(category.toString());
-
-        str.append("feedback=");
-        for (EventFeedback f: feedback) {
-            str.append("[").append(f.toString()).append("], ");
-        }
-
-        str.append("organizer=").append(organizer.toString());
-        str.append(", duration-in-days").append(durationInDays);
-
-        return str.toString();
+        return "Event [id=" + id +
+                ", name=" + name +
+                ", depositPercent=" + depositPercent +
+                ", price=" + price +
+                ", start=" + startDate +
+                ", end=" + endDate +
+                "]";
     }
 }

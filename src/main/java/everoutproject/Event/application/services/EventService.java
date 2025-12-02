@@ -4,14 +4,17 @@ import everoutproject.Event.domain.model.booking.Booking;
 import everoutproject.Event.domain.model.booking.BookingRepository;
 import everoutproject.Event.domain.model.booking.BookingStatus;
 import everoutproject.Event.domain.model.event.*;
-import everoutproject.Event.rest.dtos.event.CreateEventRequestDTO;
-import everoutproject.Event.rest.dtos.event.EditEventRequestDTO;
-import everoutproject.Event.rest.dtos.event.EventDTO;
+import everoutproject.Event.domain.model.organizer.Organizer;
+import everoutproject.Event.domain.model.organizer.OrganizerRepository;
+import everoutproject.Event.rest.dtos.event.request.CreateEventRequestDTO;
+import everoutproject.Event.rest.dtos.event.request.EditEventRequestDTO;
+import everoutproject.Event.rest.dtos.event.response.EventDTO;
 import everoutproject.Event.application.dtos.EventMapperDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,47 +37,77 @@ public class EventService {
     @Transactional
     public EventDTO createEvent(CreateEventRequestDTO dto, List<MultipartFile> images) {
 
-        Organizer organizer = organizerRepository.findById(dto.organizerId())
-                .orElseThrow(() -> new RuntimeException("Organizer not found"));
+        Organizer organizer;
 
-        EventCategory category = EventCategory.valueOf(dto.category());
+        if (dto.newOrganizer != null) {
+            // neu organizer from dto
+            organizer = organizerRepository.save(
+                    new Organizer(null, dto.newOrganizer.name, dto.newOrganizer.email, dto.newOrganizer.phone)
+            );
+        } else {
+            // if exists
+            organizer = organizerRepository.findById(dto.organizerId)
+                    .orElseThrow(() -> new RuntimeException("Organizer not found"));
+        }
+
+        EventCategory category = EventCategory.valueOf(dto.category);
 
         EventLocation location = new EventLocation(
-                dto.location().street(),
-                dto.location().houseNumber(),
-                dto.location().city(),
-                dto.location().postalCode(),
-                dto.location().state(),
-                dto.location().country()
+                dto.location.street(),
+                dto.location.houseNumber(),
+                dto.location.city(),
+                dto.location.postalCode(),
+                dto.location.state(),
+                dto.location.country()
         );
 
         Event newEvent = new Event(
-                dto.name(),
-                dto.description(),
+                dto.name,
+                dto.description,
                 location,
-                dto.startDate(),
-                dto.endDate(),
-                dto.price(),
+                dto.startDate,
+                dto.endDate,
+                BigDecimal.valueOf(dto.price),
+                dto.depositPercent,
                 EventStatus.ACTIVE,
                 category,
                 organizer
         );
+
+        newEvent.setMinParticipants(dto.minParticipants);
+        newEvent.setMaxParticipants(dto.maxParticipants);
+
         // Add children
-        dto.appointments().forEach(a ->
-                newEvent.addAppointment(new EventAppointment(null, a.startDate(), a.endDate(), a.seasonal()))
-        );
+        if (dto.appointments != null) {
+            dto.appointments.forEach(a ->
+                    newEvent.addAppointment(
+                            new EventAppointment(null, a.startDate, a.endDate, a.seasonal)
+                    )
+            );
+        }
 
-        dto.requirements().forEach(r ->
-                newEvent.addRequirement(new Requirement(null, r.description()))
-        );
+        if (dto.requirements != null) {
+            dto.requirements.forEach(r ->
+                    newEvent.addRequirement(
+                            new Requirement(null, r.description)
+                    )
+            );
+        }
 
-        dto.equipment().forEach(e ->
-                newEvent.addEquipment(new EventEquipment(null, e.name(), e.rentable()))
-        );
-
-        dto.additionalPackages().forEach(p ->
-                newEvent.addPackage(new AdditionalPackage(null, p.title(), p.description(), p.price()))
-        );
+        if (dto.equipment != null) {
+            dto.equipment.forEach(e ->
+                    newEvent.addEquipment(
+                            new EventEquipment(null, e.name, e.rentable)
+                    )
+            );
+        }
+        if (dto.additionalPackages != null) {
+            dto.additionalPackages.forEach(p ->
+                    newEvent.addPackage(
+                            new AdditionalPackage(null, p.title, p.description, p.price)
+                    )
+            );
+        }
 
         // Handle images
         if (images != null) {
@@ -143,43 +176,55 @@ public class EventService {
         Event eventToEdit = eventRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
 
-        Organizer organizer = organizerRepository.findById(dto.organizerId())
-                .orElseThrow(() -> new RuntimeException("Organizer not found"));
+        Organizer organizer;
 
-        EventCategory category = EventCategory.valueOf(dto.category());
+        if (dto.newOrganizer != null) {
+            organizer = new Organizer(
+                    null,
+                    dto.newOrganizer.name,
+                    dto.newOrganizer.email,
+                    dto.newOrganizer.phone
+            );
+        } else {
+            organizer = organizerRepository.findById(dto.organizerId)
+                    .orElseThrow(() -> new RuntimeException("Organizer not found"));
+        }
+
+
+        EventCategory category = EventCategory.valueOf(dto.category);
 
         EventLocation location = new EventLocation(
-                dto.location().street(),
-                dto.location().houseNumber(),
-                dto.location().city(),
-                dto.location().postalCode(),
-                dto.location().state(),
-                dto.location().country()
+                dto.location.street(),
+                dto.location.houseNumber(),
+                dto.location.city(),
+                dto.location.postalCode(),
+                dto.location.state(),
+                dto.location.country()
         );
 
         // --- Appointments ---
-        List<EventAppointment> appointments = dto.appointments().stream()
+        List<EventAppointment> appointments = dto.appointments.stream()
                 .map(a -> new EventAppointment(
-                        a.id(),        // keep existing ID if present!
-                        a.startDate(),
-                        a.endDate(),
-                        a.seasonal()
+                        a.id,        // keep existing ID if present!
+                        a.startDate,
+                        a.endDate,
+                        a.seasonal
                 ))
                 .toList();
 
         // --- Requirements ---
-        List<Requirement> requirements = dto.requirements().stream()
-                .map(r -> new Requirement(r.id(), r.description()))
+        List<Requirement> requirements = dto.requirements.stream()
+                .map(r -> new Requirement(r.id, r.description))
                 .toList();
 
         // --- Equipment ---
-        List<EventEquipment> equipment = dto.equipment().stream()
-                .map(e -> new EventEquipment(e.id(), e.name(), e.rentable()))
+        List<EventEquipment> equipment = dto.equipment.stream()
+                .map(e -> new EventEquipment(e.id, e.name, e.rentable))
                 .toList();
 
         // --- Packages ---
-        List<AdditionalPackage> packages = dto.additionalPackages().stream()
-                .map(p -> new AdditionalPackage(p.id(), p.title(), p.description(), p.price()))
+        List<AdditionalPackage> packages = dto.additionalPackages.stream()
+                .map(p -> new AdditionalPackage(p.id, p.title, p.description, p.price))
                 .toList();
 
 
@@ -207,16 +252,17 @@ public class EventService {
 
         // --- Apply changes ---
         eventToEdit.edit(
-                dto.name(),
-                dto.description(),
+                dto.name,
+                dto.description,
                 location,
-                dto.startDate(),
-                dto.endDate(),
+                dto.startDate,
+                dto.endDate,
                 appointments,
-                dto.price(),
+                BigDecimal.valueOf(dto.price),
+                dto.depositPercent,
                 eventToEdit.getStatus(),   // status stays unchanged here
-                dto.minParticipants(),
-                dto.maxParticipants(),
+                dto.minParticipants,
+                dto.maxParticipants,
                 requirements,
                 equipment,
                 category,

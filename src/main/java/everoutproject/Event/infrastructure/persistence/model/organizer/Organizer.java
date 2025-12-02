@@ -1,4 +1,4 @@
-package everoutproject.Event.infrastructure.persistence.model.event;
+package everoutproject.Event.infrastructure.persistence.model.organizer;
 
 import jakarta.persistence.*;
 

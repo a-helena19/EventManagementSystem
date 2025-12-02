@@ -1,12 +1,16 @@
 package everoutproject.Event.infrastructure.persistence.model.event;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import everoutproject.Event.infrastructure.persistence.model.organizer.Organizer;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "Event")
@@ -48,6 +52,11 @@ public class Event {
     // using up to 10 digits total, inclusive 2 digits after comma (e.g. 99999999.99)
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
+
+    @Column(nullable = false)
+    @Min(0)
+    @Max(100)
+    private Integer depositPercent;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -109,6 +118,7 @@ public class Event {
                  LocalDate startDate,
                  LocalDate endDate,
                  BigDecimal price,
+                 Integer depositPercent,
                  EventStatus status,
                  EventCategory category) {
         this.name = name;
@@ -122,6 +132,7 @@ public class Event {
         this.startDate = startDate;
         this.endDate = endDate;
         this.price = price;
+        this.depositPercent = Objects.requireNonNullElse(depositPercent, 30);
         this.status = status;
         this.category = category;
     }
@@ -197,6 +208,9 @@ public class Event {
     public void setPrice(BigDecimal price) {
         this.price = price;
     }
+
+    public Integer getDepositPercent() { return depositPercent; }
+    public void setDepositPercent(Integer depositPercent) { this.depositPercent = depositPercent; }
 
     public EventStatus getStatus() {
         return status;
@@ -289,50 +303,13 @@ public class Event {
     @Override
     public String toString() {
 
-        StringBuilder str = new StringBuilder("Event");
-        str.append(" [id=").append(id);
-        str.append(", name=").append(name);
-        str.append(", description=").append(description);
-        str.append(", location=" + street + " " + houseNumber + ", " + postalCode + " " + city + ", " + state + ", " + country);
-        str.append(", start-date=").append(startDate);
-        str.append(", end-date=").append(endDate);
-
-        str.append(", appointments=");
-        for (EventAppointment a: appointments) {
-            str.append("[").append(a.toString()).append("], ");
-        }
-        str.append("price=").append(price);
-        str.append(", status=").append(status);
-        str.append(", cancellationReason=").append(cancellationReason);
-        str.append(", min-participants=").append(minParticipants);
-        str.append(", max-participants=").append(maxParticipants);
-
-        str.append(", requirements=");
-        for (Requirement e: requirements) {
-            str.append("[").append(e.toString()).append("], ");
-        }
-
-        str.append("equipments=");
-        for (EventEquipment e: equipments) {
-            str.append("[").append(e.toString()).append("], ");
-        }
-
-        str.append("additional-packages=");
-        for (AdditionalPackage p: additionalPackages) {
-            str.append("[").append(p.toString()).append("], ");
-        }
-
-        str.append("category=").append(category.toString());
-
-        str.append("feedback=");
-        for (EventFeedback f: feedback) {
-            str.append("[").append(f.toString()).append("], ");
-        }
-
-        str.append("organizer=").append(organizer.toString());
-        str.append(", duration-in-days").append(durationInDays);
-
-        return str.toString();
+        return "Event [id=" + id +
+                ", name=" + name +
+                ", depositPercent=" + depositPercent +
+                ", price=" + price +
+                ", start=" + startDate +
+                ", end=" + endDate +
+                "]";
 
     }
 }

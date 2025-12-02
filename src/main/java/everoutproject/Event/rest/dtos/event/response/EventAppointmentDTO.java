@@ -1,4 +1,4 @@
-package everoutproject.Event.rest.dtos.event;
+package everoutproject.Event.rest.dtos.event.response;
 
 import java.time.LocalDate;
 
