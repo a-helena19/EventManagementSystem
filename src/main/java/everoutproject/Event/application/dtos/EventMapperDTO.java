@@ -32,6 +32,7 @@ public class EventMapperDTO {
                 event.getAdditionalPackages().stream().map(EventMapperDTO::toAdditionalPackageDTO).toList(),
 
                 event.getCategory().name(),
+                event.getOrganizer().getId(),
                 toOrganizerDTO(event.getOrganizer()),
                 event.getDurationInDays(),
 

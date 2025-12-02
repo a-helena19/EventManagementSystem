@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -180,12 +181,13 @@ public class EventService {
         Organizer organizer;
 
         if (dto.newOrganizer != null) {
-            organizer = new Organizer(
+            Organizer newOrg = new Organizer(
                     null,
                     dto.newOrganizer.name,
                     dto.newOrganizer.email,
                     dto.newOrganizer.phone
             );
+            organizer = organizerRepository.save(newOrg);
         } else {
             organizer = organizerRepository.findById(dto.organizerId)
                     .orElseThrow(() -> new RuntimeException("Organizer not found"));
@@ -229,24 +231,22 @@ public class EventService {
                 .toList();
 
 
-        // Remove images that were marked for deletion
+
+        List<EventImage> finalImages = new ArrayList<>(eventToEdit.getImages());
+
         if (idsToDelete != null && !idsToDelete.isEmpty()) {
-            List<EventImage> toRemove = eventToEdit.getImages().stream()
+
+            List<EventImage> toDelete = finalImages.stream()
                     .filter(img -> img.getId() != null && idsToDelete.contains(img.getId()))
                     .toList();
 
-            toRemove.forEach(eventToEdit::removeImage);
+            finalImages.removeAll(toDelete);
         }
 
         if (images != null) {
             for (MultipartFile file : images) {
                 if (file != null && !file.isEmpty()) {
-                    try {
-                        eventToEdit.addImage(new EventImage(null, file.getBytes()));
-                    } catch (Exception e) {
-                        throw new RuntimeException("Failed to process image", e);
-                    }
-
+                    finalImages.add(new EventImage(null, file.getBytes()));
                 }
             }
         }
@@ -269,8 +269,8 @@ public class EventService {
                 category,
                 packages,
                 organizer,
-                eventToEdit.getDurationInDays(),
-                eventToEdit.getImages()    // merged list
+                null,
+                finalImages    // final merged image list
         );
 
         eventToEdit.calculateDuration();

@@ -29,6 +29,7 @@ public record EventDTO(
         List<AdditionalPackageDTO> additionalPackages,
 
         String category,
+        Long organizerId,
         OrganizerDTO organizer,
         Integer durationInDays,
 

@@ -202,7 +202,10 @@ public class Event {
         this.category = category;
         this.organizer = organizer;
         this.durationInDays = durationInDays;
-        if (images != null) this.images.addAll(images);
+        if (images != null) {
+            this.images.clear();
+            this.images.addAll(images);
+        }
     }
 
     public void addAppointment(EventAppointment ap) {
