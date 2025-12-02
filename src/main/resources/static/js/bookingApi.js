@@ -1,7 +1,32 @@
 // Load bookings from backend
 async function loadBookings() {
     try {
-        const res = await fetch("/api/bookings");
+        const userInfoRaw = localStorage.getItem("userInfo");
+        const user = userInfoRaw ? JSON.parse(userInfoRaw) : null;
+
+        // Staff roles (ADMIN, BACKOFFICE, FRONTOFFICE) see all bookings
+        // Regular USER only sees their own bookings (filtered by email)
+        const staffRoles = ["ADMIN", "BACKOFFICE", "FRONTOFFICE"];
+        const isStaff = user && staffRoles.includes(user.role);
+
+        let url;
+        if (!user) {
+            // Not logged in - redirect to login or show error
+            showToast("error", "Please log in to view bookings");
+            return;
+        } else if (isStaff) {
+            // Staff sees all bookings
+            url = "/api/bookings";
+        } else {
+            // Regular user only sees their own bookings, matched by account rather than the email used during booking
+            if (user.id) {
+                url = `/api/bookings?userId=${encodeURIComponent(user.id)}`;
+            } else {
+                url = `/api/bookings?email=${encodeURIComponent(user.email)}`;
+            }
+        }
+
+        const res = await fetch(url);
         if (!res.ok) throw new Error("Failed to load bookings");
         const bookings = await res.json();
         await renderBookings(bookings);
