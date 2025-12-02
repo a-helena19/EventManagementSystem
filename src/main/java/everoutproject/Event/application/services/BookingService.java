@@ -27,7 +27,7 @@ public class BookingService {
     }
 
 
-    public BookingDTO createBooking(String firstname, String lastname, LocalDate birthDate, BookingAddress address, String phoneNumber, String email, Long eventId) {
+    public BookingDTO createBooking(String firstname, String lastname, LocalDate birthDate, BookingAddress address, String phoneNumber, String email, Long eventId, Long userId) {
 
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
@@ -40,7 +40,7 @@ public class BookingService {
             throw new RuntimeException("Event is fully booked");
         }
 
-        Booking newBooking = new Booking(firstname, lastname, birthDate, LocalDate.now(), address, phoneNumber, email, BookingStatus.ACTIVE, eventId);
+        Booking newBooking = new Booking(firstname, lastname, birthDate, LocalDate.now(), address, phoneNumber, email, BookingStatus.ACTIVE, eventId, userId);
 
         // Persist event
         bookingRepository.addNewBooking(newBooking);
