@@ -112,8 +112,6 @@ public class UserRestController {
     }
 
 
-
-
     // NEW ENDPOINT: Get current user profile
     @GetMapping("/profile")
     public ResponseEntity<?> getCurrentUserProfile() {
