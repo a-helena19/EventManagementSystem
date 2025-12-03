@@ -1,10 +1,22 @@
 #createEventModal{
-    margin-top: 75px;
-    max-height: 90%;
+    padding: 2rem 1rem;
 }
 
 .modal-dialog{
     max-width: 90% !important;
+}
+
+#createEventModal .modal-dialog{
+    margin: 0 auto;
+    min-height: calc(100vh - 4rem);
+    display: flex;
+    align-items: center;
+}
+
+#createEventModal .modal-content{
+    width: 100%;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
 }
 
 #event-form {
@@ -259,4 +271,31 @@
 
 .readonly .remove-item {
     display: none !important;
+}
+
+/* =========================================
+   FIXES FOR HOMEPAGE & DATE INPUTS
+   ========================================= */
+
+.modal-backdrop {
+    z-index: 10000 !important;
+}
+
+.modal {
+    z-index: 10001 !important;
+}
+
+
+.was-validated input[type="date"].form-control:invalid,
+input[type="date"].form-control.is-invalid {
+    background-position: right calc(0.375em + 0.1875rem) center !important;
+
+    padding-right: 3.5rem !important;
+}
+
+.was-validated input[type="date"].form-control:invalid::-webkit-calendar-picker-indicator,
+input[type="date"].form-control.is-invalid::-webkit-calendar-picker-indicator {
+    margin-right: 1.6rem !important;
+    position: relative;
+    z-index: 5;
 }

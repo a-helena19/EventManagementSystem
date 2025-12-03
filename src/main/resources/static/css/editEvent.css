@@ -3,13 +3,16 @@
    =========================== */
 
 #editEventModal {
-    margin-top: 75px;
-    max-height: 90%;
+    padding: 2rem 1rem;
 }
 
 /* Make edit modal full width like create modal */
 #editEventModal .modal-dialog {
     max-width: 90% !important;
+    margin: 0 auto;
+    min-height: calc(100vh - 4rem);
+    display: flex;
+    align-items: center;
 }
 
 /* Ensure no global eventList.css overrides */
@@ -17,8 +20,9 @@
     border-radius: 12px;
     background-color: #ffffff;
     padding: 10px 0;
-    margin-top: 37rem;
-    max-height: 90%;
+    width: 100%;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
 }
 
 /* ===========================
