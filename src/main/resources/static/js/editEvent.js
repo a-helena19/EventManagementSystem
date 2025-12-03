@@ -377,9 +377,13 @@ function edit_checkValidation(next) {
     else form.classList.add("was-validated");
 }
 
+function isVisible(el) {
+    return !!(el && (el.offsetParent !== null)); //style.display = "none" could be blocked by css
+}
+
 // ===========================
 // ADD / REMOVE ITEMS (Requirement/Equipment/Package/Appointment)
-// identical logic as create-event.js
+// identical logic as homepage.js
 // ===========================
 function edit_showRequirementInputs() {
     document.getElementById("edit_requirementInputs").style.display = "flex";
@@ -393,8 +397,17 @@ function edit_cancelRequirement() {
 }
 
 function edit_saveRequirement() {
-    const val = document.getElementById("edit_requirementInput").value.trim();
-    if (!val) return;
+    const input = document.getElementById("requirementInput");
+    const val = input.value.trim();
+
+    if (!isVisible(document.getElementById("requirementInputs"))) return;
+
+    if (!val) {
+        input.classList.add("is-invalid");
+        return;
+    }
+
+    input.classList.remove("is-invalid")
 
     const id = Date.now();
     edit_requirements.push({ id, description: val });
