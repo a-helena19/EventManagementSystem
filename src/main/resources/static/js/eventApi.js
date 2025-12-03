@@ -481,7 +481,7 @@ function renderEvents(events) {
     const container = document.getElementById("eventsContainer");
     const template = document.getElementById("eventCardTemplate");
     const role = typeof getCurrentUserRole === "function" ? getCurrentUserRole() : "GUEST";
-    const canBook = ["ADMIN", "BACKOFFICE", "FRONTOFFICE", "USER"].includes(role);
+    const canBook = ["ADMIN", "BACKOFFICE", "FRONTOFFICE", "USER", "GUEST"].includes(role);
 
 
     container.innerHTML = "";
@@ -549,7 +549,7 @@ function openDetailsModal(ev) {
     const modalEl = modalContent.querySelector(".modal");
     const role = typeof getCurrentUserRole === "function" ? getCurrentUserRole() : "GUEST";
     const canManageEvents = role === "ADMIN" || role === "BACKOFFICE";
-    const canBook = ["ADMIN", "BACKOFFICE", "FRONTOFFICE", "USER"].includes(role);
+    const canBook = ["ADMIN", "BACKOFFICE", "FRONTOFFICE", "USER", "GUEST"].includes(role);
 
     modalEl.querySelector(".modal-title").textContent = ev.name;
     modalEl.querySelector(".d-name").textContent = ev.name;

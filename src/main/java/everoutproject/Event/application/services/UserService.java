@@ -26,9 +26,7 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    /**
-     * Create user in database and return it as DTO
-     */
+
     public UserDTO createUser(String email, String password, String firstName, String lastName){
         Optional<User> existingUser = userRepository.findByEmail(email);
         if (existingUser.isPresent()) {

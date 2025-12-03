@@ -31,9 +31,8 @@ public class EventRestController {
         this.eventService = eventService;
     }
 
-    // Create a new event
     @PostMapping("/create")
-    public ResponseEntity<?> createEvent(
+    public ResponseEntity<Map<String, Object>> createEvent(
             @RequestParam String name,
             @RequestParam(required = false) String description,
             @RequestParam String street,
@@ -45,21 +44,18 @@ public class EventRestController {
             @RequestParam LocalDate date,
             @RequestParam BigDecimal price,
             @RequestParam List<MultipartFile> images
-    ) {
-        try {
-            EventLocation location = new EventLocation(street, houseNumber, city, postalCode, state, country);
-            EventDTO eventDTO = eventService.createEvent(name, description, location, date, price, images);
+    ) throws Exception {
 
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(Map.of(
-                            "message", "Event created successfully",
-                            "id", eventDTO.id(),
-                            "name", eventDTO.name()
-                    ));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Failed to create event: " + e.getMessage()));
-        }
+        EventLocation location = new EventLocation(street, houseNumber, city, postalCode, state, country);
+        EventDTO eventDTO = eventService.createEvent(name, description, location, date, price, images);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(Map.of(
+                        "message", "Event created successfully",
+                        "id", eventDTO.id(),
+                        "name", eventDTO.name()
+                ));
     }
 
     // Return all events as DTOs
@@ -68,70 +64,66 @@ public class EventRestController {
         return ResponseEntity.ok(eventService.getAllEventsDTO());
     }
 
-    // Return image bytes for a specific image ID
+
     @GetMapping("/image/{id}")
-    public ResponseEntity<byte[]> getEventImage(@PathVariable Long id) {
-        try {
-            byte[] imageData = eventService.getEventImage(id);
-            String contentType = URLConnection.guessContentTypeFromStream(new ByteArrayInputStream(imageData));
-            if (contentType == null) contentType = MediaType.IMAGE_JPEG_VALUE;
+    public ResponseEntity<byte[]> getEventImage(@PathVariable Long id) throws Exception {
+        byte[] imageData = eventService.getEventImage(id);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.parseMediaType(contentType));
-
-            return new ResponseEntity<>(imageData, headers, HttpStatus.OK);
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
+        String contentType = URLConnection.guessContentTypeFromStream(new ByteArrayInputStream(imageData));
+        if (contentType == null) {
+            contentType = MediaType.IMAGE_JPEG_VALUE;
         }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(contentType));
+
+        return new ResponseEntity<>(imageData, headers, HttpStatus.OK);
     }
+
 
     // Cancel an event
     @PutMapping("/cancel/{id}")
-    public ResponseEntity<?> cancelEvent(@PathVariable Long id, @RequestBody CancelRequestDTO request) {
-        try {
-            eventService.cancelEvent(id, request.getReason());
-            return ResponseEntity.ok(Map.of("message", "Event cancelled successfully"));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Failed to cancel event: " + e.getMessage()));
-        }
+    public ResponseEntity<Map<String, String>> cancelEvent(
+            @PathVariable Long id,
+            @RequestBody CancelRequestDTO request
+    ) {
+        eventService.cancelEvent(id, request.getReason());
+        return ResponseEntity.ok(Map.of("message", "Event cancelled successfully"));
     }
 
     // Edit an event
     @PutMapping("/edit/{id}/status/{status}")
-    public ResponseEntity<?> editEvent(@PathVariable Long id,
-                                       @PathVariable String status,
-                                       @RequestParam String name,
-                                       @RequestParam(required = false) String description,
-                                       @RequestParam String street,
-                                       @RequestParam String houseNumber,
-                                       @RequestParam String city,
-                                       @RequestParam String postalCode,
-                                       @RequestParam String state,
-                                       @RequestParam String country,
-                                       @RequestParam LocalDate date,
-                                       @RequestParam BigDecimal price,
-                                       @RequestPart(required = false) List<MultipartFile> images,
-                                       @RequestParam(required = false) String deleteImageIds) {
-        try {
-            EventLocation location = new EventLocation(street, houseNumber, city, postalCode, state, country);
-            EventStatus eventStatus = EventStatus.valueOf(status);
+    public ResponseEntity<Map<String, Object>> editEvent(
+            @PathVariable Long id,
+            @PathVariable String status,
+            @RequestParam String name,
+            @RequestParam(required = false) String description,
+            @RequestParam String street,
+            @RequestParam String houseNumber,
+            @RequestParam String city,
+            @RequestParam String postalCode,
+            @RequestParam String state,
+            @RequestParam String country,
+            @RequestParam LocalDate date,
+            @RequestParam BigDecimal price,
+            @RequestPart(required = false) List<MultipartFile> images,
+            @RequestParam(required = false) String deleteImageIds
+    ) throws Exception {
 
+        EventLocation location = new EventLocation(street, houseNumber, city, postalCode, state, country);
+        EventStatus eventStatus = EventStatus.valueOf(status);
 
-            // Optional: parse IDs to delete
-            List<Long> idsToDelete = null;
-            if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
-                idsToDelete = new ObjectMapper().readValue(deleteImageIds, new TypeReference<List<Long>>() {});
-            }
-
-            eventService.editEvent(id, name, description, location, date, price, eventStatus, images, idsToDelete);
-            return ResponseEntity.ok(Map.of(
-                    "message", "Event was edited successfully",
-                    "id", id,
-                    "name", name));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Failed to edit event: " + e.getMessage()));
+        List<Long> idsToDelete = null;
+        if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
+            idsToDelete = new ObjectMapper().readValue(deleteImageIds, new TypeReference<List<Long>>() {});
         }
+
+        eventService.editEvent(id, name, description, location, date, price, eventStatus, images, idsToDelete);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Event was edited successfully",
+                "id", id,
+                "name", name
+        ));
     }
 }

@@ -1,10 +1,12 @@
 package everoutproject.Event.rest;
 
+import everoutproject.Event.application.security.RoleChecker;
 import everoutproject.Event.application.services.BookingService;
 import everoutproject.Event.domain.model.booking.BookingAddress;
 import everoutproject.Event.rest.dtos.booking.BookingDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -17,26 +19,29 @@ import java.util.Map;
 public class BookingRestController {
 
     private final BookingService bookingService;
+    private final RoleChecker roleChecker;
 
-    public BookingRestController(BookingService bookingService) {
+    public BookingRestController(BookingService bookingService, RoleChecker roleChecker) {
         this.bookingService = bookingService;
+        this.roleChecker = roleChecker;
     }
 
     @GetMapping
     public ResponseEntity<List<BookingDTO>> getAllBookings(
             @RequestParam(required = false) String email,
             @RequestParam(required = false) Long userId) {
-        if (userId != null) {
-            return ResponseEntity.ok(bookingService.getBookingsByUserId(userId));
-        }
-        if (email != null && !email.isBlank()) {
-            return ResponseEntity.ok(bookingService.getBookingsByEmail(email));
-        }
-        return ResponseEntity.ok(bookingService.getAllBookingsDTO());
+        List<BookingDTO> bookings = bookingService.getFilteredBookings(email, userId);
+        return ResponseEntity.ok(bookings);
     }
 
+    @GetMapping("/my")
+    public ResponseEntity<List<BookingDTO>> getMyBookings() {
+        return ResponseEntity.ok(bookingService.getAccessibleBookings());
+    }
+
+
     @PostMapping("/create")
-    public ResponseEntity<?> createBooking(
+    public ResponseEntity<Map<String, Object>> createBooking(
             @RequestParam String firstname,
             @RequestParam String lastname,
             @RequestParam LocalDate birthdate,
@@ -47,22 +52,28 @@ public class BookingRestController {
             @RequestParam String phone,
             @RequestParam String email,
             @RequestParam Long eventId,
-            @RequestParam(required = false) Long userId
+            Authentication authentication
     ) {
-        try {
-            BookingAddress address = new BookingAddress(street, houseNumber, city, postalCode);
-            BookingDTO bookingDTO = bookingService.createBooking(firstname, lastname, birthdate, address, phone, email, userId, eventId);
 
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(Map.of(
-                            "message", "Booking created successfully",
-                            "id", bookingDTO.id(),
-                            "name", bookingDTO.firstname() + " " + bookingDTO.lastname()
-                    ));
-        } catch (Exception e) {
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Failed to create booking: " + (e.getMessage() != null ? e.getMessage() : e.toString()));
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
+        Long userId = roleChecker.getUserId(authentication);
+
+        BookingAddress address = new BookingAddress(street, houseNumber, city, postalCode);
+        BookingDTO bookingDTO = bookingService.createBooking(
+                firstname, lastname, birthdate, address, phone, email, userId, eventId
+        );
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(Map.of(
+                        "message", "Booking created successfully",
+                        "id", bookingDTO.id(),
+                        "name", bookingDTO.firstname() + " " + bookingDTO.lastname()
+                ));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, String>> cancelBooking(@PathVariable Long id) {
+        bookingService.cancelBooking(id);
+        return ResponseEntity.ok(Map.of("message", "Booking cancelled successfully"));
     }
 }

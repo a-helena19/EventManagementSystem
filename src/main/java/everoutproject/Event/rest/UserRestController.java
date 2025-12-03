@@ -1,6 +1,8 @@
 package everoutproject.Event.rest;
 
+import everoutproject.Event.application.security.CustomUserDetails;
 import everoutproject.Event.application.services.UserService;
+import everoutproject.Event.domain.model.user.Role;
 import everoutproject.Event.rest.dtos.user.UserDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,7 +11,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,9 +27,11 @@ import java.util.Map;
 public class UserRestController {
 
     private final UserService userService;
+    private final AuthenticationManager authenticationManager;
 
-    public UserRestController(UserService userService) {
+    public UserRestController(UserService userService, AuthenticationManager authenticationManager) {
         this.userService = userService;
+        this.authenticationManager = authenticationManager;
     }
 
     @PostMapping("/create")
@@ -56,16 +67,28 @@ public class UserRestController {
     @PostMapping("/login")
     public ResponseEntity<?> login(
             @RequestParam String email,
-            @RequestParam String password
+            @RequestParam String password,
+            HttpServletRequest request
     ) {
         try {
-            UserDTO userDTO = userService.loginUser(email, password);
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(email, password));
+
+            SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+            securityContext.setAuthentication(authentication);
+            SecurityContextHolder.setContext(securityContext);
+
+            HttpSession session = request.getSession(true);
+            session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
+
+            CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+            Role role = principal.getRoleDefinition();
 
             return ResponseEntity.ok(Map.of(
                     "message", "Login successful",
-                    "id", userDTO.id(),
-                    "name", userDTO.firstName() + " " + userDTO.lastName(),
-                    "role", userDTO.role()
+                    "id", principal.getId(),
+                    "name", principal.getFullName().isBlank() ? principal.getUsername() : principal.getFullName(),
+                    "role", role.getRoleName()
             ));
 
         } catch (Exception e) {

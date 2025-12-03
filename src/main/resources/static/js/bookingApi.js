@@ -3,7 +3,6 @@ async function loadBookings() {
     try {
         const userInfoRaw = localStorage.getItem("userInfo");
         const user = userInfoRaw ? JSON.parse(userInfoRaw) : null;
-
         // Staff roles (ADMIN, BACKOFFICE, FRONTOFFICE) see all bookings
         // Regular USER only sees their own bookings (filtered by email)
         const staffRoles = ["ADMIN", "BACKOFFICE", "FRONTOFFICE"];
@@ -27,6 +26,14 @@ async function loadBookings() {
         }
 
         const res = await fetch(url);
+        if (res.status === 401 || res.status === 403) {
+            console.warn("Session expired or invalid. Logging out.");
+            localStorage.removeItem("userInfo");
+            alert("Your session has expired. Please log in again.");
+            window.location.href = "/homepage";
+            return;
+        }
+
         if (!res.ok) throw new Error("Failed to load bookings");
         const bookings = await res.json();
         await renderBookings(bookings);
