@@ -78,6 +78,42 @@ public class UserRestController {
         }
     }
 
+
+    @GetMapping
+    public ResponseEntity<?> getAllUsers() {
+        try {
+            return ResponseEntity.ok(userService.getAllUserDTO());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{id}/role")
+    public ResponseEntity<?> updateUserRole(
+            @PathVariable Long id,
+            @RequestParam String role
+    ) {
+        try {
+            String normalizedRole = role.toUpperCase();
+            userService.updateUserRole(id, normalizedRole);
+            return ResponseEntity.ok(Map.of(
+                    "message", "User role updated successfully",
+                    "id", id,
+                    "role", normalizedRole
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", "Invalid role provided"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
+
+
+
+
     // NEW ENDPOINT: Get current user profile
     @GetMapping("/profile")
     public ResponseEntity<?> getCurrentUserProfile() {
