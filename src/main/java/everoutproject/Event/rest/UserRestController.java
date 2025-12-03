@@ -1,5 +1,4 @@
 package everoutproject.Event.rest;
-
 import everoutproject.Event.application.services.UserService;
 import everoutproject.Event.application.dtos.UserMapperDTO;
 import everoutproject.Event.domain.model.user.User;
@@ -13,6 +12,8 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
+
+
 public class UserRestController {
 
     private final UserService userService;
@@ -53,15 +54,12 @@ public class UserRestController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(
-            @RequestParam String email,
-            @RequestParam String password
-    ) {
+    public ResponseEntity<?> login(@RequestParam String email, @RequestParam String password) {
         try {
             UserDTO userDTO = userService.loginUser(email, password);
 
             // IMPORTANT: Set the current user in the service
-            userService.setCurrentUser(email);
+           //* userService.setCurrentUser(email);
 
             return ResponseEntity.ok(Map.of(
                     "message", "Login successful",
@@ -77,6 +75,36 @@ public class UserRestController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
     }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout() {
+        try {
+            userService.logoutUser();
+            return ResponseEntity.ok(Map.of(
+                    "message", "Logout successful"
+            ));
+        } catch (Exception e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Logout failed: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    @GetMapping("/check-login")
+    public ResponseEntity<?> checkLogin() {
+        try {
+            boolean isLoggedIn = userService.isLoggedIn();
+            return ResponseEntity.ok(Map.of(
+                    "isLoggedIn", isLoggedIn
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of(
+                    "isLoggedIn", false
+            ));
+        }
+    }
+
+
 
     // NEW ENDPOINT: Get current user profile
     @GetMapping("/profile")
