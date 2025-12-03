@@ -274,17 +274,18 @@
     </div>
 </template>
 
-<template id="editModalTemplate">
-    <div id="editEventModal" class="modal fade" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <form class="edit-form">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Edit Event</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="row">
+<!--Edit event 1:1 to create event-->
+<div class="modal fade" id="editEventModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Event</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="event-form" enctype="multipart/form-data" novalidate>
+
+                    <div class="row">
                             <!-- LEFT SIDE – Main Event Data (2/3) -->
                             <div class="col-lg-8 col-md-7 col-12" id="edit_leftColumn">
 
@@ -420,7 +421,7 @@
                                 <h5 class="mt-4">Appointments</h5>
                                 <div id="edit_appointmentsContainer"></div>
                                 <!-- appointment input row ... -->
-                                <button type="button" class="btn btn-outline-primary add-appointment-btn mb-2" onclick="editShowAppointmentInputs()">
+                                <button type="button" class="btn btn-outline-primary add-appointment-btn mb-2" onclick="edit_showAppointmentInputs()">
                                     + Add Appointment
                                 </button>
 
@@ -439,10 +440,10 @@
                                     </div>
                                     <div id="edit_appoitmentBtns" class="row">
                                         <div class="col-auto">
-                                            <button type="button" class="icon-btn save" onclick="editSaveAppointment()">✓</button>
+                                            <button type="button" class="icon-btn save" onclick="edit_caveAppointment()">✓</button>
                                         </div>
                                         <div class="col-auto">
-                                            <button type="button" class="icon-btn cancel" onclick="editCancelAppointment()">✕</button>
+                                            <button type="button" class="icon-btn cancel" onclick="edit_cancelAppointment()">✕</button>
                                         </div>
                                     </div>
                                 </div>
@@ -452,7 +453,7 @@
                                 <h5 class="mt-4">Additional Packages</h5>
                                 <div id="edit_packagesContainer"></div>
                                 <!-- package input row ... -->
-                                <button type="button" class="btn btn-outline-primary add-package-btn mb-2" onclick="editShowPackageInputs()">
+                                <button type="button" class="btn btn-outline-primary add-package-btn mb-2" onclick="edit_showPackageInputs()">
                                     + Add Package
                                 </button>
 
@@ -468,10 +469,10 @@
                                     </div>
                                     <div id="edit_packageBtns" class="row">
                                         <div class="col-auto">
-                                            <button type="button" class="icon-btn save" onclick="editSavePackage()">✓</button>
+                                            <button type="button" class="icon-btn save" onclick="edit_savePackage()">✓</button>
                                         </div>
                                         <div class="col-auto">
-                                            <button type="button" class="icon-btn cancel" onclick="editCancelPackage()">✕</button>
+                                            <button type="button" class="icon-btn cancel" onclick="edit_cancelPackage()">✕</button>
                                         </div>
                                     </div>
                                 </div>
@@ -504,7 +505,7 @@
                                 <h5 class="mt-4">Requirements</h5>
                                 <div id="edit_requirementsContainer"></div>
 
-                                <button type="button" class="btn btn-outline-primary add-requirement-btn mb-2" onclick="editShowRequirementInputs()">
+                                <button type="button" class="btn btn-outline-primary add-requirement-btn mb-2" onclick="edit_showRequirementInputs()">
                                     + Add Requirement
                                 </button>
 
@@ -514,10 +515,10 @@
                                     </div>
                                     <div id="edit_requirementBtns" class="row">
                                         <div class="col-auto">
-                                            <button type="button" class="icon-btn save" onclick="editSaveRequirement()">✓</button>
+                                            <button type="button" class="icon-btn save" onclick="edit_saveRequirement()">✓</button>
                                         </div>
                                         <div class="col-auto">
-                                            <button type="button" class="icon-btn cancel" onclick="editCancelRequirement()">✕</button>
+                                            <button type="button" class="icon-btn cancel" onclick="edit_cancelRequirement()">✕</button>
                                         </div>
                                     </div>
 
@@ -527,7 +528,7 @@
                                 <h5 class="mt-4">Equipment</h5>
                                 <div id="edit_equipmentContainer"></div>
 
-                                <button type="button" class="btn btn-outline-primary add-equipment-btn mb-2" onclick="editShowEquipmentInputs()">
+                                <button type="button" class="btn btn-outline-primary add-equipment-btn mb-2" onclick="edit_showEquipmentInputs()">
                                     + Add Equipment
                                 </button>
 
@@ -544,10 +545,10 @@
                                     </div>
                                     <div id="edit_equipmentBtns" class="row">
                                         <div class="col-auto">
-                                            <button type="button" class="icon-btn save" onclick="editSaveEquipment()">✓</button>
+                                            <button type="button" class="icon-btn save" onclick="edit_saveEquipment()">✓</button>
                                         </div>
                                         <div class="col-auto">
-                                            <button type="button" class="icon-btn cancel" onclick="editCancelEquipment()">✕</button>
+                                            <button type="button" class="icon-btn cancel" onclick="edit_cancelEquipment()">✕</button>
                                         </div>
                                     </div>
 
@@ -589,23 +590,25 @@
                                     <div id="edit_existingImages" class="d-flex flex-wrap gap-2"></div>
                                 </div>
 
+                                <!-- Uploaded Filenames -->
+                                <div class="mb-3" id="edit_fileNames"></div>
+
                             </div>
                         </div>
 
 
-                        <!-- Uploaded Filenames -->
-                        <div class="mb-3" id="edit_fileNames"></div>
-                    </div>
+
+
                     <div class="modal-footer d-flex justify-content-between">
-                        <button type="button" id="edit_backBtn" class="btn btn-secondary" style="display: none;" onclick="editNextStep(false)">Back</button>
-                        <button type="button" id = "edit_nextBtn" class="btn btn-primary" onclick="editCheckValidation(true)">Next</button>
+                        <button type="button" id="edit_backBtn" class="btn btn-secondary" style="display: none;" onclick="edit_nextStep(false)">Back</button>
+                        <button type="button" id = "edit_nextBtn" class="btn btn-primary" onclick="edit_checkValidation(true)">Next</button>
                         <button type="submit" id="edit_submitBtn" class="btn btn-primary" style="display: none;">Update</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-</template>
+</div>
 
 <script src="/js/loginUserIcon.js"></script>
 <script src="/js/toast.js"></script>

@@ -1,3 +1,6 @@
+// GLOBAL variable to store current editing event
+let editCurrentEvent = null;
+
 // Load events from backend
 async function loadEvents() {
     try {
@@ -390,3 +393,19 @@ function openDetailsModal(ev) {
 document.addEventListener("DOMContentLoaded", () => {
     loadEvents();
 });
+
+function openEditModal(ev, detailsModalEl) {
+
+    // store globally so editEvent.js can read it
+    editCurrentEvent = ev;
+
+    // hide details modal FIRST (falls offen)
+    if (detailsModalEl) {
+        const instance = bootstrap.Modal.getInstance(detailsModalEl);
+        if (instance) instance.hide();
+    }
+
+    // open edit modal
+    const editModal = new bootstrap.Modal(document.getElementById("editEventModal"));
+    editModal.show();
+}

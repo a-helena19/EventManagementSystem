@@ -1,456 +1,611 @@
-(function () {
-    // small escape helper to avoid html injection in badges
-    function escapeHtml(s) {
-        if (s === null || s === undefined) return "";
-        return String(s).replace(/[&<>"']/g, function (m) {
-            return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m];
-        });
+// ===========================
+// STATE
+// ===========================
+let edit_requirements = [];
+let edit_equipment = [];
+let edit_packages = [];
+let edit_appointments = [];
+
+let edit_imagesToDelete = [];
+let edit_existingImageIds = [];
+
+let editModal = null;
+
+// ===========================
+// ON PAGE LOAD
+// ===========================
+document.addEventListener("DOMContentLoaded", () => {
+    editModal = document.getElementById("editEventModal");
+    const form = document.getElementById("event-form");
+
+    // When edit modal opens → load data
+    editModal.addEventListener("show.bs.modal", () => {
+        edit_resetForm();
+        edit_loadOrganizers();
+        edit_loadForm(editCurrentEvent);      // <── uses global from openEditModal
+        edit_toggleEndDate();
+    });
+
+    // Submit
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        await edit_submitEvent();
+    });
+
+    // Validation identical to create
+    document.getElementById("edit_minParticipants").addEventListener("input", edit_validateParticipants);
+    document.getElementById("edit_maxParticipants").addEventListener("input", edit_validateParticipants);
+
+    document.getElementById("edit_startDate").addEventListener("change", edit_validateDates);
+    document.getElementById("edit_endDate").addEventListener("change", edit_validateDates);
+
+    document.getElementById("edit_apptStart").addEventListener("change", edit_validateAppointmentDates);
+    document.getElementById("edit_apptEnd").addEventListener("change", edit_validateAppointmentDates);
+
+    document.getElementById("edit_singleDayCheckbox").addEventListener("change", edit_toggleEndDate);
+
+    document.getElementById("edit_organizerSelect").addEventListener("change", edit_handleOrganizerSelection);
+});
+
+// ===========================
+// END DATE TOGGLE
+// ===========================
+function edit_toggleEndDate() {
+    const wrapper = document.getElementById("edit_endDateWrapper");
+    const end = document.getElementById("edit_endDate");
+    const checked = document.getElementById("edit_singleDayCheckbox").checked;
+
+    if (checked) {
+        wrapper.style.display = "none";
+        end.value = "";
+        end.removeAttribute("required");
+    } else {
+        wrapper.style.display = "block";
+        end.setAttribute("required", "true");
+    }
+}
+
+// ===========================
+// RESET FORM
+// ===========================
+function edit_resetForm() {
+
+    [
+        "edit_name", "edit_description", "edit_startDate", "edit_endDate",
+        "edit_street", "edit_houseNumber", "edit_city", "edit_postalCode",
+        "edit_state", "edit_country", "edit_price", "edit_organizerSelect",
+        "edit_minParticipants", "edit_maxParticipants", "edit_category",
+        "edit_apptStart", "edit_apptEnd", "edit_packageTitleInput",
+        "edit_packageDescInput", "edit_packagePriceInput",
+        "edit_requirementInput", "edit_equipmentNameInput",
+        "edit_equipmentRentableInput", "edit_orgName", "edit_orgEmail",
+        "edit_orgPhone"
+    ].forEach(id => document.getElementById(id).value = "");
+
+    document.getElementById("edit_depositPercent").value = 30;
+
+    // Reset images
+    document.getElementById("edit_images").value = "";
+    document.getElementById("edit_fileNames").innerHTML = "";
+    document.getElementById("edit_existingImages").innerHTML = "";
+
+    // Reset arrays
+    edit_requirements = [];
+    edit_equipment = [];
+    edit_packages = [];
+    edit_appointments = [];
+    edit_imagesToDelete = [];
+    edit_existingImageIds = [];
+
+    // Reset containers
+    document.getElementById("edit_requirementsContainer").innerHTML = "";
+    document.getElementById("edit_equipmentContainer").innerHTML = "";
+    document.getElementById("edit_packagesContainer").innerHTML = "";
+    document.getElementById("edit_appointmentsContainer").innerHTML = "";
+
+    // Hide input rows
+    edit_cancelRequirement();
+    edit_cancelEquipment();
+    edit_cancelPackage();
+    edit_cancelAppointment();
+
+    // Multi-step reset
+    edit_nextStep(false);
+
+    document.getElementById("event-form").classList.remove("was-validated");
+}
+
+// ===========================
+// LOAD FORM WITH EVENT DATA
+// ===========================
+function edit_loadForm(ev) {
+
+    // simple fields
+    document.getElementById("edit_name").value = ev.name;
+    document.getElementById("edit_description").value = ev.description;
+    document.getElementById("edit_startDate").value = ev.startDate;
+    document.getElementById("edit_endDate").value = ev.endDate;
+
+    document.getElementById("edit_price").value = ev.price;
+    document.getElementById("edit_category").value = ev.category;
+    document.getElementById("edit_depositPercent").value = ev.depositPercent ?? 30;
+
+    // location
+    document.getElementById("edit_street").value = ev.location.street;
+    document.getElementById("edit_houseNumber").value = ev.location.houseNumber;
+    document.getElementById("edit_city").value = ev.location.city;
+    document.getElementById("edit_postalCode").value = ev.location.postalCode;
+    document.getElementById("edit_state").value = ev.location.state;
+    document.getElementById("edit_country").value = ev.location.country;
+
+    // participants
+    document.getElementById("edit_minParticipants").value = ev.minParticipants;
+    document.getElementById("edit_maxParticipants").value = ev.maxParticipants;
+
+    // copy arrays
+    edit_requirements = ev.requirements.map(r => ({ id: Number.isInteger(r.id) ? r.id : null, description: r.description }));
+    edit_equipment = ev.equipment.map(e => ({ id: Number.isInteger(e.id) ? e.id : null, name: e.name, rentable: e.rentable }));
+    edit_packages = ev.additionalPackages.map(p => ({
+        id: Number.isInteger(p.id) ? p.id : null, title: p.title, description: p.description, price: p.price
+    }));
+    edit_appointments = ev.appointments.map(a => ({
+        id: Number.isInteger(a.id) ? a.id : null, startDate: a.startDate, endDate: a.endDate, seasonal: a.seasonal
+    }));
+
+    edit_renderBadges();
+
+    // existing images
+    edit_existingImageIds = ev.imageIds ? [...ev.imageIds] : [];
+    edit_renderExistingImages();
+}
+
+// ===========================
+// RENDER EXISTING IMAGES
+// ===========================
+function edit_renderExistingImages() {
+
+    const container = document.getElementById("edit_existingImages");
+    container.innerHTML = "";
+
+    edit_existingImageIds.forEach(id => {
+        const wrap = document.createElement("div");
+        wrap.className = "position-relative";
+        wrap.style.width = "120px";
+        wrap.style.height = "120px";
+
+        const img = document.createElement("img");
+        img.src = `/api/events/image/${id}`;
+        img.className = "img-thumbnail";
+        img.style.width = "120px";
+        img.style.height = "120px";
+        img.style.objectFit = "cover";
+
+        const del = document.createElement("button");
+        del.className = "btn btn-danger btn-sm position-absolute top-0 end-0";
+        del.textContent = "X";
+        del.onclick = () => {
+            edit_imagesToDelete.push(id);
+            wrap.remove();
+            updateImageRequirement(document.getElementById("edit_images"), container);
+        };
+
+        wrap.appendChild(img);
+        wrap.appendChild(del);
+        container.appendChild(wrap);
+    });
+
+    updateImageRequirement(document.getElementById("edit_images"), container);
+}
+
+// ===========================
+// BADGES RENDER
+// ===========================
+function edit_renderBadges() {
+    const reqC = document.getElementById("edit_requirementsContainer");
+    reqC.innerHTML = "";
+    edit_requirements.forEach(r => reqC.insertAdjacentHTML("beforeend",
+        edit_badge(r.id, r.description, "edit_removeRequirement", "edit_req")
+    ));
+
+    const eqC = document.getElementById("edit_equipmentContainer");
+    eqC.innerHTML = "";
+    edit_equipment.forEach(e => eqC.insertAdjacentHTML("beforeend",
+        edit_badge(e.id, (e.rentable ? "Rentable: " : "Required: ") + e.name, "edit_removeEquipment", "edit_eq")
+    ));
+
+    const packC = document.getElementById("edit_packagesContainer");
+    packC.innerHTML = "";
+    edit_packages.forEach(p => packC.insertAdjacentHTML("beforeend",
+        edit_badge(p.id, `${p.title} (€${p.price})`, "edit_removePackage", "edit_pack")
+    ));
+
+    const apC = document.getElementById("edit_appointmentsContainer");
+    apC.innerHTML = "";
+    edit_appointments.forEach(a => apC.insertAdjacentHTML("beforeend",
+        edit_badge(a.id, `${a.startDate} → ${a.endDate} (${a.seasonal ? "Seasonal" : "Fixed"})`, "edit_removeAppointment", "edit_appt")
+    ));
+}
+
+function edit_badge(id, text, removeFn, prefix) {
+    return `
+        <span class="badge bg-primary me-1 mb-1" id="${prefix}-${id}">
+            ${text}
+            <button type="button" class="btn-close btn-close-white ms-2"
+                onclick="${removeFn}(${id})"></button>
+        </span>`;
+}
+
+// ===========================
+// ORGANIZER LOAD
+// ===========================
+async function edit_loadOrganizers() {
+    const select = document.getElementById("edit_organizerSelect");
+
+    select.innerHTML = `<option value="">Select Organizer</option>
+                        <option value="NEW">Add New Organizer</option>`;
+
+    const res = await fetch("/api/organizers");
+    const list = await res.json();
+
+    list.forEach(o => {
+        const opt = document.createElement("option");
+        opt.value = o.id;
+        opt.textContent = `${o.name} (${o.contactEmail})`;
+        select.appendChild(opt);
+    });
+
+    // set current organizer
+    if (editCurrentEvent.organizerId)
+        select.value = editCurrentEvent.organizerId;
+}
+
+// ===========================
+// HANDLE NEW ORGANIZER
+// ===========================
+function edit_handleOrganizerSelection() {
+    const val = document.getElementById("edit_organizerSelect").value;
+    document.getElementById("edit_newOrganizerFields").style.display =
+        val === "NEW" ? "block" : "none";
+}
+
+// ===========================
+// VALIDATION copied from create
+// ===========================
+function edit_validateParticipants() {
+    const min = +document.getElementById("edit_minParticipants").value;
+    const max = +document.getElementById("edit_maxParticipants").value;
+
+    if (!min || !max) return;
+
+    const maxField = document.getElementById("edit_maxParticipants");
+
+    if (max < min) maxField.setCustomValidity("Max < min");
+    else maxField.setCustomValidity("");
+}
+
+function edit_validateDates() {
+    const start = document.getElementById("edit_startDate").value;
+    const end = document.getElementById("edit_endDate").value;
+    const single = document.getElementById("edit_singleDayCheckbox").checked;
+
+    const endEl = document.getElementById("edit_endDate");
+
+    if (single || !end) {
+        endEl.setCustomValidity("");
+        return;
     }
 
-    // openEditModal(ev, detailsModalEl) - main entrypoint used by openDetailsModal
-    window.openEditModal = async function (ev, detailsModalEl = null) {
-        if (!ev) { showToast("error", "Event not provided"); return; }
+    if (end < start) endEl.setCustomValidity("End < start");
+    else endEl.setCustomValidity("");
+}
 
-        const editModalTemplate = document.getElementById("editModalTemplate");
-        const content = editModalTemplate.content.cloneNode(true);
-        const modalEl = content.querySelector(".modal");
-        const form = modalEl.querySelector(".edit-form");
+function edit_validateAppointmentDates() {
+    const s = document.getElementById("edit_apptStart").value;
+    const e = document.getElementById("edit_apptEnd").value;
+    const el = document.getElementById("edit_apptEnd");
 
-        // hide original details modal if provided
-        const detailsBsModal = detailsModalEl ? bootstrap.Modal.getInstance(detailsModalEl) : null;
-        if (detailsBsModal) detailsBsModal.hide();
+    if (!s || !e) {
+        el.setCustomValidity("");
+        return;
+    }
 
-        // scoped selector
-        const $ = sel => modalEl.querySelector(sel);
+    if (e < s) el.setCustomValidity("End < start");
+    else el.setCustomValidity("");
+}
 
-        // elements mapping (IDs from your template)
-        const nameEl = $("#edit_name");
-        const descriptionEl = $("#edit_description");
-        const singleDayEl = $("#edit_singleDayCheckbox");
-        const startDateEl = $("#edit_startDate");
-        const endDateEl = $("#edit_endDate");
-        const endDateWrapper = $("#edit_endDateWrapper");
-        const priceEl = $("#edit_price");
-        const categoryEl = $("#edit_category");
-        const depositEl = $("#edit_depositPercent");
+// ===========================
+// MULTI-STEP NEXT/BACK
+// identical to create-event.js but with edit IDs
+// ===========================
+function edit_nextStep(disable) {
 
-        const streetEl = $("#edit_street");
-        const houseNumberEl = $("#edit_houseNumber");
-        const cityEl = $("#edit_city");
-        const postalCodeEl = $("#edit_postalCode");
-        const stateEl = $("#edit_state");
-        const countryEl = $("#edit_country");
+    const form = document.getElementById("event-form");
 
-        const appointmentsContainer = $("#edit_appointmentsContainer");
-        const packagesContainer = $("#edit_packagesContainer");
-        const requirementsContainer = $("#edit_requirementsContainer");
-        const equipmentContainer = $("#edit_equipmentContainer");
+    const next = document.getElementById("edit_nextBtn");
+    const back = document.getElementById("edit_backBtn");
+    const submit = document.getElementById("edit_submitBtn");
 
-        const minParticipantsEl = $("#edit_minParticipants");
-        const maxParticipantsEl = $("#edit_maxParticipants");
+    const inputs = Array.from(form.querySelectorAll("input, textarea")).filter(i => i.type !== "file");
 
-        const existingImagesContainer = $("#edit_existingImages");
-        const imagesInput = $("#edit_images");
-        const fileNamesDiv = $("#edit_fileNames");
+    const selects = form.querySelectorAll("select, input[type='checkbox'], input[type='radio']");
+    const addButtons = form.querySelectorAll(".add-requirement-btn, .add-equipment-btn, .add-appointment-btn, .add-package-btn");
+    const removeButtons = form.querySelectorAll(".btn-close");
 
-        const organizerSelect = $("#edit_organizerSelect");
-        const newOrgBox = $("#edit_newOrganizerFields");
-        const orgNameEl = $("#edit_orgName");
-        const orgEmailEl = $("#edit_orgEmail");
-        const orgPhoneEl = $("#edit_orgPhone");
+    if (disable) {
+        // readonly mode
+        form.classList.add("readonly");
+        inputs.forEach(i => {
+            i.setAttribute("readonly", "");
+            i.style.background = "#e9ecef";
+        });
+        selects.forEach(s => s.style.pointerEvents = "none");
 
-        const nextBtn = $("#edit_nextBtn");
-        const backBtn = $("#edit_backBtn");
-        const submitBtn = $("#edit_submitBtn");
+        addButtons.forEach(b => b.style.display = "none");
+        removeButtons.forEach(b => b.style.display = "none");
 
-        // local mutable state
-        let editRequirements = [];
-        let editEquipment = [];
-        let editPackages = [];
-        let editAppointments = [];
-        let imagesToDelete = [];
-        let existingImageIds = [];
+        document.getElementById("edit_requirementInputs").style.display = "none";
+        document.getElementById("edit_equipmentInputs").style.display = "none";
+        document.getElementById("edit_packageInputs").style.display = "none";
+        document.getElementById("edit_appointmentInputs").style.display = "none";
 
-        const eventId = ev.id;
+        next.style.display = "none";
+        back.style.display = "inline-block";
+        submit.style.display = "inline-block";
+    } else {
+        // normal mode
+        form.classList.remove("readonly");
+        inputs.forEach(i => {
+            i.removeAttribute("readonly");
+            i.style.background = "";
+        });
+        selects.forEach(s => s.style.pointerEvents = "");
 
-        // Populate simple fields
-        nameEl.value = ev.name || "";
-        descriptionEl.value = ev.description || "";
-        startDateEl.value = ev.startDate || "";
-        endDateEl.value = ev.endDate || "";
-        priceEl.value = (ev.price != null) ? ev.price : "";
-        categoryEl.value = ev.category || "";
-        depositEl.value = (ev.depositPercent != null) ? ev.depositPercent : 30;
+        addButtons.forEach(b => b.style.display = "inline-block");
+        removeButtons.forEach(b => b.style.display = "inline-block");
 
-        streetEl.value = ev.location?.street || "";
-        houseNumberEl.value = ev.location?.houseNumber || "";
-        cityEl.value = ev.location?.city || "";
-        postalCodeEl.value = ev.location?.postalCode || "";
-        stateEl.value = ev.location?.state || "";
-        countryEl.value = ev.location?.country || "";
+        next.style.display = "inline-block";
+        back.style.display = "none";
+        submit.style.display = "none";
+    }
+}
 
-        minParticipantsEl.value = ev.minParticipants != null ? ev.minParticipants : "";
-        maxParticipantsEl.value = ev.maxParticipants != null ? ev.maxParticipants : "";
+// wrapper for button
+function edit_checkValidation(next) {
+    const form = document.getElementById("event-form");
 
-        // Seed collections preserving original IDs when available
-        editRequirements = (ev.requirements || []).map(r => ({ id: r.id || (Date.now()+Math.random()), description: r.description }));
-        editEquipment = (ev.equipment || []).map(e => ({ id: e.id || (Date.now()+Math.random()), name: e.name, rentable: !!e.rentable }));
-        editPackages = (ev.additionalPackages || []).map(p => ({ id: p.id || (Date.now()+Math.random()), title: p.title, description: p.description, price: p.price }));
-        editAppointments = (ev.appointments || []).map(a => ({ id: a.id || (Date.now()+Math.random()), startDate: a.startDate, endDate: a.endDate, seasonal: !!a.seasonal }));
+    if (form.checkValidity()) edit_nextStep(next);
+    else form.classList.add("was-validated");
+}
 
-        // Render badges and expose removal funcs globally for inline btns
-        function renderBadges() {
-            // requirements
-            requirementsContainer.innerHTML = "";
-            editRequirements.forEach(r => {
-                const span = document.createElement("span");
-                span.className = "badge bg-primary me-1 mb-1";
-                span.id = `edit_req_${r.id}`;
-                span.innerHTML = `${escapeHtml(r.description)} <button type="button" class="btn-close btn-close-white ms-2" onclick="editRemoveRequirement(${r.id})"></button>`;
-                requirementsContainer.appendChild(span);
-            });
+// ===========================
+// ADD / REMOVE ITEMS (Requirement/Equipment/Package/Appointment)
+// identical logic as create-event.js
+// ===========================
+function edit_showRequirementInputs() {
+    document.getElementById("edit_requirementInputs").style.display = "flex";
+    document.querySelector(".add-requirement-btn").style.display = "none";
+}
 
-            // equipment
-            equipmentContainer.innerHTML = "";
-            editEquipment.forEach(e => {
-                const text = (e.rentable ? "Rentable: " : "Required: ") + e.name;
-                const span = document.createElement("span");
-                span.className = "badge bg-primary me-1 mb-1";
-                span.id = `edit_eq_${e.id}`;
-                span.innerHTML = `${escapeHtml(text)} <button type="button" class="btn-close btn-close-white ms-2" onclick="editRemoveEquipment(${e.id})"></button>`;
-                equipmentContainer.appendChild(span);
-            });
+function edit_cancelRequirement() {
+    document.getElementById("edit_requirementInput").value = "";
+    document.getElementById("edit_requirementInputs").style.display = "none";
+    document.querySelector(".add-requirement-btn").style.display = "inline-block";
+}
 
-            // packages
-            packagesContainer.innerHTML = "";
-            editPackages.forEach(p => {
-                const span = document.createElement("span");
-                span.className = "badge bg-primary me-1 mb-1";
-                span.id = `edit_pack_${p.id}`;
-                span.innerHTML = `${escapeHtml(p.title)} (€${p.price}) <button type="button" class="btn-close btn-close-white ms-2" onclick="editRemovePackage(${p.id})"></button>`;
-                packagesContainer.appendChild(span);
-            });
+function edit_saveRequirement() {
+    const val = document.getElementById("edit_requirementInput").value.trim();
+    if (!val) return;
 
-            // appointments
-            appointmentsContainer.innerHTML = "";
-            editAppointments.forEach(a => {
-                const span = document.createElement("span");
-                span.className = "badge bg-primary me-1 mb-1";
-                span.id = `edit_appt_${a.id}`;
-                span.innerHTML = `${escapeHtml(a.startDate)} → ${escapeHtml(a.endDate)} (${a.seasonal ? "Seasonal" : "Fixed"}) <button type="button" class="btn-close btn-close-white ms-2" onclick="editRemoveAppointment(${a.id})"></button>`;
-                appointmentsContainer.appendChild(span);
-            });
-        }
+    const id = Date.now();
+    edit_requirements.push({ id, description: val });
+    edit_renderBadges();
+    edit_cancelRequirement();
+}
 
-        // global removers for inline onclick
-        window.editRemoveRequirement = (id) => { editRequirements = editRequirements.filter(r => r.id !== id); renderBadges(); };
-        window.editRemoveEquipment = (id) => { editEquipment = editEquipment.filter(e => e.id !== id); renderBadges(); };
-        window.editRemovePackage = (id) => { editPackages = editPackages.filter(p => p.id !== id); renderBadges(); };
-        window.editRemoveAppointment = (id) => { editAppointments = editAppointments.filter(a => a.id !== id); renderBadges(); };
+function edit_removeRequirement(id) {
+    edit_requirements = edit_requirements.filter(r => r.id !== id);
+    document.getElementById(`edit_req-${id}`)?.remove();
+}
 
-        renderBadges();
+// EQUIPMENT
+function edit_showEquipmentInputs() {
+    document.getElementById("edit_equipmentInputs").style.display = "flex";
+    document.querySelector(".add-equipment-btn").style.display = "none";
+}
 
-        // Existing images rendering + delete logic
-        existingImagesContainer.innerHTML = "";
-        existingImageIds = (ev.imageIds || []).slice();
-        if (existingImageIds.length > 0) {
-            existingImageIds.forEach(imgId => {
-                const wrap = document.createElement("div");
-                wrap.className = "position-relative m-2";
-                wrap.style.width = "120px";
+function edit_cancelEquipment() {
+    document.getElementById("edit_equipmentNameInput").value = "";
+    document.getElementById("edit_equipmentRentableInput").value = "";
+    document.getElementById("edit_equipmentInputs").style.display = "none";
+    document.querySelector(".add-equipment-btn").style.display = "inline-block";
+}
 
-                const img = document.createElement("img");
-                img.src = `/api/events/image/${imgId}`;
-                img.className = "img-thumbnail";
-                img.style.width = "120px";
-                img.style.height = "120px";
-                img.style.objectFit = "cover";
+function edit_saveEquipment() {
+    const name = document.getElementById("edit_equipmentNameInput").value.trim();
+    const rentable = document.getElementById("edit_equipmentRentableInput").value;
 
-                const btn = document.createElement("button");
-                btn.type = "button";
-                btn.className = "btn btn-sm btn-danger position-absolute top-0 end-0";
-                btn.innerText = "X";
-                btn.onclick = () => {
-                    imagesToDelete.push(imgId);
-                    wrap.remove();
-                    updateImageRequirement(imagesInput, existingImagesContainer);
-                };
+    if (!name || !rentable) return;
 
-                wrap.appendChild(img);
-                wrap.appendChild(btn);
-                existingImagesContainer.appendChild(wrap);
-            });
-        }
+    const id = Date.now();
+    edit_equipment.push({ id, name, rentable: rentable === "true" });
+    edit_renderBadges();
+    edit_cancelEquipment();
+}
 
-        // images input change -> show filenames + update requirement state
-        imagesInput.addEventListener("change", () => {
-            const files = Array.from(imagesInput.files || []);
-            if (!files.length) fileNamesDiv.innerHTML = "No files selected";
-            else fileNamesDiv.innerHTML = `<ul>${files.map(f => `<li>${escapeHtml(f.name)}</li>`).join("")}</ul>`;
-            updateImageRequirement(imagesInput, existingImagesContainer);
+function edit_removeEquipment(id) {
+    edit_equipment = edit_equipment.filter(e => e.id !== id);
+    document.getElementById(`edit_eq-${id}`)?.remove();
+}
+
+// PACKAGE
+function edit_showPackageInputs() {
+    document.getElementById("edit_packageInputs").style.display = "flex";
+    document.querySelector(".add-package-btn").style.display = "none";
+}
+
+function edit_cancelPackage() {
+    document.getElementById("edit_packageTitleInput").value = "";
+    document.getElementById("edit_packageDescInput").value = "";
+    document.getElementById("edit_packagePriceInput").value = "";
+    document.getElementById("edit_packageInputs").style.display = "none";
+    document.querySelector(".add-package-btn").style.display = "inline-block";
+}
+
+function edit_savePackage() {
+    const title = document.getElementById("edit_packageTitleInput").value.trim();
+    const desc = document.getElementById("edit_packageDescInput").value.trim();
+    const price = parseFloat(document.getElementById("edit_packagePriceInput").value);
+
+    if (!title || !desc || isNaN(price)) return;
+
+    const id = Date.now();
+    edit_packages.push({ id, title, description: desc, price });
+    edit_renderBadges();
+    edit_cancelPackage();
+}
+
+function edit_removePackage(id) {
+    edit_packages = edit_packages.filter(p => p.id !== id);
+    document.getElementById(`edit_pack-${id}`)?.remove();
+}
+
+// APPOINTMENT
+function edit_showAppointmentInputs() {
+    document.getElementById("edit_appointmentInputs").style.display = "flex";
+    document.querySelector(".add-appointment-btn").style.display = "none";
+}
+
+function edit_cancelAppointment() {
+    document.getElementById("edit_apptStart").value = "";
+    document.getElementById("edit_apptEnd").value = "";
+    document.getElementById("edit_apptSeasonal").checked = false;
+    document.getElementById("edit_appointmentInputs").style.display = "none";
+    document.querySelector(".add-appointment-btn").style.display = "inline-block";
+}
+
+function edit_saveAppointment() {
+    const s = document.getElementById("edit_apptStart").value;
+    const e = document.getElementById("edit_apptEnd").value;
+
+    if (!s || !e || e < s) return;
+
+    const id = Date.now();
+    edit_appointments.push({ id, startDate: s, endDate: e, seasonal: document.getElementById("edit_apptSeasonal").checked });
+    edit_renderBadges();
+    edit_cancelAppointment();
+}
+
+function edit_removeAppointment(id) {
+    edit_appointments = edit_appointments.filter(a => a.id !== id);
+    document.getElementById(`edit_appt-${id}`)?.remove();
+}
+
+// ===========================
+// SUBMIT EVENT UPDATE
+// ===========================
+async function edit_submitEvent() {
+
+    let organizerId;
+    const orgSelect = document.getElementById("edit_organizerSelect").value;
+
+    if (orgSelect === "NEW") {
+        // create first
+        const name = document.getElementById("edit_orgName").value.trim();
+        const email = document.getElementById("edit_orgEmail").value.trim();
+        const phone = document.getElementById("edit_orgPhone").value.trim();
+
+        const dto = { name, email, phone };
+
+        const res = await fetch("/api/organizers/create", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(dto)
         });
 
-        // initial requirement check
-        updateImageRequirement(imagesInput, existingImagesContainer);
-
-        // Date min restrictions
-        const today = new Date().toISOString().split("T")[0];
-        startDateEl.min = today;
-        endDateEl.min = today;
-
-        // single-day toggle logic
-        if (!endDateEl.value || endDateEl.value === "" || endDateEl.value === startDateEl.value) {
-            singleDayEl.checked = true;
-            endDateWrapper.style.display = "none";
-            endDateEl.removeAttribute("required");
-            if (!endDateEl.value) endDateEl.value = startDateEl.value || "";
-        } else {
-            singleDayEl.checked = false;
-            endDateWrapper.style.display = "block";
-            endDateEl.setAttribute("required", "true");
+        if (!res.ok) {
+            showToast("error", "Organizer could not be created");
+            return;
         }
+        const created = await res.json();
+        organizerId = created.id;
+    } else {
+        organizerId = parseInt(orgSelect);
+    }
 
-        singleDayEl.addEventListener("change", () => {
-            if (singleDayEl.checked) {
-                endDateWrapper.style.display = "none";
-                endDateEl.value = startDateEl.value || "";
-                endDateEl.removeAttribute("required");
-            } else {
-                endDateWrapper.style.display = "block";
-                endDateEl.setAttribute("required", "true");
-            }
-        });
-        startDateEl.addEventListener("change", () => { if (singleDayEl.checked) endDateEl.value = startDateEl.value; });
+    // build JSON
+    const dpVal = parseInt(document.getElementById("edit_depositPercent").value, 10);
 
-        // Load organizers
-        async function loadOrganizersForEdit() {
-            organizerSelect.innerHTML = `<option value="">Select Organizer</option><option value="NEW">Add New Organizer</option>`;
-            try {
-                const res = await fetch('/api/organizers');
-                if (!res.ok) throw new Error('Failed to load organizers');
-                const list = await res.json();
-                list.forEach(o => {
-                    const opt = document.createElement("option");
-                    opt.value = o.id;
-                    opt.textContent = `${o.name} (${o.contactEmail})`;
-                    organizerSelect.appendChild(opt);
-                });
-                if (ev.organizerId) organizerSelect.value = ev.organizerId;
-            } catch (err) {
-                showToast("error", "Could not load organizers");
-            }
-        }
+    const eventDto = {
+        name: document.getElementById("edit_name").value,
+        description: document.getElementById("edit_description").value,
+        startDate: document.getElementById("edit_startDate").value,
+        endDate: document.getElementById("edit_endDate").value,
+        price: parseFloat(document.getElementById("edit_price").value),
+        depositPercent: isNaN(dpVal) ? 30 : dpVal,
+        category: document.getElementById("edit_category").value,
+        organizerId: organizerId,
+        minParticipants: parseInt(document.getElementById("edit_minParticipants").value),
+        maxParticipants: parseInt(document.getElementById("edit_maxParticipants").value),
 
-        organizerSelect.addEventListener("change", () => {
-            if (organizerSelect.value === "NEW") {
-                newOrgBox.style.display = "block";
-                orgNameEl.value = ""; orgEmailEl.value = ""; orgPhoneEl.value = "";
-            } else {
-                newOrgBox.style.display = "none";
-            }
-        });
+        location: {
+            street: document.getElementById("edit_street").value,
+            houseNumber: document.getElementById("edit_houseNumber").value,
+            city: document.getElementById("edit_city").value,
+            postalCode: document.getElementById("edit_postalCode").value,
+            state: document.getElementById("edit_state").value,
+            country: document.getElementById("edit_country").value
+        },
 
-        await loadOrganizersForEdit();
+        requirements: edit_requirements.map(r => ({
+            id: Number.isInteger(r.id) ? r.id : null,
+            description: r.description
+        })),
 
-        // dynamic subforms functions (show/save/cancel) - expose to global for inline handlers
-        window.editShowRequirementInputs = () => { $("#edit_requirementInputs").style.display = "flex"; modalEl.querySelector(".add-requirement-btn").style.display = "none"; };
-        window.editCancelRequirement = () => { $("#edit_requirementInput").value = ""; $("#edit_requirementInputs").style.display = "none"; modalEl.querySelector(".add-requirement-btn").style.display = "inline-block"; };
-        window.editSaveRequirement = () => {
-            const v = $("#edit_requirementInput").value.trim();
-            if (!v) { $("#edit_requirementInput").classList.add("is-invalid"); return; }
-            editRequirements.push({ id: null, description: v });
-            window.editCancelRequirement();
-            renderBadges();
-        };
+        equipment: edit_equipment.map(e => ({
+            id: Number.isInteger(e.id) ? e.id : null,
+            name: e.name,
+            rentable: e.rentable
+        })),
 
-        window.editShowEquipmentInputs = () => { $("#edit_equipmentInputs").style.display = "flex"; modalEl.querySelector(".add-equipment-btn").style.display = "none"; };
-        window.editCancelEquipment = () => { $("#edit_equipmentNameInput").value = ""; $("#edit_equipmentRentableInput").value = ""; $("#edit_equipmentInputs").style.display = "none"; modalEl.querySelector(".add-equipment-btn").style.display = "inline-block"; };
-        window.editSaveEquipment = () => {
-            const n = $("#edit_equipmentNameInput").value.trim(); const r = $("#edit_equipmentRentableInput").value;
-            if (!n || !r) { if(!n) $("#edit_equipmentNameInput").classList.add("is-invalid"); if(!r) $("#edit_equipmentRentableInput").classList.add("is-invalid"); return; }
-            editEquipment.push({ id: null, name: n, rentable: r === "true" });
-            window.editCancelEquipment();
-            renderBadges();
-        };
+        additionalPackages: edit_packages.map(p => ({
+            id: Number.isInteger(p.id) ? p.id : null,
+            title: p.title,
+            description: p.description,
+            price: p.price
+        })),
 
-        window.editShowPackageInputs = () => { $("#edit_packageInputs").style.display = "flex"; modalEl.querySelector(".add-package-btn").style.display = "none"; };
-        window.editCancelPackage = () => { $("#edit_packageTitleInput").value = ""; $("#edit_packageDescInput").value = ""; $("#edit_packagePriceInput").value = ""; $("#edit_packageInputs").style.display = "none"; modalEl.querySelector(".add-package-btn").style.display = "inline-block"; };
-        window.editSavePackage = () => {
-            const t = $("#edit_packageTitleInput").value.trim(); const d = $("#edit_packageDescInput").value.trim(); const p = parseFloat($("#edit_packagePriceInput").value);
-            if (!t || !d || isNaN(p) || p < 0) { if(!t) $("#edit_packageTitleInput").classList.add("is-invalid"); if(!d) $("#edit_packageDescInput").classList.add("is-invalid"); if(isNaN(p) || p<0) $("#edit_packagePriceInput").classList.add("is-invalid"); return; }
-            editPackages.push({ id: null, title: t, description: d, price: p });
-            window.editCancelPackage();
-            renderBadges();
-        };
+        appointments: edit_appointments.map(a => ({
+            id: Number.isInteger(a.id) ? a.id : null,
+            startDate: a.startDate,
+            endDate: a.endDate,
+            seasonal: a.seasonal
+        }))
+    };
 
-        window.editShowAppointmentInputs = () => { $("#edit_appointmentInputs").style.display = "flex"; modalEl.querySelector(".add-appointment-btn").style.display = "none"; };
-        window.editCancelAppointment = () => { $("#edit_apptStart").value = ""; $("#edit_apptEnd").value = ""; $("#edit_apptSeasonal").checked = false; $("#edit_appointmentInputs").style.display = "none"; modalEl.querySelector(".add-appointment-btn").style.display = "inline-block"; };
-        window.editSaveAppointment = () => {
-            const s = $("#edit_apptStart").value; const e = $("#edit_apptEnd").value; const seasonal = $("#edit_apptSeasonal").checked;
-            if (!s || !e || e < s) { if(!s) $("#edit_apptStart").classList.add("is-invalid"); if(!e || e < s) $("#edit_apptEnd").classList.add("is-invalid"); return; }
-            editAppointments.push({ id: null, startDate: s, endDate: e, seasonal });
-            window.editCancelAppointment();
-            renderBadges();
-        };
+    // multipart
+    const formData = new FormData();
+    formData.append("event", new Blob([JSON.stringify(eventDto)], { type: "application/json" }));
+    edit_imagesToDelete.forEach(id => {
+        formData.append("deleteImageIds", id);
+    });
 
-        // validation helpers for participants & dates
-        function validateParticipants() {
-            const min = parseInt(minParticipantsEl.value); const max = parseInt(maxParticipantsEl.value);
-            if (isNaN(min) || isNaN(max)) { minParticipantsEl.setCustomValidity(""); maxParticipantsEl.setCustomValidity(""); return true; }
-            if (max < min) { maxParticipantsEl.setCustomValidity("Max participants cannot be lower than min participants."); return false; }
-            maxParticipantsEl.setCustomValidity(""); return true;
-        }
-        minParticipantsEl.addEventListener("input", validateParticipants);
-        maxParticipantsEl.addEventListener("input", validateParticipants);
+    const files = document.getElementById("edit_images").files;
+    for (const f of files) formData.append("images", f);
 
-        function validateDates() {
-            if (singleDayEl.checked || !endDateEl.value) { endDateEl.setCustomValidity(""); return true; }
-            if (endDateEl.value < startDateEl.value) { endDateEl.setCustomValidity("End date cannot be earlier than start date"); return false; }
-            endDateEl.setCustomValidity(""); return true;
-        }
-        startDateEl.addEventListener("change", validateDates);
-        endDateEl.addEventListener("change", validateDates);
+    const res = await fetch(`/api/events/edit/${editCurrentEvent.id}`, {
+        method: "PUT",
+        body: formData
+    });
 
-        // Next/Back readonly toggle
-        function setReadonlyMode(readonly) {
-            const textInputs = Array.from(form.querySelectorAll("input, textarea")).filter(i => i.type !== "file");
-            const selectAndChecks = form.querySelectorAll("select, input[type='checkbox'], input[type='radio']");
-            const addButtons = form.querySelectorAll(".add-requirement-btn, .add-equipment-btn, .add-package-btn, .add-appointment-btn");
+    if (!res.ok) {
+        showToast("error", "Update failed");
+        return;
+    }
 
-            if (readonly) {
-                form.classList.add("readonly");
-                textInputs.forEach(el => { el.setAttribute("readonly","true"); el.style.backgroundColor="#e9ecef"; });
-                selectAndChecks.forEach(el => { el.style.pointerEvents="none"; el.setAttribute("aria-disabled","true"); el.style.backgroundColor="#e9ecef"; });
-                imagesInput.classList.add("readonly-file"); imagesInput.style.pointerEvents = "none";
-                addButtons.forEach(btn => btn.style.display = "none");
-                // hide close buttons on badges for review
-                form.querySelectorAll(".btn-close").forEach(b => b.style.display = "none");
+    showToast("success", "Event updated!");
 
-                if (!form.querySelector("#editFormOverlay")) {
-                    const overlay = document.createElement("div");
-                    overlay.id = "editFormOverlay";
-                    Object.assign(overlay.style, { position:"absolute", top:"0", left:"0", right:"0", bottom:"80px", background:"transparent", zIndex:"999" });
-                    form.appendChild(overlay);
-                }
+    bootstrap.Modal.getInstance(editModal).hide();
 
-                if (nextBtn) nextBtn.style.display = "none";
-                if (backBtn) backBtn.style.display = "inline-block";
-                if (submitBtn) submitBtn.style.display = "inline-block";
-            } else {
-                form.classList.remove("readonly");
-                textInputs.forEach(el => { el.removeAttribute("readonly"); el.style.backgroundColor=""; });
-                selectAndChecks.forEach(el => { el.style.pointerEvents=""; el.removeAttribute("aria-disabled"); el.style.backgroundColor=""; });
-                imagesInput.classList.remove("readonly-file"); imagesInput.style.pointerEvents = "";
-                addButtons.forEach(btn => btn.style.display = "inline-block");
-                form.querySelectorAll(".btn-close").forEach(b => b.style.display = "");
-                const overlay = form.querySelector("#editFormOverlay"); if (overlay) overlay.remove();
-                if (nextBtn) nextBtn.style.display = "inline-block";
-                if (backBtn) backBtn.style.display = "none";
-                if (submitBtn) submitBtn.style.display = "none";
-                form.classList.remove("was-validated");
-            }
-        }
+    await loadEvents();
+}
 
-        // Expose next/back functions used by inline onclick in template
-        window.editNextStep = (readonly) => setReadonlyMode(readonly);
-
-        window.editCheckValidation = (next) => {
-            // organizer new validation
-            if (next === true && organizerSelect.value === "NEW") {
-                if (!orgNameEl.value.trim() || !orgEmailEl.value.trim()) {
-                    if (!orgNameEl.value.trim()) orgNameEl.classList.add("is-invalid"); else orgNameEl.classList.remove("is-invalid");
-                    if (!orgEmailEl.value.trim()) orgEmailEl.classList.add("is-invalid"); else orgEmailEl.classList.remove("is-invalid");
-                    return;
-                }
-            }
-            if (form.checkValidity() && validateParticipants() && validateDates()) {
-                setReadonlyMode(next);
-            } else {
-                form.classList.add("was-validated");
-            }
-        };
-
-        // Submit handler -> builds DTO, sends multipart/form-data (event JSON + files) and deleteImageIds as query params
-        let submitted = false;
-        form.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            submitted = true;
-
-            // build DTO matching EditEventRequestDTO
-            const dto = {
-                id: eventId,
-                name: nameEl.value || null,
-                description: descriptionEl.value || null,
-                startDate: startDateEl.value || null,
-                endDate: (singleDayEl.checked ? (startDateEl.value || null) : (endDateEl.value || null)),
-                price: priceEl.value ? parseFloat(priceEl.value) : null,
-                depositPercent: depositEl.value ? parseInt(depositEl.value, 10) : null,
-                category: categoryEl.value || null,
-                organizerId: organizerSelect.value && organizerSelect.value !== "NEW" ? parseInt(organizerSelect.value, 10) : null,
-                newOrganizer: organizerSelect.value === "NEW" ? { name: orgNameEl.value || null, email: orgEmailEl.value || null, phone: orgPhoneEl.value || null } : null,
-                minParticipants: minParticipantsEl.value ? parseInt(minParticipantsEl.value, 10) : null,
-                maxParticipants: maxParticipantsEl.value ? parseInt(maxParticipantsEl.value, 10) : null,
-                location: {
-                    street: streetEl.value || null,
-                    houseNumber: houseNumberEl.value || null,
-                    city: cityEl.value || null,
-                    postalCode: postalCodeEl.value || null,
-                    state: stateEl.value || null,
-                    country: countryEl.value || null
-                },
-                appointments: editAppointments.map(a => ({
-                    id: Number.isInteger(a.id) ? a.id : null,
-                    startDate: a.startDate,
-                    endDate: a.endDate,
-                    seasonal: !!a.seasonal
-                })),
-                requirements: editRequirements.map(r => ({ id: Number.isInteger(r.id) ? r.id : null, description: r.description })),
-                equipment: editEquipment.map(e => ({ id: Number.isInteger(e.id) ? e.id : null, name: e.name, rentable: !!e.rentable })),
-                additionalPackages: editPackages.map(p => ({ id: Number.isInteger(p.id) ? p.id : null, title: p.title, description: p.description, price: p.price }))
-            };
-
-            const formData = new FormData();
-            formData.append("event", new Blob([JSON.stringify(dto)], { type: "application/json" }));
-
-            // append new files
-            const files = Array.from(imagesInput.files || []);
-            files.forEach(f => formData.append("images", f));
-
-            // build URL with deleteImageIds as query string
-            let url = `/api/events/edit/${eventId}`;
-            if (imagesToDelete.length > 0) {
-                const params = imagesToDelete.map(id => `deleteImageIds=${encodeURIComponent(id)}`).join("&");
-                url = `${url}?${params}`;
-            }
-
-            try {
-                const res = await fetch(url, { method: "PUT", body: formData });
-                if (!res.ok) {
-                    const txt = await res.text();
-                    showToast("error", txt || "Failed to update event");
-                    return;
-                }
-                const data = await res.json();
-                showToast("success", `Event "${data.name}" updated successfully!`);
-                await loadEvents();
-                const bs = bootstrap.Modal.getInstance(modalEl);
-                if (bs) bs.hide();
-            } catch (err) {
-                console.error(err);
-                showToast("error", "Network error: " + err.message);
-            }
-        });
-
-        // When the modal closes remove it and show details modal again if not submitted
-        modalEl.addEventListener("hidden.bs.modal", () => {
-            modalEl.remove();
-            if (!submitted && detailsBsModal) detailsBsModal.show();
-        });
-
-        // attach to DOM and show
-        document.body.appendChild(modalEl);
-        const bsModal = new bootstrap.Modal(modalEl);
-        bsModal.show();
-    }; // end openEditModal
-
-})();

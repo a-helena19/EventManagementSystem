@@ -154,7 +154,7 @@ function nextStep(disable) {
     // Selects + Checkboxes
     const selectAndChecks = form.querySelectorAll("select, input[type='checkbox'], input[type='radio']");
 
-    // Add-buttons (klassenbasiert, robust)
+    // Add-buttons
     const addButtons = form.querySelectorAll(".add-requirement-btn, .add-equipment-btn, .add-package-btn, .add-appointment-btn");
 
     // Remove buttons inside dynamic containers (die kleinen X)
@@ -166,28 +166,26 @@ function nextStep(disable) {
     }
 
     if (disable) {
-        //    Visueller "readonly" Zustand (CSS `.readonly` existiert schon in deinem CSS)
         form.classList.add("readonly");
 
-        //    Input/Textarea -> readonly (keine Veränderung der Werte, aber kein Fokus)
+        //    Input/Textarea
         textInputs.forEach(el => {
             el.setAttribute("readonly", "true");
             el.style.backgroundColor = "#e9ecef";
         });
 
-        //    Selects + checkboxes -> pointer-events none (keine Änderung, Werte bleiben)
+        //    Selects + checkboxes
         selectAndChecks.forEach(el => {
             el.style.pointerEvents = "none";
             el.setAttribute("aria-disabled", "true");
             el.style.backgroundColor = "#e9ecef";
         });
 
-        //    File input -> verhindern, dass Nutzer neue Dateien hinzufügen (aber vorhandene Dateien bleiben)
+        //    File input
         if (fileInput) {
             fileInput.classList.add("readonly-file");
             fileInput.style.pointerEvents = "none";
             fileInput.style.cursor = "not-allowed";
-            // keep fileInput.disabled = false so files still submit; pointer-events blocks interaction
         }
 
         //    Hide add buttons and remove-buttons
