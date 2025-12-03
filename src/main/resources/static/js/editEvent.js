@@ -104,10 +104,10 @@ function edit_resetForm() {
     document.getElementById("edit_appointmentsContainer").innerHTML = "";
 
     // Hide input rows
-    edit_cancelRequirement();
-    edit_cancelEquipment();
-    edit_cancelPackage();
-    edit_cancelAppointment();
+    edit_hideRequirementInputs();
+    edit_hideEquipmentInputs();
+    edit_hidePackageInputs();
+    edit_hideAppointmentInputs();
 
     // Multi-step reset
     edit_nextStep(false);
@@ -390,17 +390,28 @@ function edit_showRequirementInputs() {
     document.querySelector(".add-requirement-btn").style.display = "none";
 }
 
-function edit_cancelRequirement() {
+
+function edit_hideRequirementInputs() {
     document.getElementById("edit_requirementInput").value = "";
     document.getElementById("edit_requirementInputs").style.display = "none";
     document.querySelector(".add-requirement-btn").style.display = "inline-block";
 }
 
+function edit_cancelRequirement() {
+    edit_hideRequirementInputs();
+
+    // remove validation when cancel
+    const input = document.getElementById("edit_requirementInput");
+    if (input.classList.contains("is-invalid")) {
+        input.classList.remove("is-invalid");
+    }
+}
+
 function edit_saveRequirement() {
-    const input = document.getElementById("requirementInput");
+    const input = document.getElementById("edit_requirementInput");
     const val = input.value.trim();
 
-    if (!isVisible(document.getElementById("requirementInputs"))) return;
+    if (!isVisible(document.getElementById("edit_requirementInputs"))) return;
 
     if (!val) {
         input.classList.add("is-invalid");
@@ -426,33 +437,50 @@ function edit_showEquipmentInputs() {
     document.querySelector(".add-equipment-btn").style.display = "none";
 }
 
-function edit_cancelEquipment() {
+function edit_hideEquipmentInputs() {
     document.getElementById("edit_equipmentNameInput").value = "";
     document.getElementById("edit_equipmentRentableInput").value = "";
     document.getElementById("edit_equipmentInputs").style.display = "none";
     document.querySelector(".add-equipment-btn").style.display = "inline-block";
 }
 
+function edit_cancelEquipment() {
+
+    edit_hideEquipmentInputs();
+
+    // remove validation when cancel
+    const name = document.getElementById("edit_equipmentNameInput");
+    const rentable = document.getElementById("edit_equipmentRentableInput");
+
+    if (name.classList.contains("is-invalid")) {
+        name.classList.remove("is-invalid");
+    }
+    if (rentable.classList.contains("is-invalid")) {
+        rentable.classList.remove("is-invalid");
+    }
+
+}
+
 function edit_saveEquipment() {
     const name = document.getElementById("edit_equipmentNameInput").value.trim();
     const rentable = document.getElementById("edit_equipmentRentableInput").value;
 
-    if (!isVisible(document.getElementById("equipmentInputs"))) return;
+    if (!isVisible(document.getElementById("edit_equipmentInputs"))) return;
 
     let valid = true;
 
     if (!name) {
-        document.getElementById("equipmentNameInput").classList.add("is-invalid");
+        document.getElementById("edit_equipmentNameInput").classList.add("is-invalid");
         valid = false;
     } else {
-        document.getElementById("equipmentNameInput").classList.remove("is-invalid");
+        document.getElementById("edit_equipmentNameInput").classList.remove("is-invalid");
     }
 
     if (!rentable) {
-        document.getElementById("equipmentRentableInput").classList.add("is-invalid");
+        document.getElementById("edit_equipmentRentableInput").classList.add("is-invalid");
         valid = false;
     } else {
-        document.getElementById("equipmentRentableInput").classList.remove("is-invalid");
+        document.getElementById("edit_equipmentRentableInput").classList.remove("is-invalid");
     }
 
     if (!valid) return;
@@ -474,7 +502,7 @@ function edit_showPackageInputs() {
     document.querySelector(".add-package-btn").style.display = "none";
 }
 
-function edit_cancelPackage() {
+function edit_hidePackageInputs() {
     document.getElementById("edit_packageTitleInput").value = "";
     document.getElementById("edit_packageDescInput").value = "";
     document.getElementById("edit_packagePriceInput").value = "";
@@ -482,29 +510,50 @@ function edit_cancelPackage() {
     document.querySelector(".add-package-btn").style.display = "inline-block";
 }
 
+function edit_cancelPackage() {
+
+    edit_hidePackageInputs();
+
+    // remove validation when cancel
+    const title = document.getElementById("edit_packageTitleInput");
+    const desc = document.getElementById("edit_packageDescInput");
+    const price = document.getElementById("edit_packagePriceInput");
+
+    if (title.classList.contains("is-invalid")) {
+        title.classList.remove("is-invalid");
+    }
+    if (desc.classList.contains("is-invalid")) {
+        desc.classList.remove("is-invalid");
+    }
+    if (price.classList.contains("is-invalid")) {
+        price.classList.remove("is-invalid");
+    }
+
+}
+
 function edit_savePackage() {
     const title = document.getElementById("edit_packageTitleInput").value.trim();
     const desc = document.getElementById("edit_packageDescInput").value.trim();
     const price = parseFloat(document.getElementById("edit_packagePriceInput").value);
 
-    if (!isVisible(document.getElementById("packageInputs"))) return;
+    if (!isVisible(document.getElementById("edit_packageInputs"))) return;
 
     let valid = true;
 
     if (!title) {
-        document.getElementById("packageTitleInput").classList.add("is-invalid");
+        document.getElementById("edit_packageTitleInput").classList.add("is-invalid");
         valid = false;
-    } else document.getElementById("packageTitleInput").classList.remove("is-invalid");
+    } else document.getElementById("edit_packageTitleInput").classList.remove("is-invalid");
 
     if (!desc) {
-        document.getElementById("packageDescInput").classList.add("is-invalid");
+        document.getElementById("edit_packageDescInput").classList.add("is-invalid");
         valid = false;
-    } else document.getElementById("packageDescInput").classList.remove("is-invalid");
+    } else document.getElementById("edit_packageDescInput").classList.remove("is-invalid");
 
     if (!price || isNaN(price) || price < 0) {
-        document.getElementById("packagePriceInput").classList.add("is-invalid");
+        document.getElementById("edit_packagePriceInput").classList.add("is-invalid");
         valid = false;
-    } else document.getElementById("packagePriceInput").classList.remove("is-invalid");
+    } else document.getElementById("edit_packagePriceInput").classList.remove("is-invalid");
 
     if (!valid) return;
 
@@ -526,7 +575,7 @@ function edit_showAppointmentInputs() {
     document.querySelector(".add-appointment-btn").style.display = "none";
 }
 
-function edit_cancelAppointment() {
+function edit_hideAppointmentInputs() {
     document.getElementById("edit_apptStart").value = "";
     document.getElementById("edit_apptEnd").value = "";
     document.getElementById("edit_apptSeasonal").checked = false;
@@ -534,27 +583,44 @@ function edit_cancelAppointment() {
     document.querySelector(".add-appointment-btn").style.display = "inline-block";
 }
 
+function edit_cancelAppointment() {
+
+    edit_hideAppointmentInputs();
+
+    // remove validation when cancel
+    const start = document.getElementById("edit_apptStart");
+    const end = document.getElementById("edit_apptEnd");
+
+    if (start.classList.contains("is-invalid")) {
+        start.classList.remove("is-invalid");
+    }
+    if (end.classList.contains("is-invalid")) {
+        end.classList.remove("is-invalid");
+    }
+
+}
+
 function edit_saveAppointment() {
     const start = document.getElementById("edit_apptStart").value;
     const end = document.getElementById("edit_apptEnd").value;
-    const seasonal = document.getElementById("apptSeasonal").checked;
+    const seasonal = document.getElementById("edit_apptSeasonal").checked;
 
-    if (!isVisible(document.getElementById("appointmentInputs"))) return;
+    if (!isVisible(document.getElementById("edit_appointmentInputs"))) return;
 
     let valid = true;
 
     if (!start) {
-        document.getElementById("apptStart").classList.add("is-invalid");
+        document.getElementById("edit_apptStart").classList.add("is-invalid");
         valid = false;
-    } else document.getElementById("apptStart").classList.remove("is-invalid");
+    } else document.getElementById("edit_apptStart").classList.remove("is-invalid");
 
     if (!end) {
-        document.getElementById("apptEnd").classList.add("is-invalid");
+        document.getElementById("edit_apptEnd").classList.add("is-invalid");
         valid = false;
-    } else document.getElementById("apptEnd").classList.remove("is-invalid");
+    } else document.getElementById("edit_apptEnd").classList.remove("is-invalid");
 
     if (start && end && end < start) {
-        document.getElementById("apptEnd").classList.add("is-invalid");
+        document.getElementById("edit_apptEnd").classList.add("is-invalid");
         valid = false;
     }
 

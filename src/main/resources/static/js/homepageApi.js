@@ -95,10 +95,11 @@ function resetForm() {
     document.getElementById("packagesContainer").innerHTML = "";
     document.getElementById("appointmentsContainer").innerHTML = "";
 
-    cancelRequirement();
-    cancelEquipment();
-    cancelAppointment();
-    cancelPackage();
+    // Hide input rows
+    hideRequirementInputs();
+    hideEquipmentInputs();
+    hidePackageInputs();
+    hideAppointmentInputs();
 
     // Restart multi-step
     document.getElementById("event-form").classList.remove("was-validated");
@@ -383,11 +384,21 @@ function showRequirementInputs() {
     document.querySelector(".add-requirement-btn").style.display = "none";
 }
 
-function cancelRequirement() {
+function hideRequirementInputs() {
     document.getElementById("requirementInput").value = "";
     document.getElementById("requirementInputs").style.display = "none";
-
     document.querySelector(".add-requirement-btn").style.display = "inline-block";
+}
+
+function cancelRequirement() {
+    hideRequirementInputs();
+
+    // remove validation when cancel
+    const input = document.getElementById("requirementInput");
+    if (input.classList.contains("is-invalid")) {
+        input.classList.remove("is-invalid");
+    }
+
 }
 
 function saveRequirement() {
@@ -429,11 +440,26 @@ function showEquipmentInputs() {
     document.querySelector(".add-equipment-btn").style.display = "none";
 }
 
-function cancelEquipment() {
+function hideEquipmentInputs() {
     document.getElementById("equipmentNameInput").value = "";
     document.getElementById("equipmentRentableInput").value = "";
     document.getElementById("equipmentInputs").style.display = "none";
     document.querySelector(".add-equipment-btn").style.display = "inline-block";
+}
+
+function cancelEquipment() {
+
+    hideEquipmentInputs();
+    // remove validation when cancel
+    const name = document.getElementById("equipmentNameInput");
+    const rentable = document.getElementById("equipmentRentableInput");
+
+    if (name.classList.contains("is-invalid")) {
+        name.classList.remove("is-invalid");
+    }
+    if (rentable.classList.contains("is-invalid")) {
+        rentable.classList.remove("is-invalid");
+    }
 }
 
 function saveEquipment() {
@@ -486,12 +512,32 @@ function showPackageInputs() {
     document.querySelector(".add-package-btn").style.display = "none";
 }
 
-function cancelPackage() {
+function hidePackageInputs() {
     document.getElementById("packageTitleInput").value = "";
     document.getElementById("packageDescInput").value = "";
     document.getElementById("packagePriceInput").value = "";
     document.getElementById("packageInputs").style.display = "none";
     document.querySelector(".add-package-btn").style.display = "inline-block";
+}
+
+function cancelPackage() {
+
+    hidePackageInputs();
+
+    // remove validation when cancel
+    const title = document.getElementById("packageTitleInput");
+    const desc = document.getElementById("packageDescInput");
+    const price = document.getElementById("packagePriceInput");
+
+    if (title.classList.contains("is-invalid")) {
+        title.classList.remove("is-invalid");
+    }
+    if (desc.classList.contains("is-invalid")) {
+        desc.classList.remove("is-invalid");
+    }
+    if (price.classList.contains("is-invalid")) {
+        price.classList.remove("is-invalid");
+    }
 }
 
 function savePackage() {
@@ -545,12 +591,26 @@ function showAppointmentInputs() {
     document.querySelector(".add-appointment-btn").style.display = "none";
 }
 
-function cancelAppointment() {
+function hideAppointmentInputs() {
     document.getElementById("apptStart").value = "";
     document.getElementById("apptEnd").value = "";
     document.getElementById("apptSeasonal").checked = false;
     document.getElementById("appointmentInputs").style.display = "none";
     document.querySelector(".add-appointment-btn").style.display = "inline-block";
+}
+function cancelAppointment() {
+    hideAppointmentInputs();
+
+    // remove validation when cancel
+    const start = document.getElementById("apptStart");
+    const end = document.getElementById("apptEnd");
+
+    if (start.classList.contains("is-invalid")) {
+        start.classList.remove("is-invalid");
+    }
+    if (end.classList.contains("is-invalid")) {
+        end.classList.remove("is-invalid");
+    }
 }
 
 function saveAppointment() {
