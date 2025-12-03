@@ -36,7 +36,8 @@ class BookingServiceTest {
                 "+4912345",
                 "test@test.com",
                 BookingStatus.ACTIVE,
-                1L
+                1L,
+                2L
         );
         savedBooking.setId(99L);
 
@@ -52,7 +53,8 @@ class BookingServiceTest {
                 addr,
                 "+4912345",
                 "test@test.com",
-                1L
+                1L,
+                2L
         );
 
         assertNotNull(dto);
@@ -63,7 +65,7 @@ class BookingServiceTest {
     @Test
     void testGetAllBookingsDTO() {
         BookingAddress addr = new BookingAddress("S", "1", "C", "1000");
-        Booking b = new Booking("A", "B", LocalDate.now(), LocalDate.now(), addr, "123", "a@b.com", BookingStatus.ACTIVE, 1L);
+        Booking b = new Booking("A", "B", LocalDate.now(), LocalDate.now(), addr, "123", "a@b.com", BookingStatus.ACTIVE, 1L, 2L);
         b.setId(10L);
 
         when(bookingRepository.findAll()).thenReturn(List.of(b));

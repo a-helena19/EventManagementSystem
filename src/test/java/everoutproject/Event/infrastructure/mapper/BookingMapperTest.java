@@ -19,7 +19,8 @@ class BookingMapperTest {
                 new BookingAddress("Street", "10", "City", "12345"),
                 "123", "mail@mail.com",
                 everoutproject.Event.domain.model.booking.BookingStatus.ACTIVE,
-                5L
+                5L,
+                6L
         );
         domain.setId(100L);
 
@@ -46,11 +47,13 @@ class BookingMapperTest {
         entity.setEmail("a@b.com");
         entity.setStatus(BookingStatus.ACTIVE);
         entity.setEventId(9L);
+        entity.setUserId(5L);
 
         var domain = BookingMapper.toDomain(entity);
 
         assertEquals(20L, domain.getId());
         assertEquals("A", domain.getFirstname());
         assertEquals("C", domain.getAddress().getCity());
+        assertEquals(5L, domain.getUserId());
     }
 }

@@ -24,14 +24,15 @@ class BookingRepositoryJPAImplTest {
     }
 
     @Test
-    void testAddNewEvent() {
+    void testAddNewBooking() {
         Booking domain = new Booking(
                 "A", "B",
                 LocalDate.now(), LocalDate.now(),
                 new BookingAddress("S", "1", "C", "1000"),
                 "123", "mail@mail.com",
                 BookingStatus.ACTIVE,
-                1L
+                1L,
+                2L  //user id
         );
 
         everoutproject.Event.infrastructure.persistence.model.booking.Booking savedEntity =
