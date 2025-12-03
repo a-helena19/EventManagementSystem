@@ -77,13 +77,12 @@ document.addEventListener("DOMContentLoaded", function() {
                 });
 
                 if (response.ok) {
+                    // Clear user data from localStorage
+                    localStorage.removeItem("userInfo");
+
                     showToast('success', 'Account deleted successfully');
-
-                    // Clear user session and redirect
-                    localStorage.removeItem('userToken');
-                    localStorage.removeItem('userEmail');
-
                     setTimeout(() => {
+                        // Redirect to homepage
                         window.location.href = '/homepage';
                     }, 1500);
                 } else {
@@ -95,6 +94,8 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
     });
+
+
 
     function setProfileReadOnly(readOnly) {
         const inputs = profileForm.querySelectorAll('input');
