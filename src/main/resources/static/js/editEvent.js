@@ -437,7 +437,25 @@ function edit_saveEquipment() {
     const name = document.getElementById("edit_equipmentNameInput").value.trim();
     const rentable = document.getElementById("edit_equipmentRentableInput").value;
 
-    if (!name || !rentable) return;
+    if (!isVisible(document.getElementById("equipmentInputs"))) return;
+
+    let valid = true;
+
+    if (!name) {
+        document.getElementById("equipmentNameInput").classList.add("is-invalid");
+        valid = false;
+    } else {
+        document.getElementById("equipmentNameInput").classList.remove("is-invalid");
+    }
+
+    if (!rentable) {
+        document.getElementById("equipmentRentableInput").classList.add("is-invalid");
+        valid = false;
+    } else {
+        document.getElementById("equipmentRentableInput").classList.remove("is-invalid");
+    }
+
+    if (!valid) return;
 
     const id = Date.now();
     edit_equipment.push({ id, name, rentable: rentable === "true" });
@@ -469,7 +487,27 @@ function edit_savePackage() {
     const desc = document.getElementById("edit_packageDescInput").value.trim();
     const price = parseFloat(document.getElementById("edit_packagePriceInput").value);
 
-    if (!title || !desc || isNaN(price)) return;
+    if (!isVisible(document.getElementById("packageInputs"))) return;
+
+    let valid = true;
+
+    if (!title) {
+        document.getElementById("packageTitleInput").classList.add("is-invalid");
+        valid = false;
+    } else document.getElementById("packageTitleInput").classList.remove("is-invalid");
+
+    if (!desc) {
+        document.getElementById("packageDescInput").classList.add("is-invalid");
+        valid = false;
+    } else document.getElementById("packageDescInput").classList.remove("is-invalid");
+
+    if (!price || isNaN(price) || price < 0) {
+        document.getElementById("packagePriceInput").classList.add("is-invalid");
+        valid = false;
+    } else document.getElementById("packagePriceInput").classList.remove("is-invalid");
+
+    if (!valid) return;
+
 
     const id = Date.now();
     edit_packages.push({ id, title, description: desc, price });
@@ -497,13 +535,33 @@ function edit_cancelAppointment() {
 }
 
 function edit_saveAppointment() {
-    const s = document.getElementById("edit_apptStart").value;
-    const e = document.getElementById("edit_apptEnd").value;
+    const start = document.getElementById("edit_apptStart").value;
+    const end = document.getElementById("edit_apptEnd").value;
+    const seasonal = document.getElementById("apptSeasonal").checked;
 
-    if (!s || !e || e < s) return;
+    if (!isVisible(document.getElementById("appointmentInputs"))) return;
+
+    let valid = true;
+
+    if (!start) {
+        document.getElementById("apptStart").classList.add("is-invalid");
+        valid = false;
+    } else document.getElementById("apptStart").classList.remove("is-invalid");
+
+    if (!end) {
+        document.getElementById("apptEnd").classList.add("is-invalid");
+        valid = false;
+    } else document.getElementById("apptEnd").classList.remove("is-invalid");
+
+    if (start && end && end < start) {
+        document.getElementById("apptEnd").classList.add("is-invalid");
+        valid = false;
+    }
+
+    if (!valid) return;
 
     const id = Date.now();
-    edit_appointments.push({ id, startDate: s, endDate: e, seasonal: document.getElementById("edit_apptSeasonal").checked });
+    edit_appointments.push({ id, startDate: start, endDate: end, seasonal });
     edit_renderBadges();
     edit_cancelAppointment();
 }
