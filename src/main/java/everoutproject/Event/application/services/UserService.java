@@ -14,12 +14,16 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Optional;
+import everoutproject.Event.infrastructure.persistence.model.user.UserJPARepository;
 
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    private String currentUserEmail = null;
+
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder){
         this.userRepository = userRepository;
@@ -38,24 +42,23 @@ public class UserService {
         UserRole userRole = UserRole.USER;
         LocalDate createdAt = LocalDate.now();
 
-        //Hash password
+        // Hash password
         String hashpassword = passwordEncoder.encode(password);
 
         User newUser = new User(email, hashpassword, firstName, lastName, userRole);
         newUser.setCreatedAt(createdAt);
 
-        userRepository.addNewUser(newUser);
+        userRepository.save(newUser);
 
         return UserMapperDTO.toDTO(newUser);
-
     }
 
 
 
-    private String currentUserEmail = null;  // Use email instead of ID
 
     public void setCurrentUser(String email) {
         this.currentUserEmail = email;
+        System.out.println("=== DEBUG: Current user set to: " + email);
     }
 
     public User getCurrentUser() {
@@ -147,6 +150,11 @@ public class UserService {
     public void updateUserPassword(Long id, String newPassword) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Hash the new password before saving
+        String hashedPassword = passwordEncoder.encode(newPassword);
+        user.updatePassword(hashedPassword);
+        userRepository.save(user);
     }
 
     /**
@@ -167,7 +175,10 @@ public class UserService {
     public void deleteUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        userRepository.delete(id);
+
+        // Use the delete method from your repository interface
+        userRepository.delete(id);  // This matches your interface
+
         if (currentUserEmail != null && currentUserEmail.equals(user.getEmail())) {
             this.currentUserEmail = null;
         }

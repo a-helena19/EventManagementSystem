@@ -1,10 +1,3 @@
-const mockUserData = {
-    id: 1,
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com"
-};
-
 document.addEventListener("DOMContentLoaded", function() {
     const profileForm = document.getElementById('profileForm');
     const cancelBtn = document.getElementById('cancelBtn');
@@ -35,8 +28,8 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
 
-        try {  // ADD try-catch block
-            // REAL API CALL - REPLACE the setTimeout
+        try {
+            // REAL API CALL - Update profile
             const response = await fetch('/api/users/profile', {
                 method: 'PUT',
                 headers: {
@@ -46,20 +39,19 @@ document.addEventListener("DOMContentLoaded", function() {
             });
 
             if (response.ok) {
-                const userData = await response.json();
-                showToast('success', 'Profile updated successfully!');
-                updateUserDisplay(userData);
+                const result = await response.json();
+                showToast('success', result.message);
+                loadUserData(); // Reload data from server
                 setProfileReadOnly(true);
                 isEditing = false;
             } else {
                 const error = await response.json();
-                showToast('error', error.message);
+                showToast('error', error.message || 'Failed to update profile');
             }
         } catch (error) {
             showToast('error', 'Network error: ' + error.message);
         }
     });
-
 
     // Cancel button handler
     cancelBtn.addEventListener('click', function () {
@@ -86,6 +78,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
                 if (response.ok) {
                     showToast('success', 'Account deleted successfully');
+
+                    // Clear user session and redirect
+                    localStorage.removeItem('userToken');
+                    localStorage.removeItem('userEmail');
+
                     setTimeout(() => {
                         window.location.href = '/homepage';
                     }, 1500);
@@ -98,6 +95,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
     });
+
     function setProfileReadOnly(readOnly) {
         const inputs = profileForm.querySelectorAll('input');
 
@@ -122,9 +120,8 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById('cancelBtn').style.display = readOnly ? 'none' : 'inline-block';
     }
 
-    async function loadUserData() {  // ADD async
-        try {  // ADD try-catch
-            // REAL API CALL - REPLACE mock data
+    async function loadUserData() {
+        try {
             const response = await fetch('/api/users/profile');
             if (response.ok) {
                 const userData = await response.json();
@@ -134,22 +131,38 @@ document.addEventListener("DOMContentLoaded", function() {
                 updateUserDisplay(userData);
                 originalData = {...userData};
             } else {
+                // Handle unauthorized (user not logged in)
+                if (response.status === 401 || response.status === 403) {
+                    showToast('error', 'Please login first');
+                    setTimeout(() => {
+                        window.location.href = '/user';
+                    }, 2000);
+                    return;
+                }
                 throw new Error('Failed to load user data');
             }
         } catch (error) {
             console.error('Failed to load user data:', error);
-            showToast('error', 'Failed to load profile data');
-            // Fallback to mock data
-            const mockUserData = {firstName: "John", lastName: "Doe", email: "user@example.com"};
-            document.getElementById('firstName').value = mockUserData.firstName;
-            document.getElementById('lastName').value = mockUserData.lastName;
-            document.getElementById('email').value = mockUserData.email;
-            updateUserDisplay(mockUserData);
+            showToast('error', 'Failed to load profile data. Please try again.');
+
+            // Don't use mock data - show empty form instead
+            document.getElementById('firstName').value = '';
+            document.getElementById('lastName').value = '';
+            document.getElementById('email').value = '';
+            updateUserDisplay({firstName: '', lastName: '', email: ''});
         }
     }
 
     function updateUserDisplay(userData) {
-        document.getElementById('userFullName').textContent = `${userData.firstName} ${userData.lastName}`;
-        document.getElementById('userEmail').textContent = userData.email;
+        const fullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim();
+        document.getElementById('userFullName').textContent = fullName || 'Guest User';
+        document.getElementById('userEmail').textContent = userData.email || 'Not logged in';
+
+        // Update profile picture initials
+        const profileCircle = document.getElementById('profilePicture');
+        if (userData.firstName && userData.lastName) {
+            const initials = userData.firstName.charAt(0) + userData.lastName.charAt(0);
+            profileCircle.textContent = initials.toUpperCase();
+        }
     }
-})
+});
