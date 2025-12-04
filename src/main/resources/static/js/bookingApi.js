@@ -128,8 +128,24 @@ async function renderBookings(bookings) {
         container.appendChild(card);
     });
 }
+function canCancelBooking(cancelDeadline){
+    if(cancelDeadline === ""){
+        return true;
+    }
+    const date = new Date();
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+
+    const today = `${yyyy}-${mm}-${dd}`;
+
+    if(today > cancelDeadline) {
+        return false;
+    }
+    return true;
+}
 // Open Cancel Modal
-function openCancelBookingModal(event, modalEl, cancelReasonEl, cancelSection) {
+function openCancelBookingModal(booking, event, modalEl, cancelReasonEl, cancelDateEl, cancelSection) {
     const cancelTemplate = document.getElementById("cancelModalTemplate");
     const cancelContent = cancelTemplate.content.cloneNode(true);
     const cancelModalEl = cancelContent.querySelector(".modal");
@@ -137,6 +153,49 @@ function openCancelBookingModal(event, modalEl, cancelReasonEl, cancelSection) {
     // Hide Details-Modal
     const detailsBsModal = bootstrap.Modal.getInstance(modalEl);
     detailsBsModal.hide();
+
+    // Set up form submit
+    cancelModalEl.querySelector(".cancel-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const reason = cancelModalEl.querySelector(".cancellationReason").value;
+        try {
+            const res = await fetch(`/api/bookings/cancel/${event.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ reason })
+            });
+            if (!res.ok) throw new Error(await res.text());
+            showToast("success", "Event cancelled successfully!");
+            await loadEvents();
+            filterEvents();
+
+            const date = new Date();
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, '0');
+            const dd = String(date.getDate()).padStart(2, '0');
+
+            const cancelDate = `${yyyy}-${mm}-${dd}`;
+
+            // Update UI status and cancellation reason
+            booking.status = "CANCELLED";
+            booking.cancelReason = reason;
+            booking.cancelDate = cancelDate;
+
+            const statusBadge = modalEl.querySelector(".d-status");
+            statusBadge.textContent = booking.status;
+            statusBadge.classList.add("bg-danger");
+            cancelReasonEl.style.display = "block";
+            cancelReasonEl.querySelector(".info-value").textContent = reason;
+            cancelDateEl.style.display = "block";
+            cancelDateEl.querySelector(".info-value").textContent = cancelDate;
+            cancelSection.style.display = "none";
+
+            bootstrap.Modal.getInstance(cancelModalEl).hide();
+        } catch (err) {
+            console.error(err);
+            showToast("error", "Failed to cancel event");
+        }
+    });
 
     // When Cancel-Modal is closed, show Details-Modal again
     cancelModalEl.addEventListener("hidden.bs.modal", () => {
@@ -160,6 +219,8 @@ async function openDetailsModal(booking) {
     modalEl.querySelector(".d-email").textContent = booking.email;
     modalEl.querySelector(".d-phone").textContent = booking.phoneNumber || "-";
     modalEl.querySelector(".d-address").textContent = formatAddress(booking.address);
+    modalEl.querySelector(".d-cancelReason").textContent = booking.cancelReason || "-";
+    modalEl.querySelector(".d-cancelDate").textContent = booking.cancelDate || "-";
 
     // Fill booking information (right column)
     modalEl.querySelector(".d-bookingdate").textContent = booking.bookingDate;
@@ -204,11 +265,16 @@ async function openDetailsModal(booking) {
                 const cancelBtn = modalEl.querySelector(".btn-open-cancel");
                 const cancelSection = modalEl.querySelector(".cancel-section");
                 const cancelReasonEl = modalEl.querySelector(".d-cancelreason");
+                const cancelDateEl = modalEl.querySelector(".d-canceldate");
+                const cancelDeadline = event.cancelDeadline;
                 if (booking.status === "CANCELLED" || booking.status === "EXPIRED" || booking.status === "EVENTCANCELLED") {
-                    cancelSection.style.display = "none";
+                    if(!canCancelBooking(cancelDeadline)){
+                        cancelSection.style.display = "none";
+                    }
                 }
-                if(booking.status === "ACTIVE") {
-                    cancelBtn.addEventListener("click", () => openCancelBookingModal(event, modalEl, cancelReasonEl, cancelSection));
+                else if(booking.status === "ACTIVE" && canCancelBooking(cancelDeadline)) {
+                    cancelSection.style.display = "block";
+                    cancelBtn.addEventListener("click", () => openCancelBookingModal(booking, event, modalEl, cancelReasonEl, cancelDateEl, cancelSection));
                 }
 
             } else {
