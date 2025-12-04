@@ -4,6 +4,7 @@ import everoutproject.Event.application.services.BookingService;
 import everoutproject.Event.domain.model.booking.BookingAddress;
 import everoutproject.Event.rest.dtos.booking.BookingDTO;
 import everoutproject.Event.rest.dtos.booking.CancelBookingRequestDTO;
+import everoutproject.Event.rest.dtos.booking.RefundDTO;
 import everoutproject.Event.rest.dtos.event.request.CancelRequestDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -78,5 +79,10 @@ public class BookingRestController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Failed to cancel booking: " + e.getMessage()));
         }
+    }
+
+    @GetMapping("/refund/{id}")
+    public ResponseEntity<RefundDTO> getRefund(@PathVariable Long id) {
+        return ResponseEntity.ok(bookingService.getRefund(id));
     }
 }

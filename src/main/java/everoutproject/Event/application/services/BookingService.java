@@ -9,6 +9,7 @@ import everoutproject.Event.domain.model.event.Event;
 import everoutproject.Event.domain.model.event.EventRepository;
 import everoutproject.Event.domain.model.event.EventStatus;
 import everoutproject.Event.rest.dtos.booking.BookingDTO;
+import everoutproject.Event.rest.dtos.booking.RefundDTO;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -71,6 +72,35 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
+    public BigDecimal calculateRefund(LocalDate startDate, Integer depositPercent, BigDecimal price) {
+        LocalDate freeCancelUntil = startDate.minusWeeks(4);   // 4 weeks before
+        LocalDate percent25Until  = startDate.minusWeeks(2);   // 2 weeks before
+        LocalDate percent70Until  = startDate.minusDays(3);  // 3 days before
+        int refundPercent;
+
+        LocalDate cancelDate = LocalDate.now();
+
+        if (!cancelDate.isAfter(freeCancelUntil)) {
+            refundPercent= 100;
+        } else if (!cancelDate.isAfter(percent25Until)) {
+            refundPercent= 75;
+        } else if (!cancelDate.isAfter(percent70Until)) {
+            refundPercent= 30;
+        } else {
+            refundPercent = 0;
+        }
+
+        BigDecimal deposit = price
+                .multiply(BigDecimal.valueOf(depositPercent))
+                .divide(BigDecimal.valueOf(100),2, RoundingMode.HALF_UP);
+
+        BigDecimal refund = deposit
+                .multiply(BigDecimal.valueOf(refundPercent))
+                .divide(BigDecimal.valueOf(100),2, RoundingMode.HALF_UP);
+
+        return refund;
+    }
+
     public void cancelBooking(Long id, String cancelReason) {
         Booking bookingToCancel = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
@@ -85,35 +115,27 @@ public class BookingService {
                 throw new RuntimeException("Cancellation Deadline is expired");
             }
         }
-
         LocalDate startDate = event.getStartDate();
-        LocalDate freeCancelUntil = startDate.minusWeeks(4);   // 4 weeks before
-        LocalDate percent25Until  = startDate.minusWeeks(2);   // 2 weeks before
-        LocalDate percent70Until  = startDate.minusDays(3);  // 3 days before
-        int refundPercent;
-
-        if (!cancelDate.isAfter(freeCancelUntil)) {
-            refundPercent= 100;
-        } else if (!cancelDate.isAfter(percent25Until)) {
-            refundPercent= 75;
-        } else if (!cancelDate.isAfter(percent70Until)) {
-            refundPercent= 30;
-        } else {
-            refundPercent = 0;
-        }
-
         Integer depositPercent = event.getDepositPercent();
         BigDecimal price = event.getPrice();
-
-        BigDecimal deposit = price
-                .multiply(BigDecimal.valueOf(depositPercent))
-                .divide(BigDecimal.valueOf(100),2, RoundingMode.HALF_UP);
-
-        BigDecimal refund = deposit
-                .multiply(BigDecimal.valueOf(refundPercent))
-                .divide(BigDecimal.valueOf(100),2, RoundingMode.HALF_UP);
+        BigDecimal refund = calculateRefund(startDate, depositPercent, price);
 
         bookingToCancel.cancel(cancelReason, refund);
         bookingRepository.save(bookingToCancel);
+    }
+    public RefundDTO getRefund(Long id) {
+        Booking bookingToCancel = bookingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Event not found"));
+
+        LocalDate startDate = event.getStartDate();
+        Integer depositPercent = event.getDepositPercent();
+        BigDecimal price = event.getPrice();
+        BigDecimal refund = calculateRefund(startDate, depositPercent, price);
+
+        return new RefundDTO(refund);
+
     }
 }

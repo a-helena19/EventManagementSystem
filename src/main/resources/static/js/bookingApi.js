@@ -154,6 +154,8 @@ function openCancelBookingModal(booking, event, modalEl, cancelReasonEl, cancelD
     const detailsBsModal = bootstrap.Modal.getInstance(modalEl);
     detailsBsModal.hide();
 
+//try catch hier
+
     // Set up form submit
     cancelModalEl.querySelector(".cancel-form").addEventListener("submit", async (e) => {
         e.preventDefault();
