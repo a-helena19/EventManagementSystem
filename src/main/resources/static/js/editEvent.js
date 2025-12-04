@@ -72,7 +72,7 @@ function edit_toggleEndDate() {
 function edit_resetForm() {
 
     [
-        "edit_name", "edit_description", "edit_startDate", "edit_endDate",
+        "edit_name", "edit_description", "edit_startDate", "edit_endDate", "edit_cancelDeadline",
         "edit_street", "edit_houseNumber", "edit_city", "edit_postalCode",
         "edit_state", "edit_country", "edit_price", "edit_organizerSelect",
         "edit_minParticipants", "edit_maxParticipants", "edit_category",
@@ -126,6 +126,7 @@ function edit_loadForm(ev) {
     document.getElementById("edit_description").value = ev.description;
     document.getElementById("edit_startDate").value = ev.startDate;
     document.getElementById("edit_endDate").value = ev.endDate;
+    document.getElementById("edit_cancelDeadline").value = ev.cancelDeadline;
 
     document.getElementById("edit_price").value = ev.price;
     document.getElementById("edit_category").value = ev.category;
