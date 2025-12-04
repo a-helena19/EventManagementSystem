@@ -1,10 +1,14 @@
 package everoutproject.Event.infrastructure.persistence.model.booking;
 
 import everoutproject.Event.domain.model.booking.BookingRepository;
+import everoutproject.Event.domain.model.event.Event;
 import everoutproject.Event.infrastructure.mapper.BookingMapper;
+import everoutproject.Event.infrastructure.persistence.model.event.EventJPARepository;
+import everoutproject.Event.infrastructure.persistence.model.event.EventRepositoryJPAImpl;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
@@ -17,10 +21,9 @@ public class BookingRepositoryJPAImpl implements BookingRepository {
     }
 
     @Override
-    public void addNewEvent(everoutproject.Event.domain.model.booking.Booking domainBooking) {
+    public void addNewBooking(everoutproject.Event.domain.model.booking.Booking domainBooking) {
         everoutproject.Event.infrastructure.persistence.model.booking.Booking entity = BookingMapper.toEntity(domainBooking);
         everoutproject.Event.infrastructure.persistence.model.booking.Booking savedEntity = bookingJPARepository.save(entity);
-
         domainBooking.setId(savedEntity.getId());
     }
 

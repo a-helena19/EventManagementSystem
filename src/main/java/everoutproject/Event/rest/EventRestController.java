@@ -7,6 +7,10 @@ import everoutproject.Event.rest.dtos.event.CancelRequestDTO;
 import everoutproject.Event.domain.model.event.EventLocation;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import everoutproject.Event.rest.dtos.event.request.CreateEventRequestDTO;
+import everoutproject.Event.rest.dtos.event.request.EditEventRequestDTO;
+import everoutproject.Event.rest.dtos.event.response.EventDTO;
+import everoutproject.Event.rest.dtos.event.request.CancelRequestDTO;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -31,19 +35,11 @@ public class EventRestController {
         this.eventService = eventService;
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<Map<String, Object>> createEvent(
-            @RequestParam String name,
-            @RequestParam(required = false) String description,
-            @RequestParam String street,
-            @RequestParam String houseNumber,
-            @RequestParam String city,
-            @RequestParam String postalCode,
-            @RequestParam String state,
-            @RequestParam String country,
-            @RequestParam LocalDate date,
-            @RequestParam BigDecimal price,
-            @RequestParam List<MultipartFile> images
+    // Create a new event
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> createEvent(
+            @RequestPart("event") CreateEventRequestDTO dto,
+            @RequestPart(value = "images") List<MultipartFile> images
     ) throws Exception {
 
         EventLocation location = new EventLocation(street, houseNumber, city, postalCode, state, country);
@@ -64,7 +60,7 @@ public class EventRestController {
         return ResponseEntity.ok(eventService.getAllEventsDTO());
     }
 
-
+    // Return image bytes for a specific image ID
     @GetMapping("/image/{id}")
     public ResponseEntity<byte[]> getEventImage(@PathVariable Long id) throws Exception {
         byte[] imageData = eventService.getEventImage(id);
@@ -92,38 +88,27 @@ public class EventRestController {
     }
 
     // Edit an event
-    @PutMapping("/edit/{id}/status/{status}")
-    public ResponseEntity<Map<String, Object>> editEvent(
-            @PathVariable Long id,
-            @PathVariable String status,
-            @RequestParam String name,
-            @RequestParam(required = false) String description,
-            @RequestParam String street,
-            @RequestParam String houseNumber,
-            @RequestParam String city,
-            @RequestParam String postalCode,
-            @RequestParam String state,
-            @RequestParam String country,
-            @RequestParam LocalDate date,
-            @RequestParam BigDecimal price,
-            @RequestPart(required = false) List<MultipartFile> images,
-            @RequestParam(required = false) String deleteImageIds
-    ) throws Exception {
+    @PutMapping(value = "/edit/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> editEvent(@PathVariable Long id,
+                                       @RequestPart("event") EditEventRequestDTO dto,
+                                       @RequestPart(value =  "images", required = false) List<MultipartFile> images,
+                                       @RequestParam(value = "deleteImageIds", required = false) List<Long> deleteImageIds)
+ throws Exception {
 
-        EventLocation location = new EventLocation(street, houseNumber, city, postalCode, state, country);
-        EventStatus eventStatus = EventStatus.valueOf(status);
+            EventLocation location = new EventLocation(street, houseNumber, city, postalCode, state, country);
+            EventStatus eventStatus = EventStatus.valueOf(status);
 
-        List<Long> idsToDelete = null;
-        if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
-            idsToDelete = new ObjectMapper().readValue(deleteImageIds, new TypeReference<List<Long>>() {});
-        }
+            List<Long> idsToDelete = null;
+            if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
+                idsToDelete = new ObjectMapper().readValue(deleteImageIds, new TypeReference<List<Long>>() {});
+            }
 
-        eventService.editEvent(id, name, description, location, date, price, eventStatus, images, idsToDelete);
+            eventService.editEvent(id, name, description, location, date, price, eventStatus, images, idsToDelete);
 
-        return ResponseEntity.ok(Map.of(
-                "message", "Event was edited successfully",
-                "id", id,
-                "name", name
-        ));
+            return ResponseEntity.ok(Map.of(
+                    "message", "Event was edited successfully",
+                    "id", id,
+                    "name", name
+            ));
     }
 }

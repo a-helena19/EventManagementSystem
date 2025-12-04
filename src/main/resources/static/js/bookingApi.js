@@ -171,6 +171,11 @@ async function openDetailsModal(booking) {
         statusBadge.classList.add("bg-secondary");
     }
 
+    const cancelBtn = modalEl.querySelector(".btn-open-cancel");
+    if (booking.status === "CANCELLED" || booking.status === "EXPIRED" || booking.status === "EVENTCANCELLED") {
+        cancelBtn.style.display = "none";
+    }
+
     // Add modal to DOM and show it
     document.body.appendChild(modalEl);
     const bsModal = new bootstrap.Modal(modalEl);
