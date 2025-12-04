@@ -3,6 +3,8 @@ package everoutproject.Event.rest;
 import everoutproject.Event.application.services.BookingService;
 import everoutproject.Event.domain.model.booking.BookingAddress;
 import everoutproject.Event.rest.dtos.booking.BookingDTO;
+import everoutproject.Event.rest.dtos.booking.CancelBookingRequestDTO;
+import everoutproject.Event.rest.dtos.event.request.CancelRequestDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -63,6 +65,18 @@ public class BookingRestController {
             Map<String, String> response = new HashMap<>();
             response.put("message", "Failed to create booking: " + (e.getMessage() != null ? e.getMessage() : e.toString()));
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+    // Cancel a booking
+    @PutMapping("/cancel/{id}")
+    public ResponseEntity<?> cancelBooking(@PathVariable Long id, @RequestBody CancelBookingRequestDTO request) {
+        try {
+            bookingService.cancelBooking(id, request.getReason());
+            return ResponseEntity.ok(Map.of("message", "Booking cancelled successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Failed to cancel booking: " + e.getMessage()));
         }
     }
 }
