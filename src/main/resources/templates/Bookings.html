@@ -133,6 +133,10 @@
                                 <span class="info-label">Address:</span>
                                 <span class="info-value d-address"></span>
                             </div>
+                            <div class="d-cancelreason" style="display:none;">
+                                <span class="info-label">Cancellation Reason:</span>
+                                <span class="info-value"></span>
+                            </div>
                         </div>
                         <div class="col-md-6 booking-section">
                             <h6 class="text-muted mb-4">BOOKING INFORMATION</h6>
@@ -149,6 +153,10 @@
                                 <span class="info-value d-eventlocation">-</span>
                             </div>
                             <div class="info-row">
+                                <span class="info-label">Price:</span>
+                                <span class="info-value d-eventprice">-</span>
+                            </div>
+                            <div class="info-row">
                                 <span class="info-label">Status:</span>
                                 <span class="d-status badge"></span>
                             </div>
@@ -156,9 +164,37 @@
                     </div>
                 </div>
                 <div class="modal-footer d-flex justify-content-between">
-                    <div></div>
+                    <div class="cancel-section text-end">
                     <button type="button" class="btn btn-outline-danger btn-open-cancel">Cancel Booking</button>
+                    </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<template id="cancelModalTemplate">
+    <div class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form class="cancel-form">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Cancel Booking</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Please provide a reason for cancellation:</p>
+                        <textarea name="cancellationReason" class="form-control cancellationReason" rows="3" required></textarea>
+                    </div>
+                    <div>
+                        <span id="calculateRefund">
+
+                        </span>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-danger">Confirm</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

@@ -128,7 +128,26 @@ async function renderBookings(bookings) {
         container.appendChild(card);
     });
 }
+// Open Cancel Modal
+function openCancelBookingModal(event, modalEl, cancelReasonEl, cancelSection) {
+    const cancelTemplate = document.getElementById("cancelModalTemplate");
+    const cancelContent = cancelTemplate.content.cloneNode(true);
+    const cancelModalEl = cancelContent.querySelector(".modal");
 
+    // Hide Details-Modal
+    const detailsBsModal = bootstrap.Modal.getInstance(modalEl);
+    detailsBsModal.hide();
+
+    // When Cancel-Modal is closed, show Details-Modal again
+    cancelModalEl.addEventListener("hidden.bs.modal", () => {
+        cancelModalEl.remove();
+        detailsBsModal.show();
+    });
+
+    document.body.appendChild(cancelModalEl);
+    const bsCancelModal = new bootstrap.Modal(cancelModalEl);
+    bsCancelModal.show();
+}
 // Open details modal and populate booking information
 async function openDetailsModal(booking) {
     const detailsTemplate = document.getElementById("detailsModalTemplate");
@@ -164,11 +183,6 @@ async function openDetailsModal(booking) {
         statusBadge.classList.add("bg-secondary");
     }
 
-    const cancelBtn = modalEl.querySelector(".btn-open-cancel");
-    if (booking.status === "CANCELLED" || booking.status === "EXPIRED" || booking.status === "EVENTCANCELLED") {
-        cancelBtn.style.display = "none";
-    }
-
     // Add modal to DOM and show it
     document.body.appendChild(modalEl);
     const bsModal = new bootstrap.Modal(modalEl);
@@ -184,16 +198,32 @@ async function openDetailsModal(booking) {
             if (event) {
                 modalEl.querySelector(".d-eventname").textContent = event.name;
                 modalEl.querySelector(".d-eventlocation").textContent = formatEventLocation(event.location);
+                const price = event.price + "€";
+                modalEl.querySelector(".d-eventprice").textContent = price;
+
+                const cancelBtn = modalEl.querySelector(".btn-open-cancel");
+                const cancelSection = modalEl.querySelector(".cancel-section");
+                const cancelReasonEl = modalEl.querySelector(".d-cancelreason");
+                if (booking.status === "CANCELLED" || booking.status === "EXPIRED" || booking.status === "EVENTCANCELLED") {
+                    cancelSection.style.display = "none";
+                }
+                if(booking.status === "ACTIVE") {
+                    cancelBtn.addEventListener("click", () => openCancelBookingModal(event, modalEl, cancelReasonEl, cancelSection));
+                }
+
             } else {
                 modalEl.querySelector(".d-eventname").textContent = "Event not found";
                 modalEl.querySelector(".d-eventlocation").textContent = "-";
+                modalEl.querySelector(".d-eventprice").textContent = "-";
             }
         }
     } catch (error) {
         console.error("Failed to load event details:", error);
         modalEl.querySelector(".d-eventname").textContent = "Error loading event";
         modalEl.querySelector(".d-eventlocation").textContent = "-";
+        modalEl.querySelector(".d-eventprice").textContent = "-";
     }
+
 
     // Clean up when modal is hidden
     modalEl.addEventListener("hidden.bs.modal", () => {
