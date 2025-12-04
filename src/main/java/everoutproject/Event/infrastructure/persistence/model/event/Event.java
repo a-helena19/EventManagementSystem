@@ -1,12 +1,16 @@
 package everoutproject.Event.infrastructure.persistence.model.event;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import everoutproject.Event.infrastructure.persistence.model.organizer.Organizer;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "Event")
@@ -21,30 +25,40 @@ public class Event {
     @Column(nullable = true)
     private String description;
 
+    // location fields
     @Column(nullable = false)
     private String street;
-
     @Column(nullable = false)
     private String houseNumber;
-
     @Column(nullable = false)
     private String city;
-
     @Column(nullable = false)
     private String postalCode;
-
     @Column(nullable = false)
     private String state;
-
     @Column(nullable = false)
     private String country;
 
-    @Column(nullable = false)
-    private LocalDate date;
+
+    @Column(name = "start_date")
+    private LocalDate startDate;
+    @Column(name = "end_date")
+    private LocalDate endDate;
+    @Column(name = "cancel_deadline")
+    private LocalDate cancelDeadline;
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<EventAppointment> appointments = new ArrayList<>();
 
     // using up to 10 digits total, inclusive 2 digits after comma (e.g. 99999999.99)
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
+
+    @Column(nullable = false)
+    @Min(0)
+    @Max(100)
+    private Integer depositPercent;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -52,6 +66,39 @@ public class Event {
 
     @Column(name = "cancel_reason",nullable = true)
     private String cancellationReason;
+
+    @Column(name = "min_participants")
+    private Integer minParticipants;
+
+    @Column(name = "max_participants")
+    private Integer maxParticipants;
+
+    @Column(name = "booked_participants", nullable = false)
+    private Integer bookedParticipants = 0;
+
+    // Relationships to supporting entities
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Requirement> requirements = new ArrayList<>();
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EventEquipment> equipments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AdditionalPackage> additionalPackages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<EventFeedback> feedback = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organizer_id")
+    private Organizer organizer;
+
+    @Column(name = "category", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private EventCategory category;
+
+    @Column(name = "duration_days")
+    private Integer durationInDays;
 
     // mappedBy: bidirectional relationship and event is the owner.
     // CascadeType.ALL: all operations (persist, merge, remove, refresh, detach) on the parent (event) will be automatically applied on the child (eventImage)
@@ -73,9 +120,13 @@ public class Event {
                  String postalCode,
                  String state,
                  String country,
-                 LocalDate date,
+                 LocalDate startDate,
+                 LocalDate endDate,
+                 LocalDate cancelDeadline,
                  BigDecimal price,
-                 EventStatus status) {
+                 Integer depositPercent,
+                 EventStatus status,
+                 EventCategory category) {
         this.name = name;
         this.description = description;
         this.street = street;
@@ -84,9 +135,13 @@ public class Event {
         this.postalCode = postalCode;
         this.state = state;
         this.country = country;
-        this.date = date;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.cancelDeadline = cancelDeadline;
         this.price = price;
+        this.depositPercent = Objects.requireNonNullElse(depositPercent, 30);
         this.status = status;
+        this.category = category;
     }
 
 
@@ -98,7 +153,6 @@ public class Event {
     public String getName() {
         return name;
     }
-
     public void setName(String name) {
         this.name = name;
     }
@@ -106,65 +160,71 @@ public class Event {
     public String getDescription() {
         return description;
     }
-
     public void setDescription(String description) {
         this.description = description;
     }
 
     public String getStreet() {return street;}
-
     public void setStreet(String street) {
         this.street = street;
     }
 
     public String getHouseNumber() {return houseNumber;}
-
     public void setHouseNumber(String houseNumber) {
         this.houseNumber = houseNumber;
     }
-    public String getCity() {return city;}
 
+    public String getCity() {return city;}
     public void setCity(String city) {
         this.city = city;
     }
-    public String getPostalCode() {return postalCode;}
 
+    public String getPostalCode() {return postalCode;}
     public void setPostalCode(String postalCode) {
         this.postalCode = postalCode;
     }
 
     public String getState() {return state;}
-
     public void setState(String state) {
         this.state = state;
     }
 
     public String getCountry() {return country;}
-
     public void setCountry(String country) {
         this.country = country;
     }
 
-    public LocalDate getDate() {
-        return date;
-    }
+    public LocalDate getStartDate() { return startDate; }
+    public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
 
-    public void setDate(LocalDate date) {
-        this.date = date;
+    public LocalDate getEndDate() { return endDate; }
+    public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
+
+    public LocalDate getCancelDeadline() { return cancelDeadline; }
+    public void setCancelDeadline(LocalDate cancelDeadline) { this.cancelDeadline = cancelDeadline; }
+
+    public List<EventAppointment> getAppointments() { return appointments; }
+    public void setAppointments(List<EventAppointment> appointments) {
+        this.appointments = appointments;
+        for (EventAppointment a : appointments) a.setEvent(this);
+    }
+    public void addAppointment(EventAppointment a) {
+        appointments.add(a); a.setEvent(this);
     }
 
     public BigDecimal getPrice() {
         return price;
     }
-
     public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
+    public Integer getDepositPercent() { return depositPercent; }
+    public void setDepositPercent(Integer depositPercent) { this.depositPercent = depositPercent; }
+
     public EventStatus getStatus() {
         return status;
     }
-
     public void setStatus(EventStatus status) {
         this.status = status;
     }
@@ -172,15 +232,55 @@ public class Event {
     public String getCancellationReason(){
         return cancellationReason;
     }
-
     public void setCancellationReason(String reason){
         this.cancellationReason = reason;
     }
 
+    public Integer getMinParticipants() { return minParticipants; }
+    public void setMinParticipants(Integer minParticipants) { this.minParticipants = minParticipants; }
+
+    public Integer getMaxParticipants() { return maxParticipants; }
+    public void setMaxParticipants(Integer maxParticipants) { this.maxParticipants = maxParticipants; }
+
+    public Integer getBookedParticipants() {return bookedParticipants;}
+    public void setBookedParticipants(Integer bookedParticipants) {this.bookedParticipants = bookedParticipants;}
+
+    public List<Requirement> getRequirements() { return requirements; }
+    public void setRequirements(List<Requirement> requirements) {
+        this.requirements = requirements;
+        for (Requirement r : requirements) r.setEvent(this);
+    }
+
+    public List<EventEquipment> getEquipments() { return equipments; }
+    public void setEquipments(List<EventEquipment> equipment) {
+        this.equipments = equipment;
+        for (EventEquipment e : equipment) e.setEvent(this);
+    }
+
+    public List<AdditionalPackage> getAdditionalPackages() { return additionalPackages; }
+    public void setAdditionalPackages(List<AdditionalPackage> additionalPackages) {
+        this.additionalPackages = additionalPackages;
+        for (AdditionalPackage p : additionalPackages) p.setEvent(this);
+    }
+
+    public List<EventFeedback> getFeedback() { return feedback; }
+    public void setFeedback(List<EventFeedback> feedback) {
+        this.feedback = feedback;
+        for (EventFeedback f : feedback) f.setEvent(this);
+    }
+
+    public Organizer getOrganizer() { return organizer; }
+    public void setOrganizer(Organizer organizer) { this.organizer = organizer; }
+
+    public EventCategory getCategory() { return category; }
+    public void setCategory(EventCategory category) { this.category = category; }
+
+    public Integer getDurationInDays() { return durationInDays; }
+    public void setDurationInDays(Integer durationInDays) { this.durationInDays = durationInDays; }
+
     public List<EventImage> getImages() {
         return images;
     }
-
     public void setImages(List<EventImage> images) {
         this.images = images;
         for (EventImage img : images) {
@@ -192,17 +292,39 @@ public class Event {
         images.add(image);
         image.setEvent(this);
     }
-
     public void removeImage(EventImage image) {
         images.remove(image);
         image.setEvent(null);
     }
 
+    public void addAdditionalPackage(AdditionalPackage add) {
+        additionalPackages.add(add);
+        add.setEvent(this);
+    }
+
+    public void addEquipment(EventEquipment eq) {
+        equipments.add(eq);
+        eq.setEvent(this);
+    }
+
+    public void addRequirement(Requirement req) {
+        requirements.add(req);
+        req.setEvent(this);
+    }
+
+
     @Override
     public String toString() {
-        return "Event [id=" + id + ", name=" + name + ", description=" + description + ", location=" + street + " "
-                + houseNumber + ", " + postalCode + " " + city + ", " + state + ", " + country +
-                ", date=" + date + ", price=" + price + ", status=" + status + "]";
+
+        return "Event [id=" + id +
+                ", name=" + name +
+                ", depositPercent=" + depositPercent +
+                ", price=" + price +
+                ", start=" + startDate +
+                ", end=" + endDate +
+                ", cancel=" + cancelDeadline +
+                "]";
+
     }
 }
 

@@ -1,4 +1,4 @@
-package everoutproject.Event.rest.dtos.event;
+package everoutproject.Event.rest.dtos.event.request;
 
 public class CancelRequestDTO {
     private String reason;

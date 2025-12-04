@@ -1,0 +1,266 @@
+/* ===========================
+   EDIT EVENT MODAL LAYOUT
+   =========================== */
+
+#editEventModal {
+    padding: 2rem 1rem;
+}
+
+/* Make edit modal full width like create modal */
+#editEventModal .modal-dialog {
+    max-width: 90% !important;
+    margin: 0 auto;
+    min-height: calc(100vh - 4rem);
+    display: flex;
+    align-items: center;
+}
+
+/* Ensure no global eventList.css overrides */
+#editEventModal .modal-content {
+    border-radius: 12px;
+    background-color: #ffffff;
+    padding: 10px 0;
+    width: 100%;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+}
+
+/* ===========================
+   FORM BASE STYLE
+   =========================== */
+
+.edit-form {
+    width: 100%;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Labels */
+.edit-form label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+    display: block;
+}
+
+/* Inputs, textareas, selects */
+.edit-form input,
+.edit-form textarea,
+.edit-form select {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 10px 12px !important;
+    font-size: 14px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    width: 100%;
+}
+
+/* Checkbox fix */
+.edit-form input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    padding: 0 !important;
+}
+
+/* Input focus states */
+.edit-form input:focus,
+.edit-form textarea:focus,
+.edit-form select:focus {
+    border-color: #007bff !important;
+    box-shadow: 0 0 4px rgba(0,123,255,0.4);
+    outline: none;
+}
+
+/* Valid/invalid states */
+.edit-form input:valid,
+.edit-form textarea:valid,
+.edit-form select:valid {
+    border-color: green !important;
+}
+
+.edit-form input:invalid:focus,
+.edit-form textarea:invalid:focus,
+.edit-form select:invalid:focus {
+    border-color: red !important;
+}
+
+.is-invalid {
+    border-color: red !important;
+    box-shadow: 0 0 4px rgba(255,0,0,0.4) !important;
+}
+
+/* ===========================
+   SECTION HEADERS
+   =========================== */
+
+#edit_leftColumn h5,
+#edit_rightColumn h5 {
+    font-weight: 600;
+    margin-top: 25px;
+    margin-bottom: 10px;
+}
+
+/* ===========================
+   BADGES & LIST ITEMS
+   =========================== */
+
+#edit_requirementsContainer,
+#edit_equipmentContainer,
+#edit_packagesContainer,
+#edit_appointmentsContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+#edit_appointmentsContainer .badge,
+#edit_packagesContainer .badge {
+    margin-bottom: 6px;
+}
+
+#edit_packagesContainer .badge,
+#edit_appointmentsContainer .badge,
+#edit_requirementsContainer .badge,
+#edit_equipmentContainer .badge{
+    font-size: 13px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.remove-item {
+    cursor: pointer;
+    margin-left: 8px;
+    font-weight: bold;
+}
+
+/* Icon buttons (✓ and ✕) */
+.icon-btn {
+    border: none;
+    background: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 0 6px;
+}
+
+.icon-btn.save {
+    color: #28a745;
+}
+
+.icon-btn.cancel {
+    color: #dc3545;
+}
+
+.icon-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* ===========================
+   INLINE INPUT ROWS
+   =========================== */
+
+#edit_requirementInputs,
+#edit_equipmentInputs,
+#edit_appointmentInputs,
+#edit_packageInputs {
+    align-items: center;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+/* smaller inline buttons */
+#edit_requirementInputs .btn,
+#edit_equipmentInputs .btn,
+#edit_appointmentInputs .btn,
+#edit_packageInputs .btn {
+    padding: 6px 14px;
+}
+
+.input-group input,
+.input-group select {
+    width: auto !important;
+    flex: 1 !important;
+}
+
+.input-group .btn {
+    flex: 0 0 auto !important;
+}
+
+/* ===========================
+   READONLY MODE SUPPORT
+   =========================== */
+
+.readonly input,
+.readonly textarea,
+.readonly select {
+    pointer-events: none;
+    background-color: #e9ecef !important;
+    border: 1px solid #bbb !important;
+}
+
+.readonly .btn-outline-primary,
+.readonly .remove-item {
+    display: none !important;
+}
+
+/* ===========================
+   FILE INPUTS
+   =========================== */
+
+#edit_fileNames {
+    margin-top: 5px;
+    font-size: 12px;
+    color: #333;
+}
+
+/* Images container spacing */
+#edit_existingImages img {
+    border-radius: 6px;
+}
+
+/* ===========================
+   BUTTONS (Next / Back / Submit)
+   =========================== */
+
+#edit_nextBtn,
+#edit_backBtn,
+#edit_submitBtn {
+    padding: 10px 20px;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: background-color 0.3s;
+}
+
+#edit_nextBtn,
+#edit_submitBtn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+}
+
+#edit_nextBtn:hover,
+#edit_submitBtn:hover {
+    background-color: #0056b3;
+}
+
+#edit_backBtn {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+}
+
+#edit_backBtn:hover {
+    background-color: #5a6268;
+}
+
+/* Ensure buttons stay aligned */
+#edit_backBtn,
+#edit_submitBtn {
+    display: inline-block;
+    margin: 20px 5px 0 5px;
+}
