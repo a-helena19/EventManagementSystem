@@ -14,6 +14,7 @@ public class EditEventRequestDTO {
 
     public LocalDate startDate;
     public LocalDate endDate;
+    public LocalDate cancelDeadline;
 
     public Double price;
     public Integer depositPercent;

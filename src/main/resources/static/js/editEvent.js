@@ -38,6 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("edit_startDate").addEventListener("change", edit_validateDates);
     document.getElementById("edit_endDate").addEventListener("change", edit_validateDates);
+    document.getElementById("edit_cancelDeadline").addEventListener("change", edit_validateCancel);
 
     document.getElementById("edit_apptStart").addEventListener("change", edit_validateAppointmentDates);
     document.getElementById("edit_apptEnd").addEventListener("change", edit_validateAppointmentDates);
@@ -281,6 +282,18 @@ function edit_validateParticipants() {
 
     if (max < min) maxField.setCustomValidity("Max < min");
     else maxField.setCustomValidity("");
+}
+
+function edit_validateCancel() {
+    const start = document.getElementById("edit_startDate");
+    const cancel = document.getElementById("edit_cancelDeadline");
+
+    if (cancel.value > start.value) {
+        cancel.setCustomValidity("Cancellation Deadline cannot be later than start date");
+        return false;
+    }
+    cancel.setCustomValidity("");
+    return true;
 }
 
 function edit_validateDates() {
@@ -677,6 +690,7 @@ async function edit_submitEvent() {
         description: document.getElementById("edit_description").value,
         startDate: document.getElementById("edit_startDate").value,
         endDate: document.getElementById("edit_endDate").value,
+        cancelDeadline: document.getElementById("edit_cancelDeadline").value,
         price: parseFloat(document.getElementById("edit_price").value),
         depositPercent: isNaN(dpVal) ? 30 : dpVal,
         category: document.getElementById("edit_category").value,

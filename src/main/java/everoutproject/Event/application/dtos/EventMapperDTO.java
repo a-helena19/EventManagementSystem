@@ -15,6 +15,7 @@ public class EventMapperDTO {
 
                 event.getStartDate(),
                 event.getEndDate(),
+                event.getCancelDeadline(),
 
                 event.getAppointments().stream().map(EventMapperDTO::toAppointmentDTO).toList(),
 

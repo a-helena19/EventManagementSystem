@@ -13,6 +13,8 @@ public record EventDTO(
         LocalDate startDate,
         LocalDate endDate,
 
+        LocalDate cancelDeadline,
+
         List<EventAppointmentDTO> appointments,
 
         BigDecimal price,

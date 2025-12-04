@@ -17,6 +17,8 @@ public class Event {
     private LocalDate startDate;
     private LocalDate endDate;
 
+    private LocalDate cancelDeadline;
+
     private List<EventAppointment> appointments = new ArrayList<>();
 
     private BigDecimal price;
@@ -46,6 +48,7 @@ public class Event {
                  EventLocation location,
                  LocalDate startDate,
                  LocalDate endDate,
+                 LocalDate cancelDeadline,
                  BigDecimal price,
                  Integer depositPercent,
                  EventStatus status,
@@ -59,6 +62,7 @@ public class Event {
                 location,
                 startDate,
                 endDate,
+                cancelDeadline,
                 new ArrayList<>(),
                 price,
                 depositPercent != null ? depositPercent : 30,
@@ -82,6 +86,7 @@ public class Event {
                  EventLocation location,
                  LocalDate startDate,
                  LocalDate endDate,
+                 LocalDate cancelDeadline,
                  List<EventAppointment> appointments,
                  BigDecimal price,
                  Integer depositPercent,
@@ -102,6 +107,7 @@ public class Event {
         this.location = location;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.cancelDeadline = cancelDeadline;
         if (appointments != null) this.appointments.addAll(appointments);
         this.price = price;
         this.depositPercent = depositPercent;
@@ -125,6 +131,8 @@ public class Event {
     public EventLocation getLocation() { return location; }
     public LocalDate getStartDate() { return startDate; }
     public LocalDate getEndDate() { return endDate; }
+
+    public LocalDate getCancelDeadline() { return cancelDeadline; }
     public List<EventAppointment> getAppointments() { return Collections.unmodifiableList(appointments); }
     public BigDecimal getPrice() { return price; }
     public Integer getDepositPercent() { return depositPercent; }
@@ -160,6 +168,7 @@ public class Event {
                      EventLocation location,
                      LocalDate startDate,
                      LocalDate endDate,
+                     LocalDate cancelDeadline,
                      List<EventAppointment> appointments,
                      BigDecimal price,
                      Integer depositPercent,
@@ -178,6 +187,7 @@ public class Event {
         this.location = location;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.cancelDeadline = cancelDeadline;
         if (appointments != null) {
             this.appointments.clear();
             this.appointments.addAll(appointments);
@@ -292,6 +302,7 @@ public class Event {
                 ", price=" + price +
                 ", start=" + startDate +
                 ", end=" + endDate +
+                ", cancel=" + cancelDeadline +
                 "]";
     }
 }

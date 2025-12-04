@@ -44,6 +44,8 @@ public class Event {
     private LocalDate startDate;
     @Column(name = "end_date")
     private LocalDate endDate;
+    @Column(name = "cancel_deadline")
+    private LocalDate cancelDeadline;
 
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
@@ -120,6 +122,7 @@ public class Event {
                  String country,
                  LocalDate startDate,
                  LocalDate endDate,
+                 LocalDate cancelDeadline,
                  BigDecimal price,
                  Integer depositPercent,
                  EventStatus status,
@@ -134,6 +137,7 @@ public class Event {
         this.country = country;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.cancelDeadline = cancelDeadline;
         this.price = price;
         this.depositPercent = Objects.requireNonNullElse(depositPercent, 30);
         this.status = status;
@@ -195,6 +199,9 @@ public class Event {
 
     public LocalDate getEndDate() { return endDate; }
     public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
+
+    public LocalDate getCancelDeadline() { return cancelDeadline; }
+    public void setCancelDeadline(LocalDate cancelDeadline) { this.cancelDeadline = cancelDeadline; }
 
     public List<EventAppointment> getAppointments() { return appointments; }
     public void setAppointments(List<EventAppointment> appointments) {
@@ -315,6 +322,7 @@ public class Event {
                 ", price=" + price +
                 ", start=" + startDate +
                 ", end=" + endDate +
+                ", cancel=" + cancelDeadline +
                 "]";
 
     }

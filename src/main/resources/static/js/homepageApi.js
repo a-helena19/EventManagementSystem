@@ -28,6 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Event date validation
     document.getElementById("startDate").addEventListener("change", validateDates);
     document.getElementById("endDate").addEventListener("change", validateDates);
+    document.getElementById("cancelDeadline").addEventListener("change", validateCancel);
 
     // Appointment date validation
     document.getElementById("apptStart").addEventListener("change", validateAppointmentDates);
@@ -65,7 +66,7 @@ function resetForm() {
 
     // Reset normal fields
     [
-        "name", "description", "startDate", "endDate",
+        "name", "description", "startDate", "endDate", "cancelDeadline",
         "street", "houseNumber", "city", "postalCode",
         "state", "country", "price", "organizerSelect",
         "minParticipants", "maxParticipants", "category", "apptStart",
@@ -109,6 +110,7 @@ function resetForm() {
     const today = new Date().toISOString().split("T")[0];
     document.getElementById("startDate").min = today;
     document.getElementById("endDate").min = today;
+    document.getElementById("cancelDeadline").min = today;
 }
 
 // ===========================
@@ -328,6 +330,20 @@ function validateParticipants() {
     }
 
     maxField.setCustomValidity("");
+    return true;
+}
+// ===========================
+// VALIDATE CANCELLATION DEADLINE
+// ===========================
+function validateCancel() {
+    const start = document.getElementById("startDate");
+    const cancel = document.getElementById("cancelDeadline");
+
+    if (cancel.value > start.value) {
+        cancel.setCustomValidity("Cancellation Deadline cannot be later than start date");
+        return false;
+    }
+    cancel.setCustomValidity("");
     return true;
 }
 
@@ -786,6 +802,7 @@ async function submitEvent() {
             description: document.getElementById("description").value,
             startDate: document.getElementById("startDate").value,
             endDate: document.getElementById("endDate").value,
+            cancelDeadline: document.getElementById("cancelDeadline").value,
             price: parseFloat(document.getElementById("price").value),
             depositPercent:isNaN(dpVal) ? 30 : dpVal,
             category: document.getElementById("category").value,
