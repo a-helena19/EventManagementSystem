@@ -63,7 +63,7 @@ public class BookingService {
         event.increaseBookedParticipants(1);
         eventRepository.save(event);
 
-        bookingRepository.addNewEvent(newBooking);
+        bookingRepository.addNewBooking(newBooking);
         return BookingMapperDTO.toDTO(newBooking);
     }
 

@@ -39,8 +39,9 @@ public class EventService {
      */
     @PreAuthorize("@roleChecker.canCreateEvent(authentication)")
     @Transactional
-    public EventDTO createEvent(String name, String description, EventLocation location, LocalDate date,
-                                BigDecimal price, List<MultipartFile> images) {
+    public EventDTO createEvent(CreateEventRequestDTO dto, List<MultipartFile> images) {
+
+        Organizer organizer;
 
         if (dto.newOrganizer != null) {
             // neu organizer from dto

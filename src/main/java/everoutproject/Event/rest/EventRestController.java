@@ -2,8 +2,6 @@ package everoutproject.Event.rest;
 
 import everoutproject.Event.application.services.EventService;
 import everoutproject.Event.domain.model.event.EventStatus;
-import everoutproject.Event.rest.dtos.event.EventDTO;
-import everoutproject.Event.rest.dtos.event.CancelRequestDTO;
 import everoutproject.Event.domain.model.event.EventLocation;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,18 +38,21 @@ public class EventRestController {
     public ResponseEntity<?> createEvent(
             @RequestPart("event") CreateEventRequestDTO dto,
             @RequestPart(value = "images") List<MultipartFile> images
-    ) throws Exception {
-
-        EventLocation location = new EventLocation(street, houseNumber, city, postalCode, state, country);
-        EventDTO eventDTO = eventService.createEvent(name, description, location, date, price, images);
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(Map.of(
-                        "message", "Event created successfully",
-                        "id", eventDTO.id(),
-                        "name", eventDTO.name()
-                ));
+    ) {
+        try {
+            EventDTO created = eventService.createEvent(dto, images);
+            System.out.println("Created event: " + created);
+            System.out.println("ID = " + created.id());
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of(
+                            "message", "Event created successfully",
+                            "id", created.id(),
+                            "name", created.name()
+                    ));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Failed to create event: " + e.getMessage()));
+        }
     }
 
     // Return all events as DTOs
@@ -92,23 +93,16 @@ public class EventRestController {
     public ResponseEntity<?> editEvent(@PathVariable Long id,
                                        @RequestPart("event") EditEventRequestDTO dto,
                                        @RequestPart(value =  "images", required = false) List<MultipartFile> images,
-                                       @RequestParam(value = "deleteImageIds", required = false) List<Long> deleteImageIds)
- throws Exception {
-
-            EventLocation location = new EventLocation(street, houseNumber, city, postalCode, state, country);
-            EventStatus eventStatus = EventStatus.valueOf(status);
-
-            List<Long> idsToDelete = null;
-            if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
-                idsToDelete = new ObjectMapper().readValue(deleteImageIds, new TypeReference<List<Long>>() {});
-            }
-
-            eventService.editEvent(id, name, description, location, date, price, eventStatus, images, idsToDelete);
-
-            return ResponseEntity.ok(Map.of(
-                    "message", "Event was edited successfully",
-                    "id", id,
-                    "name", name
-            ));
+                                       @RequestParam(value = "deleteImageIds", required = false) List<Long> deleteImageIds) {
+        try {
+        EventDTO updated = eventService.editEvent(id, dto, images, deleteImageIds);
+        return ResponseEntity.ok(Map.of(
+                "message", "Event was edited successfully",
+                "id", updated.id(),
+                "name", updated.name()));
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("message", "Failed to edit event: " + e.getMessage()));
     }
+}
 }

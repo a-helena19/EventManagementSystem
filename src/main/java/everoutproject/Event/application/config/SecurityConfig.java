@@ -56,6 +56,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/events/create", "/api/events/edit/**", "/api/events/cancel/**")
                         .hasAnyRole("ADMIN", "BACKOFFICE")
 
+                        .requestMatchers("/api/organizers", "/api/organizers/**").permitAll()
+
                         .requestMatchers("/api/bookings").hasAnyRole("ADMIN", "BACKOFFICE", "FRONTOFFICE", "USER")
 
                         .anyRequest().authenticated())
