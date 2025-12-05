@@ -70,10 +70,10 @@ public class BookingRestController {
     }
 
     // Cancel a booking
-    @PutMapping("/cancel/{id}")
-    public ResponseEntity<?> cancelBooking(@PathVariable Long id, @RequestBody CancelBookingRequestDTO request) {
+    @PutMapping("/cancel/{eventId}/{bookingId}")
+    public ResponseEntity<?> cancelBooking(@PathVariable Long eventId, @PathVariable Long bookingId, @RequestBody CancelBookingRequestDTO request) {
         try {
-            bookingService.cancelBooking(id, request.getReason());
+            bookingService.cancelBooking(eventId, bookingId, request.getReason());
             return ResponseEntity.ok(Map.of("message", "Booking cancelled successfully"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

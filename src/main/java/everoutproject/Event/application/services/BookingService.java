@@ -101,11 +101,11 @@ public class BookingService {
         return refund;
     }
 
-    public void cancelBooking(Long id, String cancelReason) {
-        Booking bookingToCancel = bookingRepository.findById(id)
+    public void cancelBooking(Long eventId, Long bookingId, String cancelReason) {
+        Booking bookingToCancel = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
 
-        Event event = eventRepository.findById(id)
+        Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
 
         LocalDate cancelDeadline = event.getCancelDeadline();
@@ -124,9 +124,6 @@ public class BookingService {
         bookingRepository.save(bookingToCancel);
     }
     public RefundDTO getRefund(Long id) {
-        Booking bookingToCancel = bookingRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
-
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
 
