@@ -2,6 +2,8 @@ package everoutproject.Event.infrastructure.persistence.model.booking;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 
@@ -50,6 +52,11 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     private BookingStatus status;
 
+    private LocalDate cancelDate;
+
+    private String cancelReason;
+
+    private BigDecimal refund;
     // Just store the event_id as a foreign key
     @Column(name = "event_id", nullable = false)
     private Long eventId;
@@ -155,6 +162,15 @@ public class Booking {
     public void setStatus(BookingStatus status) {
         this.status = status;
     }
+
+    public LocalDate getCancelDate() { return cancelDate; }
+    public void setCancelDate(LocalDate cancelDate) { this.cancelDate = cancelDate; }
+
+    public String getCancelReason() { return cancelReason; }
+    public void setCancelReason(String cancelReason) { this.cancelReason = cancelReason; }
+
+    public BigDecimal getRefund() { return refund; }
+    public void setRefund(BigDecimal refund) { this.refund = refund; }
 
     public Long getEventId() {return eventId;}
 

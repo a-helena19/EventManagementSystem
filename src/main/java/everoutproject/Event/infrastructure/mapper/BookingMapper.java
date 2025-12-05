@@ -26,6 +26,9 @@ public class BookingMapper {
                 entity.getPhoneNumber(),
                 entity.getEmail(),
                 BookingStatus.valueOf(entity.getStatus().name()),
+                entity.getCancelDate(),
+                entity.getCancelReason(),
+                entity.getRefund(),
                 entity.getEventId(),
                 entity.getUserId()
         );
@@ -55,6 +58,9 @@ public class BookingMapper {
                 domain.getUserId()
         );
         entity.setId(domain.getId());
+        entity.setCancelDate(domain.getCancelDate());
+        entity.setCancelReason(domain.getCancelReason());
+        entity.setRefund(domain.getRefund());
         return entity;
     }
 }
