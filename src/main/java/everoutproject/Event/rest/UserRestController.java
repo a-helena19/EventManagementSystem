@@ -87,7 +87,7 @@ public class UserRestController {
             Role role = principal.getRoleDefinition();
 
             // IMPORTANT: Set the current user in the service
-           //* userService.setCurrentUser(email);
+           userService.setCurrentUser(email);
 
             return ResponseEntity.ok(Map.of(
                     "message", "Login successful",

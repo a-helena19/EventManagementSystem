@@ -83,27 +83,6 @@ public class UserService {
         }
     }
 
-    /** public User getCurrentUser() {
-       System.out.println("=== DEBUG getCurrentUser ===");
-        System.out.println("currentUserEmail: " + currentUserEmail);
-
-        if (currentUserEmail == null) {
-            System.out.println("FALLBACK: Using first user from database");
-            List<User> allUsers = userRepository.findAll();
-            if (allUsers.isEmpty()) {
-                throw new RuntimeException("No users found");
-            }
-            User firstUser = allUsers.get(0);
-            System.out.println("First user email: " + firstUser.getEmail());
-            return firstUser;
-        }
-
-        System.out.println("Using currentUserEmail: " + currentUserEmail);
-        return userRepository.findByEmail(currentUserEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-
-    }*/
 
 
     public User getCurrentUser() {
