@@ -13,8 +13,10 @@ import everoutproject.Event.application.dtos.EventMapperDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,6 +37,7 @@ public class EventService {
     /**
      * Create a new Event with optional images.
      */
+    @PreAuthorize("@roleChecker.canCreateEvent(authentication)")
     @Transactional
     public EventDTO createEvent(CreateEventRequestDTO dto, List<MultipartFile> images) {
 
@@ -161,18 +164,16 @@ public class EventService {
         eventRepository.save(eventToCancel);
 
         List<Booking> bookings = bookingRepository.findByEventId(id);
-        if (!bookings.isEmpty()) {
-            for (Booking booking : bookings) {
-                booking.setStatus(BookingStatus.EVENTCANCELLED);
-                bookingRepository.save(booking);
-                System.out.println("Booking ID: " + booking.getId() + ", Status: " + booking.getStatus());
-            }
+        for (Booking booking : bookings) {
+            booking.setStatus(BookingStatus.EVENTCANCELLED);
+            bookingRepository.save(booking);
         }
     }
 
     /**
      * Edit and Save an Event
      */
+    @PreAuthorize("@roleChecker.canEditEvent(authentication)")
     @Transactional
     public EventDTO editEvent(Long id, EditEventRequestDTO dto, List<MultipartFile> images, List<Long> idsToDelete) throws Exception {
 
@@ -333,9 +334,7 @@ public class EventService {
         return EventMapperDTO.toDTO(eventToEdit);
     }
 
-    /**
-     * For debugging/logging purposes: prints all events to console.
-     */
+
     @Transactional
     public void printEvents() {
         eventRepository.findAll().forEach(event -> System.out.println(event.toString()));
