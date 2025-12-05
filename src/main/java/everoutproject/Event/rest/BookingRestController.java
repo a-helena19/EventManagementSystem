@@ -4,6 +4,9 @@ import everoutproject.Event.application.security.RoleChecker;
 import everoutproject.Event.application.services.BookingService;
 import everoutproject.Event.domain.model.booking.BookingAddress;
 import everoutproject.Event.rest.dtos.booking.BookingDTO;
+import everoutproject.Event.rest.dtos.booking.CancelBookingRequestDTO;
+import everoutproject.Event.rest.dtos.booking.RefundDTO;
+import everoutproject.Event.rest.dtos.event.request.CancelRequestDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -39,7 +42,6 @@ public class BookingRestController {
         return ResponseEntity.ok(bookingService.getAccessibleBookings());
     }
 
-
     @PostMapping("/create")
     public ResponseEntity<Map<String, Object>> createBooking(
             @RequestParam String firstname,
@@ -54,7 +56,6 @@ public class BookingRestController {
             @RequestParam Long eventId,
             Authentication authentication
     ) {
-
         Long userId = roleChecker.getUserId(authentication);
 
         BookingAddress address = new BookingAddress(street, houseNumber, city, postalCode);
@@ -75,5 +76,22 @@ public class BookingRestController {
     public ResponseEntity<Map<String, String>> cancelBooking(@PathVariable Long id) {
         bookingService.cancelBooking(id);
         return ResponseEntity.ok(Map.of("message", "Booking cancelled successfully"));
+    }
+
+    // Cancel a booking
+    @PutMapping("/cancel/{eventId}/{bookingId}")
+    public ResponseEntity<?> cancelBooking(@PathVariable Long eventId, @PathVariable Long bookingId, @RequestBody CancelBookingRequestDTO request) {
+        try {
+            bookingService.cancelBooking(eventId, bookingId, request.getReason());
+            return ResponseEntity.ok(Map.of("message", "Booking cancelled successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Failed to cancel booking: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/refund/{id}")
+    public ResponseEntity<RefundDTO> getRefund(@PathVariable Long id) {
+        return ResponseEntity.ok(bookingService.getRefund(id));
     }
 }

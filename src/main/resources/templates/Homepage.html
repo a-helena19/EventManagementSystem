@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <title>EVERout - Homepage</title>
@@ -54,6 +54,7 @@
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
                 <li><span class="dropdown-item-text" id="userNameDisplay"></span></li>
                 <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/profile">Profile</a></li>
                 <li><button class="dropdown-item" id="logout" onclick="logout()">Sign out</button></li>
             </ul>
         </li>
@@ -136,10 +137,7 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label>Cancellation Deadline</label>
-                                    <input type="date" id="cancelDeadline" class="form-control" required>
-                                    <div class="invalid-feedback">
-                                        Cancellation Deadline is required and must be earlier than start date.
-                                    </div>
+                                    <input type="date" id="cancelDeadline" class="form-control">
                                 </div>
                             </div>
                             <!-- Price & Category -->

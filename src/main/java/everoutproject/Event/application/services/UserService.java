@@ -11,23 +11,47 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 
+import jakarta.servlet.http.HttpSession;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Optional;
+import everoutproject.Event.infrastructure.persistence.model.user.UserJPARepository;
 
 @Service
 public class UserService {
 
+    private static final String SESSION_USER_EMAIL = "userEmail";
+    //private final HttpSession httpSession;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder){
+    private String currentUserEmail = null;
+
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, HttpSession httpSession){
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
+
+    // Add this helper method
+    private HttpSession getSession() {
+        try {
+            ServletRequestAttributes attr = (ServletRequestAttributes)
+                    RequestContextHolder.currentRequestAttributes();
+            return attr.getRequest().getSession(true);
+        }
+        catch (IllegalStateException e)
+        {
+            System.out.println("=== DEBUG: No HTTP request context available");
+            return null;
+        }
+        }
+
 
 
     public UserDTO createUser(String email, String password, String firstName, String lastName){
@@ -45,25 +69,89 @@ public class UserService {
         User newUser = new User(email, hashpassword, firstName, lastName, userRole);
         newUser.setCreatedAt(createdAt);
 
-        userRepository.addNewUser(newUser);
+        userRepository.save(newUser);
 
         return UserMapperDTO.toDTO(newUser);
+    }
 
+
+    public void setCurrentUser(String email) {
+        HttpSession session = getSession();
+        if (session != null) {
+            session.setAttribute(SESSION_USER_EMAIL, email);
+            System.out.println("=== DEBUG: Current user set to: " + email);
+        }
+    }
+
+    /** public User getCurrentUser() {
+       System.out.println("=== DEBUG getCurrentUser ===");
+        System.out.println("currentUserEmail: " + currentUserEmail);
+
+        if (currentUserEmail == null) {
+            System.out.println("FALLBACK: Using first user from database");
+            List<User> allUsers = userRepository.findAll();
+            if (allUsers.isEmpty()) {
+                throw new RuntimeException("No users found");
+            }
+            User firstUser = allUsers.get(0);
+            System.out.println("First user email: " + firstUser.getEmail());
+            return firstUser;
+        }
+
+        System.out.println("Using currentUserEmail: " + currentUserEmail);
+        return userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+
+    }*/
+
+
+    public User getCurrentUser() {
+        HttpSession session = getSession();
+        String email = null;
+
+        if (session != null) {
+            email = (String) session.getAttribute(SESSION_USER_EMAIL);
+        }
+
+        if (email == null) {
+            throw new RuntimeException("No user logged in");
+        }
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     /**
      * Log in user and return it as DTO
      */
-    public UserDTO loginUser(String email, String password){
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User with this email does not exist"));
-        if (!passwordEncoder.matches(password, user.getPassword())){
-            throw new RuntimeException("Incorrect password");
+        public UserDTO loginUser(String email, String password) {
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User with this email does not exist"));
+
+            if (!passwordEncoder.matches(password, user.getPassword())) {
+                throw new RuntimeException("Incorrect password");
+            }
+
+            setCurrentUser(email); // This sets the session
+
+            return UserMapperDTO.toDTO(user);
         }
 
-        return UserMapperDTO.toDTO(user);
+    public void logoutUser() {
+        HttpSession session = getSession();
+        if (session != null) {
+            session.removeAttribute(SESSION_USER_EMAIL);
+        }
     }
 
-
+    public boolean isLoggedIn() {
+        HttpSession session = getSession();
+        if (session == null) {
+            return false;
+        }
+        return session.getAttribute(SESSION_USER_EMAIL) != null;
+    }
     /**
      * Get all users as DTOs.
      */
@@ -91,15 +179,25 @@ public class UserService {
         return UserMapperDTO.toDTO(user);
     }
 
-    /**
-     * Update user profile.
-     */
-    public void updateUserProfile(Long id, String firstName, String lastName) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
 
-         user.updateProfile(firstName, lastName);
-         userRepository.save(user);
+
+    public User updateUserProfile(Long id, String firstName, String lastName, String newEmail) {
+        User user = userRepository.findById(id ).orElseThrow(() -> new RuntimeException("User not found"));
+
+        String oldEmail = user.getEmail();
+        user.updateProfile(firstName, lastName);
+        user.setEmail(newEmail);
+        userRepository.save(user);
+
+        HttpSession session = getSession();
+        if (session != null) {
+            String sessionEmail = (String) session.getAttribute(SESSION_USER_EMAIL);
+            if (sessionEmail != null && sessionEmail.equals(oldEmail)) {
+                session.setAttribute(SESSION_USER_EMAIL, newEmail);
+            }
+        }
+
+        return user;
     }
 
     /**
@@ -108,6 +206,11 @@ public class UserService {
     public void updateUserPassword(Long id, String newPassword) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Hash the new password before saving
+        String hashedPassword = passwordEncoder.encode(newPassword);
+        user.updatePassword(hashedPassword);
+        userRepository.save(user);
     }
 
     /**
@@ -139,8 +242,14 @@ public class UserService {
      * Delete user.
      */
     public void deleteUser(Long id) {
-        if(!userRepository.findById(id).isPresent()){
-            throw new RuntimeException("User not found");
+        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+
+        HttpSession session = getSession();
+        if (session != null) {
+            String sessionEmail = (String) session.getAttribute(SESSION_USER_EMAIL);
+            if (sessionEmail != null && sessionEmail.equals(user.getEmail())) {
+                session.removeAttribute(SESSION_USER_EMAIL);
+            }
         }
         userRepository.delete(id);
     }
