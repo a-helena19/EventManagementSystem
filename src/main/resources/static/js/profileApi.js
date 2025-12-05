@@ -131,6 +131,26 @@ document.addEventListener("DOMContentLoaded", function() {
                 document.getElementById('email').value = userData.email || '';
                 updateUserDisplay(userData);
                 originalData = {...userData};
+
+                const fullName = `${userData.firstName} ${userData.lastName}`.trim();
+                const updatedUserInfo = {
+                    name: fullName,
+                    email: userData.email,
+                    role: userData.role || 'USER'
+                };
+                localStorage.setItem("userInfo", JSON.stringify(updatedUserInfo));
+
+                const userNameDisplay = document.getElementById('userNameDisplay');
+                if (userNameDisplay) {
+                    userNameDisplay.textContent = fullName;
+                }
+
+                const loggedInProfile = document.getElementById('loggedInProfile');
+                if (loggedInProfile && userData.firstName && userData.lastName) {
+                    const initials = userData.firstName.charAt(0) + userData.lastName.charAt(0);
+                    loggedInProfile.textContent = initials.toUpperCase();
+                    loggedInProfile.style.backgroundColor = nameToColor(fullName);
+                }
             } else {
                 // Handle unauthorized (user not logged in)
                 if (response.status === 401 || response.status === 403) {
@@ -164,6 +184,22 @@ document.addEventListener("DOMContentLoaded", function() {
         if (userData.firstName && userData.lastName) {
             const initials = userData.firstName.charAt(0) + userData.lastName.charAt(0);
             profileCircle.textContent = initials.toUpperCase();
+
+            profileCircle.style.backgroundColor = nameToColor(fullName);
         }
     }
+
+    function nameToColor(name) {
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) {
+            hash = name.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        let color = "#";
+        for (let i = 0; i < 3; i++) {
+            const value = (hash >> (i * 8)) & 255;
+            color += ("00" + value.toString(16)).substr(-2);
+        }
+        return color;
+    }
+
 });

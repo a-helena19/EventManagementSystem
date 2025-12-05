@@ -97,12 +97,33 @@
 .navbarRight.dropdown {
     position: relative;
 }
+
 .dropdown-menu {
     min-width: 150px;
     z-index: 1200;
     position: absolute;
     top: 100%;
     right: 0;
+    padding: 8px 0 !important;
+}
+
+#navbar .dropdown-menu li {
+    height: auto !important;
+    min-height: 0;
+    display: block;
+}
+
+#navbar .dropdown-menu a,
+#navbar .dropdown-menu .dropdown-item {
+    height: auto !important;
+    padding: 8px 16px;
+    line-height: 1.5;
+    display: block;
+    width: 100%;
+}
+
+.dropdown-menu .dropdown-divider {
+    margin: 4px 0;
 }
 
 #navbar::after {
