@@ -41,7 +41,7 @@ class BookingRepositoryJPAImplTest {
 
         when(jpaRepository.save(any())).thenReturn(savedEntity);
 
-        repository.addNewEvent(domain);
+        repository.addNewBooking(domain);
 
         assertEquals(55L, domain.getId());
     }
