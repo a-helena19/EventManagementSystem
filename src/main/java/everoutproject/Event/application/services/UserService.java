@@ -1,6 +1,7 @@
 package everoutproject.Event.application.services;
 
 import everoutproject.Event.application.dtos.UserMapperDTO;
+import everoutproject.Event.application.security.CustomUserDetails;
 import everoutproject.Event.domain.model.user.UserRepository;
 import everoutproject.Event.domain.model.user.User;
 import everoutproject.Event.rest.dtos.user.UserDTO;
@@ -8,6 +9,8 @@ import everoutproject.Event.domain.model.user.UserRole;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 
 import java.time.LocalDate;
@@ -115,6 +118,19 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         UserRole userRole = UserRole.valueOf(newRole.toUpperCase());
+
+        // Check if the logged-in user is trying to remove their own admin rights
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof CustomUserDetails) {
+            CustomUserDetails currentUser = (CustomUserDetails) authentication.getPrincipal();
+
+            //If the current user is the same as the target user and the new role is not ADMIN, throw exception
+            if (currentUser.getId().equals(id) && userRole != UserRole.ADMIN) {
+                throw new RuntimeException("Admins cannot remove their own admin rights");
+            }
+        }
+
+
         user.updateRole(userRole);
         userRepository.save(user);
     }
