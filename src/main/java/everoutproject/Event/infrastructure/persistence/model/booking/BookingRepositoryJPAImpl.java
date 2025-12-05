@@ -5,6 +5,7 @@ import everoutproject.Event.infrastructure.mapper.BookingMapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
@@ -17,10 +18,9 @@ public class BookingRepositoryJPAImpl implements BookingRepository {
     }
 
     @Override
-    public void addNewEvent(everoutproject.Event.domain.model.booking.Booking domainBooking) {
+    public void addNewBooking(everoutproject.Event.domain.model.booking.Booking domainBooking) {
         everoutproject.Event.infrastructure.persistence.model.booking.Booking entity = BookingMapper.toEntity(domainBooking);
         everoutproject.Event.infrastructure.persistence.model.booking.Booking savedEntity = bookingJPARepository.save(entity);
-
         domainBooking.setId(savedEntity.getId());
     }
 
@@ -51,6 +51,12 @@ public class BookingRepositoryJPAImpl implements BookingRepository {
         return bookingJPARepository.findByUserId(userId).stream()
                 .map(BookingMapper::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<everoutproject.Event.domain.model.booking.Booking> findById(Long id) {
+        return bookingJPARepository.findById(id)
+                .map(BookingMapper::toDomain);
     }
 
     @Override

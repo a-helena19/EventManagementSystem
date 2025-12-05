@@ -149,16 +149,56 @@
                                 <span class="info-value d-eventlocation">-</span>
                             </div>
                             <div class="info-row">
+                                <span class="info-label">Price:</span>
+                                <span class="info-value d-eventprice">-</span>
+                            </div>
+                            <div class="info-row">
                                 <span class="info-label">Status:</span>
                                 <span class="d-status badge"></span>
+                            </div>
+                            <div class="d-cancelDeadline info-row">
+                                <span class="info-label">Cancellation Deadline:</span>
+                                <span class="info-value"></span>
+                            </div>
+                            <div class="d-cancelReason info-row" style="display:none;">
+                                <span class="info-label">Cancellation Reason:</span>
+                                <span class="info-value"></span>
+                            </div>
+                            <div class="d-cancelDate info-row" style="display:none;">
+                                <span class="info-label">Cancellation Date:</span>
+                                <span class="info-value"></span>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer d-flex justify-content-between">
-                    <div></div>
-                    <button type="button" class="btn btn-outline-danger">Cancel Booking</button>
+                    <div class="cancel-section text-end">
+                    <button type="button" class="btn btn-outline-danger btn-open-cancel">Cancel Booking</button>
+                    </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<template id="cancelModalTemplate">
+    <div class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form class="cancel-form">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Cancel Booking</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Please provide a reason for cancellation:</p>
+                        <textarea name="cancellationReason" class="form-control cancellationReason" rows="3" required></textarea>
+                    </div>
+                    <div class="modal-footer">
+                         <span id="calculateRefund" class="alert alert-warning"></span>
+                        <button type="submit" class="btn btn-danger">Confirm</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
