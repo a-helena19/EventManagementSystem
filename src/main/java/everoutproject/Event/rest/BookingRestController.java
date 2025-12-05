@@ -54,7 +54,7 @@ public class BookingRestController {
     ) {
         try {
             BookingAddress address = new BookingAddress(street, houseNumber, city, postalCode);
-            BookingDTO bookingDTO = bookingService.createBooking(firstname, lastname, birthdate, address, phone, email, userId, eventId);
+            BookingDTO bookingDTO = bookingService.createBooking(firstname, lastname, birthdate, address, phone, email, eventId, userId);
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of(
