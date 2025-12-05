@@ -240,8 +240,8 @@ async function openDetailsModal(booking) {
     const modalContent = detailsTemplate.content.cloneNode(true);
     const modalEl = modalContent.querySelector(".modal");
 
-    const cancelReasonEl = modalEl.querySelector(".d-cancelreason");
-    const cancelDateEl = modalEl.querySelector(".d-canceldate");
+    const cancelReasonEl = modalEl.querySelector(".d-cancelReason");
+    const cancelDateEl = modalEl.querySelector(".d-cancelDate");
 
     // Fill personal information (left column)
     modalEl.querySelector(".d-name").textContent = `${booking.firstname} ${booking.lastname}`;
