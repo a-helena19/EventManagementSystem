@@ -26,50 +26,157 @@ window.updateImageRequirement = function(imagesInput, existingImagesContainer) {
     }
 }
 
-// Next step for booking form
-function bookNextStep(readonly) {
-    const fields = [
-        "firstname", "lastname", "birthdate", "street", "houseNumber",
-        "city", "postalCode", "email", "phone"
-    ].map(id => document.getElementById(id));
+// Multi-Step Booking Flow
+let currentBookingStep = 1;
+let currentBookingEvent = null;
 
-    const nextBtn = document.getElementById("nextBtn");
-    const backBtn = document.getElementById("backBtn");
-    const submitBtn = document.getElementById("submitBtn");
+function showBookingStep(step, modalEl) {
+    const steps = modalEl.querySelectorAll('.booking-step');
+    steps.forEach(stepEl => {
+        if (parseInt(stepEl.dataset.step) === step) {
+            stepEl.classList.add('active');
+        } else {
+            stepEl.classList.remove('active');
+        }
+    });
 
-    if(readonly) {
-        nextBtn.style.display = "none";
-        backBtn.style.display = "inline-block";
-        submitBtn.style.display = "inline-block";
-        fields.forEach(el => {
-            el.setAttribute("readonly", "");
-            el.style.border = "0px";
-            el.style.backgroundColor = "#e9ecef";
-            el.style.color = "#495057";
-        });
-    }
-    else {
-        nextBtn.style.display = "inline-block";
-        backBtn.style.display = "none";
-        submitBtn.style.display = "none";
-        fields.forEach(el => {
-            el.removeAttribute("readonly");
-            el.style.border = "1px solid";
-            el.style.backgroundColor = "white";
-            el.style.color = "black";
-        });
+    const backBtn = modalEl.querySelector('#bookBackBtn');
+    const nextBtn = modalEl.querySelector('#bookNextBtn');
+    const submitBtn = modalEl.querySelector('#bookSubmitBtn');
+
+    if (step === 1) {
+        backBtn.style.display = 'none';
+        nextBtn.style.display = 'inline-block';
+        submitBtn.style.display = 'none';
+    } else if (step === 2) {
+        backBtn.style.display = 'inline-block';
+        nextBtn.style.display = 'inline-block';
+        submitBtn.style.display = 'none';
+    } else if (step === 3) {
+        backBtn.style.display = 'inline-block';
+        nextBtn.style.display = 'none';
+        submitBtn.style.display = 'inline-block';
     }
 }
 
-// --- Validation for Next Button (Book) ---
-function bookCheckValidation(next) {
-    const form = document.querySelector(".book-form");
+function validateStep1(form) {
+    const fields = ['firstname', 'lastname', 'birthdate', 'street', 'houseNumber', 'city', 'postalCode', 'email', 'phone'];
+    let valid = true;
 
-    if (form.checkValidity()) {
-        bookNextStep(next);
-    } else {
+    fields.forEach(fieldId => {
+        const field = form.querySelector(`#${fieldId}`);
+        if (!field.checkValidity()) {
+            valid = false;
+        }
+    });
+
+    if (!valid) {
         form.classList.add('was-validated');
     }
+
+    return valid;
+}
+
+function validateStep2(form) {
+    const paymentMethod = form.querySelector('input[name="paymentMethod"]:checked');
+
+    if (!paymentMethod) {
+        showToast("error", "Please select a payment method");
+        return false;
+    }
+
+    // If credit card is selected, validate card details
+    if (paymentMethod.value === 'creditcard') {
+        const cardNumber = form.querySelector('#cardNumber');
+        const expiryDate = form.querySelector('#expiryDate');
+        const cvv = form.querySelector('#cvv');
+
+        if (!cardNumber.value || !cardNumber.checkValidity()) {
+            showToast("error", "Please enter a valid 16-digit card number");
+            cardNumber.focus();
+            return false;
+        }
+
+        if (!expiryDate.value || !expiryDate.checkValidity()) {
+            showToast("error", "Please enter expiry date in MM/YY format");
+            expiryDate.focus();
+            return false;
+        }
+
+        // Check if expiry date is in the future
+        const [month, year] = expiryDate.value.split('/').map(Number);
+        const now = new Date();
+        const currentYear = now.getFullYear() % 100;
+        const currentMonth = now.getMonth() + 1;
+
+        if (year < currentYear || (year === currentYear && month < currentMonth)) {
+            showToast("error", "Card has expired. Please use a valid card");
+            expiryDate.focus();
+            return false;
+        }
+
+        if (!cvv.value || !cvv.checkValidity()) {
+            showToast("error", "Please enter a valid CVV (3-4 digits)");
+            cvv.focus();
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function updateOverview(form, event) {
+    // Personal information
+    const firstname = form.querySelector('#firstname').value;
+    const lastname = form.querySelector('#lastname').value;
+    const birthdate = form.querySelector('#birthdate').value;
+    const street = form.querySelector('#street').value;
+    const houseNumber = form.querySelector('#houseNumber').value;
+    const city = form.querySelector('#city').value;
+    const postalCode = form.querySelector('#postalCode').value;
+    const email = form.querySelector('#email').value;
+    const phone = form.querySelector('#phone').value;
+
+    form.querySelector('#overview-name').textContent = `${firstname} ${lastname}`;
+    form.querySelector('#overview-birthdate').textContent = birthdate;
+    form.querySelector('#overview-address').textContent = `${street} ${houseNumber}, ${postalCode} ${city}`;
+    form.querySelector('#overview-email').textContent = email;
+    form.querySelector('#overview-phone').textContent = phone;
+
+    // Payment method
+    const paymentMethod = form.querySelector('input[name="paymentMethod"]:checked');
+    const paymentMethodText = paymentMethod.value.charAt(0).toUpperCase() + paymentMethod.value.slice(1);
+    form.querySelector('#overview-payment-method').textContent = paymentMethodText;
+
+    // Calculate deposit and total
+    const depositPercent = event.depositPercent || 30;
+    const totalPrice = event.price;
+    const depositAmount = (totalPrice * depositPercent) / 100;
+
+    form.querySelector('#overview-deposit').textContent = `€${depositAmount.toFixed(2)}`;
+    form.querySelector('#overview-total').textContent = `€${totalPrice.toFixed(2)}`;
+}
+
+
+function navigateBookingStep(direction, modalEl, event) {
+    const form = modalEl.querySelector('.book-form');
+
+    if (direction === 'next') {
+        if (currentBookingStep === 1) {
+            if (!validateStep1(form)) return;
+            currentBookingStep = 2;
+        } else if (currentBookingStep === 2) {
+            if (!validateStep2(form)) return;
+            updateOverview(form, event);
+            currentBookingStep = 3;
+        }
+    } else if (direction === 'back') {
+        if (currentBookingStep > 1) {
+            currentBookingStep--;
+        }
+    }
+
+    showBookingStep(currentBookingStep, modalEl);
 }
 
 // Open shared Book Modal
@@ -77,6 +184,9 @@ function openBookModal(ev, onCloseCallback) {
     const bookTemplate = document.getElementById("bookModalTemplate");
     const bookContent = bookTemplate.content.cloneNode(true);
     const bookModalEl = bookContent.querySelector(".modal");
+
+    currentBookingStep = 1;
+    currentBookingEvent = ev;
 
     const dateOfBirth = bookModalEl.querySelector("#birthdate");
 
@@ -87,15 +197,65 @@ function openBookModal(ev, onCloseCallback) {
     const dd = String(today.getDate()).padStart(2, '0');
     dateOfBirth.setAttribute("max", `${yyyy}-${mm}-${dd}`);
 
+    const paymentMethodCards = bookModalEl.querySelectorAll('.payment-method-card');
+    const creditCardForm = bookModalEl.querySelector('#creditCardForm');
+
+    paymentMethodCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            radio.checked = true;
+
+            // Remove selected class from all cards
+            paymentMethodCards.forEach(c => c.classList.remove('selected'));
+            // Add selected class to clicked card
+            this.classList.add('selected');
+
+            // Show/hide credit card form
+            if (radio.value === 'creditcard') {
+                creditCardForm.style.display = 'block';
+                // Make credit card fields required
+                creditCardForm.querySelector('#cardNumber').setAttribute('required', '');
+                creditCardForm.querySelector('#expiryDate').setAttribute('required', '');
+                creditCardForm.querySelector('#cvv').setAttribute('required', '');
+            } else {
+                creditCardForm.style.display = 'none';
+                // Remove required attribute
+                creditCardForm.querySelector('#cardNumber').removeAttribute('required');
+                creditCardForm.querySelector('#expiryDate').removeAttribute('required');
+                creditCardForm.querySelector('#cvv').removeAttribute('required');
+            }
+        });
+    });
+
+    // Navigation buttons
+    const backBtn = bookModalEl.querySelector('#bookBackBtn');
+    const nextBtn = bookModalEl.querySelector('#bookNextBtn');
+
+    backBtn.addEventListener('click', () => {
+        navigateBookingStep('back', bookModalEl, ev);
+    });
+
+    nextBtn.addEventListener('click', () => {
+        navigateBookingStep('next', bookModalEl, ev);
+    });
+
     // Form submit handler
     bookModalEl.querySelector(".book-form").addEventListener("submit", async (e) => {
         e.preventDefault();
 
         const form = bookModalEl.querySelector(".book-form");
+        const submitBtn = bookModalEl.querySelector('#bookSubmitBtn');
 
-        console.log("Submitting booking for event:", ev);
-        console.log("eventId =", ev?.id);
-        // Get values from the modal (only inside!)
+        // Disable submit button to prevent double submission
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Processing...';
+
+        console.log("Submitting booking with payment for event:", ev);
+
+        const paymentMethod = form.querySelector('input[name="paymentMethod"]:checked').value;
+
+
+
         const data = {
             firstname: form.querySelector("#firstname").value,
             lastname: form.querySelector("#lastname").value,
@@ -106,7 +266,8 @@ function openBookModal(ev, onCloseCallback) {
             postalCode: form.querySelector("#postalCode").value,
             email: form.querySelector("#email").value,
             phone: form.querySelector("#phone").value,
-            eventId: ev?.id
+            eventId: ev?.id,
+            paymentMethod: paymentMethod
         };
 
         const formData = new FormData();
@@ -120,37 +281,48 @@ function openBookModal(ev, onCloseCallback) {
         }
 
         try {
-            const res = await fetch('/api/bookings/create', {
+            const res = await fetch('/api/bookings/createWithPayment', {
                 method: "POST",
                 body: formData
             });
 
-            if (!res.ok) {
-                const text = await res.text();
-                showToast("error", text);
-                return;
+            const responseData = await res.json();
+
+            if (res.ok && responseData.success) {
+                // Payment successful
+                showToast("success", `Booking confirmed! Payment successful. Confirmation sent to ${responseData.email}`);
+
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(bookModalEl);
+                modal.hide();
+
+                // Reload events
+                await loadEvents();
+            } else {
+                // Payment failed - go back to step 2
+                showToast("error", responseData.message || "Payment failed. Please try again.");
+                currentBookingStep = 2;
+                showBookingStep(currentBookingStep, bookModalEl);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Confirm & Pay';
             }
 
-            const data = await res.json();
-            showToast("success", `Booking for "${data.name}" created successfully!`);
-
-            // Reset UI
-            form.reset();
-            bookNextStep(false);
-
-            // Close modal
-            const modal = bootstrap.Modal.getInstance(bookModalEl);
-            modal.hide();
         }
         catch (err) {
             console.error(err);
-            showToast("error", "Failed to book event");
+            showToast("error", "Failed to process booking. Please try again.");
+            currentBookingStep = 2;
+            showBookingStep(currentBookingStep, bookModalEl);
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Confirm & Pay';
         }
     });
 
     // Cleanup and optional callback on close
     bookModalEl.addEventListener("hidden.bs.modal", () => {
         bookModalEl.remove();
+        currentBookingStep = 1;
+        currentBookingEvent = null;
         if (typeof onCloseCallback === "function") onCloseCallback();
     });
 
@@ -158,6 +330,7 @@ function openBookModal(ev, onCloseCallback) {
     const bsBookModal = new bootstrap.Modal(bookModalEl);
     bsBookModal.show();
 
+    showBookingStep(1, bookModalEl);
 
 }
 

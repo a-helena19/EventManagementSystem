@@ -1,0 +1,174 @@
+/* Payment Flow Styles */
+
+/* Payment Method Selection */
+.payment-methods {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.payment-method-card {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+    position: relative;
+}
+
+.payment-method-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: #007bff;
+}
+
+.payment-method-card.selected {
+    border-color: #007bff;
+    background: linear-gradient(135deg, rgba(0, 123, 255, 0.05), rgba(0, 86, 179, 0.05));
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+}
+
+.payment-method-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+}
+
+.payment-method-icon {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.payment-method-name {
+    font-weight: 600;
+    font-size: 16px;
+    color: #495057;
+}
+
+.payment-method-card.selected .payment-method-name {
+    color: #007bff;
+}
+
+/* Credit Card Form */
+.credit-card-form {
+    margin-top: 20px;
+    padding: 20px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    background: #f8f9fa;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.credit-card-form .form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+}
+
+.credit-card-form .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    padding: 10px 15px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.credit-card-form .form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+.credit-card-form .form-control:valid {
+    border-color: #28a745 !important;
+}
+
+.credit-card-form .form-control:invalid:not(:placeholder-shown) {
+    border-color: #dc3545 !important;
+}
+
+/* Overview Cards */
+.payment-overview {
+    margin-top: 20px;
+}
+
+.overview-section {
+    margin-bottom: 30px;
+}
+
+.overview-section h5 {
+    font-weight: 700;
+    color: #122453;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.overview-data {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.overview-data p {
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #495057;
+}
+
+.overview-data p strong {
+    color: #122453;
+    font-weight: 600;
+}
+
+.overview-data p:last-child {
+    margin-bottom: 0;
+}
+
+/* Hide/Show Steps */
+.booking-step {
+    display: none;
+}
+
+.booking-step.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .progress-line {
+        width: 40px;
+    }
+
+    .progress-label {
+        font-size: 10px;
+    }
+
+    .payment-methods {
+        grid-template-columns: 1fr;
+    }
+}
+

@@ -12,6 +12,10 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+
+import java.time.Duration;
 
 @Configuration
 @EnableMethodSecurity(prePostEnabled = true)
@@ -35,6 +39,14 @@ public class SecurityConfig {
     }
 
     @Bean
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        return builder
+                .setConnectTimeout(Duration.ofSeconds(5))
+                .setReadTimeout(Duration.ofSeconds(5))
+                .build();
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
@@ -47,7 +59,8 @@ public class SecurityConfig {
                                 "/api/users/create",
                                 "/api/events",
                                 "/api/events/image/**",
-                                "/api/bookings/create"
+                                "/api/bookings/create",
+                                "/api/bookings/createWithPayment"
                         ).permitAll()
 
                         .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")

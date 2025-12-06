@@ -64,4 +64,6 @@ public class BusinessException extends RuntimeException {
     public static BusinessException invalidState(String message) {
         return new BusinessException(message, HttpStatus.CONFLICT, "INVALID_STATE");
     }
+
+
 }
