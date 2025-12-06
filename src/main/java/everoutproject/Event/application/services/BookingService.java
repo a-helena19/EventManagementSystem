@@ -15,12 +15,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import everoutproject.Event.application.exceptions.PaymentFailedException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,11 +28,14 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final RoleChecker roleChecker;
     private final EventRepository eventRepository;
+    private final PaymentService paymentService;
 
-    public BookingService(BookingRepository bookingRepository, RoleChecker roleChecker, EventRepository eventRepository) {
+    public BookingService(BookingRepository bookingRepository, RoleChecker roleChecker,
+                          EventRepository eventRepository, PaymentService paymentService) {
         this.bookingRepository = bookingRepository;
         this.roleChecker = roleChecker;
         this.eventRepository = eventRepository;
+        this.paymentService = paymentService;
     }
 
 
@@ -63,6 +66,46 @@ public class BookingService {
         // Persist event
         //bookingRepository.addNewBooking(newBooking);
 
+        event.increaseBookedParticipants(1);
+        eventRepository.save(event);
+
+        bookingRepository.addNewBooking(newBooking);
+        return BookingMapperDTO.toDTO(newBooking);
+    }
+
+    @PreAuthorize("@roleChecker.canCreateBooking(authentication)")
+    public BookingDTO createBookingWithPayment(String firstname, String lastname, LocalDate birthDate,
+                                               BookingAddress address, String phoneNumber, String email,
+                                               Long userId, Long eventId, String paymentMethod)
+            throws PaymentFailedException {
+
+        // Load event
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new RuntimeException("Event not found"));
+
+        if (event.getStatus() != EventStatus.ACTIVE) {
+            throw new RuntimeException("Event is not bookable");
+        }
+
+        if (event.getBookedParticipants() >= event.getMaxParticipants()) {
+            throw new RuntimeException("Event is fully booked");
+        }
+
+        // Calculate deposit (default 30% if not set)
+        Integer depositPercent = event.getDepositPercent() != null ? event.getDepositPercent() : 30;
+        BigDecimal depositAmount = event.getPrice()
+                .multiply(BigDecimal.valueOf(depositPercent))
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
+        // Process payment BEFORE creating booking
+        paymentService.processPayment(depositAmount, paymentMethod);
+
+        // Payment successful -> create booking
+        Booking newBooking = new Booking(
+                firstname, lastname, birthDate, LocalDate.now(),
+                address, phoneNumber, email,
+                BookingStatus.ACTIVE, eventId, userId
+        );
         event.increaseBookedParticipants(1);
         eventRepository.save(event);
 

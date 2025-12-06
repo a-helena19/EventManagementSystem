@@ -6,14 +6,13 @@ import everoutproject.Event.domain.model.booking.BookingAddress;
 import everoutproject.Event.rest.dtos.booking.BookingDTO;
 import everoutproject.Event.rest.dtos.booking.CancelBookingRequestDTO;
 import everoutproject.Event.rest.dtos.booking.RefundDTO;
-import everoutproject.Event.rest.dtos.event.request.CancelRequestDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import everoutproject.Event.application.exceptions.PaymentFailedException;
 
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -70,6 +69,56 @@ public class BookingRestController {
                         "id", bookingDTO.id(),
                         "name", bookingDTO.firstname() + " " + bookingDTO.lastname()
                 ));
+    }
+
+    @PostMapping("/createWithPayment")
+    public ResponseEntity<Map<String, Object>> createBookingWithPayment(
+            @RequestParam String firstname,
+            @RequestParam String lastname,
+            @RequestParam LocalDate birthdate,
+            @RequestParam String street,
+            @RequestParam String houseNumber,
+            @RequestParam String city,
+            @RequestParam String postalCode,
+            @RequestParam String phone,
+            @RequestParam String email,
+            @RequestParam Long eventId,
+            @RequestParam String paymentMethod,
+            Authentication authentication
+    ) {
+        try {
+            Long userId = roleChecker.getUserId(authentication);
+
+            BookingAddress address = new BookingAddress(street, houseNumber, city, postalCode);
+            BookingDTO bookingDTO = bookingService.createBookingWithPayment(
+                    firstname, lastname, birthdate, address, phone, email, userId, eventId, paymentMethod
+            );
+
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(Map.of(
+                            "success", true,
+                            "message", "Booking created successfully",
+                            "id", bookingDTO.id(),
+                            "firstname", bookingDTO.firstname(),
+                            "lastname", bookingDTO.lastname(),
+                            "email", bookingDTO.email()
+                    ));
+        } catch (PaymentFailedException e) {
+            return ResponseEntity
+                    .status(HttpStatus.PAYMENT_REQUIRED)
+                    .body(Map.of(
+                            "success", false,
+                            "message", e.getMessage()
+                    ));
+        } catch (Exception e) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(
+                            "success", false,
+                            "message", e.getMessage()
+                    ));
+        }
     }
 
     @DeleteMapping("/{id}")
