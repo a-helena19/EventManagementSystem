@@ -132,41 +132,128 @@
     </div>
 </template>
 
-<template id="detailsModalTemplate">
-    <div class="modal mt-3" tabindex="-1">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="gallery d-flex flex-wrap justify-content-center gap-2 mb-3"></div>
-                    <p><span class="infoLabel">Name:</span> <span class="d-name infoValue"></span></p>
-                    <p><span class="infoLabel">Description:</span> <span class="d-desc infoValue"></span></p>
-                    <p><span class="infoLabel">Location:</span> <span class="d-location infoValue"></span></p>
-                    <p><span class="infoLabel">Date:</span> <span class="d-date infoValue"></span></p>
-                    <p><span class="infoLabel">Price:</span> <span class="d-price infoValue"></span></p>
-                    <p><span class="infoLabel">Status:</span> <span class="d-status badge"></span></p>
-                    <p class="d-cancelreason" style="display:none;"><strong class="infoLabel">Cancellation Reason:</strong> <span class="infoValue"></span></p>
-                </div>
-                <div class="modal-footer">
-                    <div class="d-flex justify-content-between">
-                        <div class="cancel-section text-end" style="display:none;">
-                            <button type="button" class="btn btn-outline-danger btn-sm btn-open-cancel">Cancel Event</button>
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xxl modal-dialog-centered">
+        <div class="modal-content p-3">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="details_title"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="container-fluid">
+                    <div class="row g-3">
+
+                        <!-- COLUMN 1 — MAIN INFO -->
+                        <div class="col-lg-4 col-md-6 col-12">
+                            <h5>Main Information</h5>
+                            <table class="table table-sm table-bordered details-table">
+                                <tbody>
+                                <tr><th>Name</th><td id="details_name"></td></tr>
+                                <tr><th>Description</th><td id="details_desc"></td></tr>
+                                <tr><th>Category</th><td id="details_category"></td></tr>
+                                <tr><th>Start Date</th><td id="details_start"></td></tr>
+                                <tr><th>End Date</th><td id="details_end"></td></tr>
+                                <tr><th>Cancel Deadline</th><td id="details_cancelDeadline"></td></tr>
+                                <tr><th>Price</th><td id="details_price"></td></tr>
+                                <tr><th>Deposit %</th><td id="details_deposit"></td></tr>
+                                <tr>
+                                    <th>Status</th>
+                                    <td><span class="badge" id="details_status"></span></td>
+                                </tr>
+
+                                <tr id="details_cancelReasonRow" style="display:none;">
+                                    <th>Cancellation Reason</th>
+                                    <td id="details_cancelReason"></td>
+                                </tr>
+                                </tbody>
+                            </table>
                         </div>
-                        <div class="book-section text-end" style="display:none;">
-                            <button type="button" class="btn btn-outline-primary btn-sm btn-open-book">Book Now</button>
+
+                        <!-- COLUMN 2 — LOCATION + ORGANIZER -->
+                        <div class="col-lg-4 col-md-6 col-12">
+
+                            <h5>Location</h5>
+                            <table class="table table-sm table-bordered details-table">
+                                <tbody>
+                                <tr><th>Street</th><td id="details_street"></td></tr>
+                                <tr><th>House Nr.</th><td id="details_houseNumber"></td></tr>
+                                <tr><th>Postal Code</th><td id="details_postalCode"></td></tr>
+                                <tr><th>City</th><td id="details_city"></td></tr>
+                                <tr><th>State</th><td id="details_state"></td></tr>
+                                <tr><th>Country</th><td id="details_country"></td></tr>
+                                </tbody>
+                            </table>
+
+                            <h5 class="mt-4">Organizer</h5>
+                            <table class="table table-sm table-bordered details-table">
+                                <tbody>
+                                <tr><th>Name</th><td id="details_orgName"></td></tr>
+                                <tr><th>Email</th><td id="details_orgEmail"></td></tr>
+                                <tr><th>Phone</th><td id="details_orgPhone"></td></tr>
+                                </tbody>
+                            </table>
+
+                            <h5 class="mt-4">Participants</h5>
+                            <table class="table table-sm table-bordered details-table">
+                                <tbody>
+                                <tr><th>Min</th><td id="details_min"></td></tr>
+                                <tr><th>Max</th><td id="details_max"></td></tr>
+                                </tbody>
+                            </table>
                         </div>
-                        <div class="edit-section text-end" style="display:none;">
-                            <button type="button" class="btn btn-outline-primary btn-sm btn-open-edit">Edit Event</button>
+
+                        <!-- COLUMN 3 — TABLES (REQ/EQUIP/PACK/APPT) -->
+                        <div class="col-lg-4 col-md-12 col-12">
+
+                            <h5>Requirements</h5>
+                            <table class="table table-sm table-bordered details-table" id="details_requirementsTable">
+                                <thead><tr><th>Description</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+
+                            <h5 class="mt-4">Equipment</h5>
+                            <table class="table table-sm table-bordered details-table" id="details_equipmentTable">
+                                <thead><tr><th>Name</th><th>Rentable</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+
+                            <h5 class="mt-4">Packages</h5>
+                            <table class="table table-sm table-bordered details-table" id="details_packagesTable">
+                                <thead><tr><th>Title</th><th>Description</th><th>Price</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+
+                            <h5 class="mt-4">Appointments</h5>
+                            <table class="table table-sm table-bordered details-table" id="details_appointmentsTable">
+                                <thead><tr><th>Start</th><th>End</th><th>Seasonal</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+
                         </div>
+
+                        <!-- FULL-WIDTH IMAGES -->
+                        <div class="col-12 mt-4">
+                            <h5>Images</h5>
+                            <div id="details_images" class="d-flex flex-wrap gap-2"></div>
+                        </div>
+
                     </div>
                 </div>
+
             </div>
+
+            <div class="modal-footer d-flex justify-content-end">
+                <button class="btn btn-outline-danger btn-sm" id="details_cancelBtn" style="display:none;">Cancel Event</button>
+                <button class="btn btn-outline-primary btn-sm" id="details_bookBtn" style="display:none;">Book Now</button>
+                <button class="btn btn-outline-primary btn-sm" id="details_editBtn" style="display:none;">Edit Event</button>
+            </div>
+
         </div>
     </div>
-</template>
+</div>
 
 <template id="cancelModalTemplate">
     <div class="modal fade" tabindex="-1">
