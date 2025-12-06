@@ -239,7 +239,9 @@ public void cancelBooking(Long eventId, Long bookingId, String cancelReason) {
     LocalDate cancelDate = LocalDate.now();
     if (cancelDeadline != null) {
         if(cancelDeadline.isBefore(cancelDate)) {
-            throw new RuntimeException("Cancellation Deadline is expired");
+            bookingToCancel.cancel(cancelReason, BigDecimal.ZERO);
+            bookingRepository.save(bookingToCancel);
+            return;
         }
     }
     LocalDate startDate = event.getStartDate();
@@ -254,6 +256,14 @@ public void cancelBooking(Long eventId, Long bookingId, String cancelReason) {
     public RefundDTO getRefund(Long id) {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
+
+        // refund = 0 when after cancellation deadline
+        LocalDate cancelDeadline = event.getCancelDeadline();
+        if (cancelDeadline != null) {
+            if(cancelDeadline.isBefore(LocalDate.now())) {
+                return new RefundDTO(BigDecimal.ZERO);
+            }
+        }
 
         LocalDate startDate = event.getStartDate();
         Integer depositPercent = event.getDepositPercent();

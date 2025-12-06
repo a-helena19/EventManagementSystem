@@ -135,22 +135,6 @@ async function renderBookings(bookings) {
         container.appendChild(card);
     });
 }
-function canCancelBooking(cancelDeadline){
-    if(cancelDeadline === ""){
-        return true;
-    }
-    const date = new Date();
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
-
-    const today = `${yyyy}-${mm}-${dd}`;
-
-    if(today > cancelDeadline) {
-        return false;
-    }
-    return true;
-}
 
 // Calculate Refund in back-end
 async function loadAndSetRefund(eventId, cancelModalEl) {
@@ -308,11 +292,11 @@ async function openDetailsModal(booking) {
                 } else {
                     cancelDeadlineEl.querySelector(".info-value").textContent = "-";
                 }
-                // Booking can ONLY be canceled if ACTIVE AND before deadline
-                if (booking.status === "ACTIVE" && canCancelBooking(cancelDeadlineVal)) {
+                // Booking can ONLY be canceled if ACTIVE
+                if (booking.status === "ACTIVE") {
                     cancelSection.style.display = "block";
                     cancelBtn.addEventListener("click", () => openCancelBookingModal(booking, event, modalEl, cancelReasonEl, cancelDateEl, cancelSection));
-                } else if (booking.status === "CANCELLED"){
+                } else {
                     cancelSection.style.display = "none";
                     cancelReasonEl.style.display = "block";
                     cancelDateEl.style.display = "block";

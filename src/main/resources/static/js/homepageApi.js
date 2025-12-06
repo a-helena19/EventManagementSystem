@@ -85,6 +85,11 @@ function resetForm() {
     document.getElementById("images").value = "";
     document.getElementById("fileNames").innerHTML = "";
 
+    // Reset single-day checkbox state
+    document.getElementById("singleDayCheckbox").checked = false;
+    document.getElementById("endDateWrapper").style.display = "block";
+    document.getElementById("endDate").setAttribute("required", "");
+
     // Reset all dynamic collections
     requirements = [];
     equipment = [];

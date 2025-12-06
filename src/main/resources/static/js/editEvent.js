@@ -85,6 +85,12 @@ function edit_resetForm() {
 
     document.getElementById("edit_depositPercent").value = 30;
 
+    // Reset single-day checkbox state
+    document.getElementById("edit_singleDayCheckbox").checked = false;
+    document.getElementById("edit_endDateWrapper").style.display = "block";
+    document.getElementById("edit_endDate").setAttribute("required", "");
+
+
     // Reset images
     document.getElementById("edit_images").value = "";
     document.getElementById("edit_fileNames").innerHTML = "";
@@ -126,6 +132,17 @@ function edit_loadForm(ev) {
     document.getElementById("edit_description").value = ev.description;
     document.getElementById("edit_startDate").value = ev.startDate;
     document.getElementById("edit_endDate").value = ev.endDate;
+    // Auto-enable single-day mode if no endDate exists
+    if (!ev.endDate || ev.endDate.trim() === "") {
+        document.getElementById("edit_singleDayCheckbox").checked = true;
+        document.getElementById("edit_endDateWrapper").style.display = "none";
+        document.getElementById("edit_endDate").removeAttribute("required");
+    } else {
+        document.getElementById("edit_singleDayCheckbox").checked = false;
+        document.getElementById("edit_endDateWrapper").style.display = "block";
+        document.getElementById("edit_endDate").setAttribute("required", "");
+    }
+
     document.getElementById("edit_cancelDeadline").value = ev.cancelDeadline;
 
     document.getElementById("edit_price").value = ev.price;

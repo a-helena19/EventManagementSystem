@@ -572,103 +572,191 @@ function renderEvents(events) {
 }
 
 // Open details modal and populate info
+// ===============================
+// OPEN FULL DETAILS MODAL (NEW)
+// ===============================
 function openDetailsModal(ev) {
-    const detailsTemplate = document.getElementById("detailsModalTemplate");
-    const modalContent = detailsTemplate.content.cloneNode(true);
-    const modalEl = modalContent.querySelector(".modal");
-    const role = typeof getCurrentUserRole === "function" ? getCurrentUserRole() : "GUEST";
-    const canManageEvents = role === "ADMIN" || role === "BACKOFFICE";
-    const canBook = ["ADMIN", "BACKOFFICE", "FRONTOFFICE", "USER", "GUEST"].includes(role);
+    const modalEl = document.getElementById("detailsModal");
 
-    modalEl.querySelector(".modal-title").textContent = ev.name;
-    modalEl.querySelector(".d-name").textContent = ev.name;
-    modalEl.querySelector(".d-desc").textContent = ev.description || "-";
-    modalEl.querySelector(".d-location").textContent = formatLocation(ev.location);
-    modalEl.querySelector(".d-date").textContent = ev.startDate;
-    modalEl.querySelector(".d-price").textContent = ev.price.toFixed(2) + " €";
+    // Bootstrap instance
+    const bsModal = new bootstrap.Modal(modalEl);
 
-    // Status badge
-    const statusBadge = modalEl.querySelector(".d-status");
+    // Shortcuts to DOM
+    const $ = id => modalEl.querySelector(id);
+
+    // --------------------------------
+    // BASIC / MAIN INFO
+    // --------------------------------
+    $("#details_title").textContent = ev.name;
+    $("#details_name").textContent = ev.name;
+    $("#details_desc").textContent = ev.description || "-";
+    $("#details_category").textContent = ev.category || "-";
+    $("#details_start").textContent = ev.startDate || "-";
+    $("#details_end").textContent = ev.endDate || "-";
+    $("#details_cancelDeadline").textContent = ev.cancelDeadline || "-";
+    $("#details_price").textContent = ev.price != null ? ev.price.toFixed(2) + " €" : "-";
+    $("#details_deposit").textContent = ev.depositPercent != null ? ev.depositPercent + "%" : "-";
+
+    // STATUS BADGE
+    const statusBadge = $("#details_status");
     statusBadge.textContent = ev.status;
 
-    // Add badge color based on status
-    if (ev.status === "ACTIVE") {
-        statusBadge.classList.add("bg-success");
-    } else if (ev.status === "CANCELLED") {
-        statusBadge.classList.add("bg-danger");
-    } else if (ev.status === "EXPIRED") {
-        statusBadge.classList.add("bg-warning");
-    }
+    statusBadge.className = "badge"; // reset
+    if (ev.status === "ACTIVE") statusBadge.classList.add("bg-success");
+    else if (ev.status === "CANCELLED") statusBadge.classList.add("bg-danger");
+    else if (ev.status === "EXPIRED") statusBadge.classList.add("bg-warning");
+    else statusBadge.classList.add("bg-secondary");
 
-    // Images gallery
-    const gallery = modalEl.querySelector(".gallery");
-    gallery.innerHTML = "";
-    if (ev.imageIds && ev.imageIds.length > 0) {
-        ev.imageIds.forEach(imgId => {
-            const imgEl = document.createElement("img");
-            imgEl.src = `/api/events/image/${imgId}`;
-            imgEl.className = "img-thumbnail";
-            imgEl.style.width = "120px";
-            imgEl.style.height = "80px";
-            imgEl.style.objectFit = "cover";
-            gallery.appendChild(imgEl);
-        });
-    }
-
-    // Cancel Button logic
-    const cancelSection = modalEl.querySelector(".cancel-section");
-    const cancelBtn = modalEl.querySelector(".btn-open-cancel");
-    const cancelReasonEl = modalEl.querySelector(".d-cancelreason");
-
-    const bookSection = modalEl.querySelector(".book-section");
-    const bookBtn = modalEl.querySelector(".btn-open-book");
-
-    const editSection = modalEl.querySelector(".edit-section");
-    const editBtn = modalEl.querySelector(".btn-open-edit");
-
-    if (ev.status && ev.status.toLowerCase() === "cancelled" || ev.status && ev.status.toLowerCase() === "expired") {
-        cancelSection.style.display = "none";
-        bookSection.style.display = "none";
-        editSection.style.display = "none";
-        if (ev.status && ev.status.toLowerCase() === "cancelled") {
-            cancelReasonEl.style.display = "block"; // show reason
-            cancelReasonEl.querySelector("span").textContent = ev.cancellationReason || "-";
-        }
+    // SHOW CANCELLATION REASON IF EXISTS
+    if (ev.status === "CANCELLED") {
+        $("#details_cancelReasonRow").style.display = "table-row";
+        $("#details_cancelReason").textContent = ev.cancellationReason || "-";
     } else {
-        cancelSection.style.display = canManageEvents ? "block" : "none"; // show cancel button
-        bookSection.style.display = canBook ? "block" : "none";
-        editSection.style.display = canManageEvents ? "block" : "none";
-        cancelReasonEl.style.display = "none";
-
-        if (canManageEvents) {
-            editBtn.addEventListener("click", () => openEditModal(ev, modalEl))
-            cancelBtn.addEventListener("click", () => openCancelModal(ev, modalEl, cancelReasonEl, cancelSection, bookSection, editSection));
-        }
-
-        if (canBook) {
-            //Booking handler
-            bookBtn.addEventListener("click", () => {
-                const detailsBsModal = bootstrap.Modal.getInstance(modalEl);
-                detailsBsModal.hide();
-
-                openBookModal(ev, () => {
-                    // Das wird ausgeführt, wenn Book-Modal geschlossen wird!
-                    detailsBsModal.show();})
-
-            });
-        }
-
+        $("#details_cancelReasonRow").style.display = "none";
     }
 
 
-    document.body.appendChild(modalEl);
-    const bsModal = new bootstrap.Modal(modalEl);
-    bsModal.show();
+    // --------------------------------
+    // LOCATION
+    // --------------------------------
+    $("#details_street").textContent = ev.location?.street || "-";
+    $("#details_houseNumber").textContent = ev.location?.houseNumber || "-";
+    $("#details_postalCode").textContent = ev.location?.postalCode || "-";
+    $("#details_city").textContent = ev.location?.city || "-";
+    $("#details_state").textContent = ev.location?.state || "-";
+    $("#details_country").textContent = ev.location?.country || "-";
 
-    modalEl.addEventListener("hidden.bs.modal", () => {
-        modalEl.remove();
-    });
+    // --------------------------------
+    // ORGANIZER
+    // --------------------------------
+    $("#details_orgName").textContent = ev.organizer.name ?? "-";
+    $("#details_orgEmail").textContent = ev.organizer.contactEmail ?? "-";
+    $("#details_orgPhone").textContent = ev.organizer.phone ?? "-";
+
+    // --------------------------------
+    // PARTICIPANTS
+    // --------------------------------
+    $("#details_min").textContent = ev.minParticipants ?? "-";
+    $("#details_max").textContent = ev.maxParticipants ?? "-";
+
+
+    // --------------------------------
+    // TABLE HELPERS
+    // --------------------------------
+    function fillTable(tableId, rowsHtml) {
+        const tbody = $(tableId).querySelector("tbody");
+        tbody.innerHTML = rowsHtml || `<tr><td colspan="10" class="text-muted">No data</td></tr>`;
+    }
+
+    // Requirements
+    fillTable("#details_requirementsTable",
+        ev.requirements?.map(r =>
+            `<tr><td>${r.description}</td></tr>`
+        ).join("") || ""
+    );
+
+    // Equipment
+    fillTable("#details_equipmentTable",
+        ev.equipment?.map(e =>
+            `<tr>
+                <td>${e.name}</td>
+                <td>${e.rentable ? "Yes" : "No"}</td>
+             </tr>`
+        ).join("") || ""
+    );
+
+    // Packages
+    fillTable("#details_packagesTable",
+        ev.additionalPackages?.map(p =>
+            `<tr>
+                <td>${p.title}</td>
+                <td>${p.description}</td>
+                <td>€${p.price.toFixed(2)}</td>
+             </tr>`
+        ).join("") || ""
+    );
+
+    // Appointments
+    fillTable("#details_appointmentsTable",
+        ev.appointments?.map(a =>
+            `<tr>
+                <td>${a.startDate}</td>
+                <td>${a.endDate}</td>
+                <td>${a.seasonal ? "Yes" : "No"}</td>
+            </tr>`
+        ).join("") || ""
+    );
+
+    // --------------------------------
+    // IMAGES
+    // --------------------------------
+    const imgContainer = $("#details_images");
+    imgContainer.innerHTML = "";
+
+    if (ev.imageIds?.length > 0) {
+        ev.imageIds.forEach(id => {
+            const img = document.createElement("img");
+            img.src = `/api/events/image/${id}`;
+            img.className = "img-thumbnail";
+            img.style.width = "140px";
+            img.style.height = "100px";
+            img.style.objectFit = "cover";
+            imgContainer.appendChild(img);
+        });
+    } else {
+        imgContainer.innerHTML = `<span class="text-muted">No images available</span>`;
+    }
+
+
+    // --------------------------------
+    // BUTTON CONTROLS (BOOK / EDIT / CANCEL)
+    // --------------------------------
+    const role = typeof getCurrentUserRole === "function" ? getCurrentUserRole() : "GUEST";
+    const canManage = role === "ADMIN" || role === "BACKOFFICE";
+    const canBook = ["ADMIN", "BACKOFFICE", "FRONTOFFICE", "USER", "GUEST"].includes(role);
+
+    const btnCancel = $("#details_cancelBtn");
+    const btnBook = $("#details_bookBtn");
+    const btnEdit = $("#details_editBtn");
+
+    // Hide all first
+    btnCancel.style.display = "none";
+    btnBook.style.display = "none";
+    btnEdit.style.display = "none";
+
+    const isActive = ev.status === "ACTIVE";
+
+    if (isActive) {
+        if (canBook) btnBook.style.display = "inline-block";
+        if (canManage) {
+            btnEdit.style.display = "inline-block";
+            btnCancel.style.display = "inline-block";
+        }
+    }
+
+    // --- BOOK BUTTON ---
+    btnBook.onclick = () => {
+        bsModal.hide();
+        openBookModal(ev, () => bsModal.show());
+    };
+
+    // --- EDIT BUTTON ---
+    btnEdit.onclick = () => openEditModal(ev, modalEl);
+
+    // --- CANCEL BUTTON ---
+    btnCancel.onclick = () => openCancelModal(
+        ev,
+        modalEl,
+        $("#details_cancelReasonRow"),
+        btnCancel,
+        btnBook,
+        btnEdit
+    );
+
+    // SHOW FINAL MODAL
+    bsModal.show();
 }
+
 
 // Page initialize
 document.addEventListener("DOMContentLoaded", () => {
