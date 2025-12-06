@@ -1,6 +1,73 @@
 // GLOBAL variable to store current editing event
 let editCurrentEvent = null;
 
+// Flag to track if booking process completed (success or showing result modal)
+let bookingProcessCompleted = false;
+
+// Store form data for retry after payment failure
+let savedBookingFormData = null;
+
+// Show Booking Result Modal (Success or Failure)
+function showBookingResultModal(isSuccess, email = null, errorMessage = null, event = null, formData = null) {
+    const resultTemplate = document.getElementById("bookingResultModalTemplate");
+    const resultContent = resultTemplate.content.cloneNode(true);
+    const resultModalEl = resultContent.querySelector(".modal");
+
+    const successSection = resultModalEl.querySelector(".result-success");
+    const failureSection = resultModalEl.querySelector(".result-failure");
+
+    if (isSuccess) {
+        // Show success state
+        successSection.style.display = "block";
+        failureSection.style.display = "none";
+
+        // Clear saved form data on success
+        savedBookingFormData = null;
+
+        // Set email confirmation message
+        if (email) {
+            resultModalEl.querySelector(".confirmation-email").textContent =
+                `Confirmation sent to ${email}`;
+        }
+    } else {
+        // Show failure state
+        successSection.style.display = "none";
+        failureSection.style.display = "block";
+
+        // Save form data for retry
+        if (formData) {
+            savedBookingFormData = formData;
+        }
+
+        // Set error message
+        resultModalEl.querySelector(".failure-message").textContent =
+            errorMessage || "Payment could not be processed. Please try again.";
+
+        // Set up "Try Again" button to reopen booking modal
+        const tryAgainBtn = resultModalEl.querySelector(".btn-try-again");
+        tryAgainBtn.addEventListener("click", () => {
+            const resultModal = bootstrap.Modal.getInstance(resultModalEl);
+            resultModal.hide();
+
+            // Reopen booking modal at step 2 (payment method) - no callback needed
+            if (event) {
+                setTimeout(() => {
+                    openBookModal(event, null, true); // Pass true to start at step 2
+                }, 300);
+            }
+        });
+    }
+
+    // Cleanup when modal is hidden
+    resultModalEl.addEventListener("hidden.bs.modal", () => {
+        resultModalEl.remove();
+    });
+
+    document.body.appendChild(resultModalEl);
+    const bsResultModal = new bootstrap.Modal(resultModalEl);
+    bsResultModal.show();
+}
+
 // Load events from backend
 async function loadEvents() {
     try {
@@ -180,12 +247,15 @@ function navigateBookingStep(direction, modalEl, event) {
 }
 
 // Open shared Book Modal
-function openBookModal(ev, onCloseCallback) {
+function openBookModal(ev, onCloseCallback, startAtStep2 = false) {
     const bookTemplate = document.getElementById("bookModalTemplate");
     const bookContent = bookTemplate.content.cloneNode(true);
     const bookModalEl = bookContent.querySelector(".modal");
 
-    currentBookingStep = 1;
+    // Reset the completed flag
+    bookingProcessCompleted = false;
+
+    currentBookingStep = startAtStep2 ? 2 : 1;
     currentBookingEvent = ev;
 
     const dateOfBirth = bookModalEl.querySelector("#birthdate");
@@ -196,6 +266,20 @@ function openBookModal(ev, onCloseCallback) {
     const mm = String(today.getMonth() + 1).padStart(2, '0');
     const dd = String(today.getDate()).padStart(2, '0');
     dateOfBirth.setAttribute("max", `${yyyy}-${mm}-${dd}`);
+
+    // Restore saved form data if retrying after payment failure
+    if (startAtStep2 && savedBookingFormData) {
+        const form = bookModalEl.querySelector(".book-form");
+        form.querySelector("#firstname").value = savedBookingFormData.firstname || '';
+        form.querySelector("#lastname").value = savedBookingFormData.lastname || '';
+        form.querySelector("#birthdate").value = savedBookingFormData.birthdate || '';
+        form.querySelector("#street").value = savedBookingFormData.street || '';
+        form.querySelector("#houseNumber").value = savedBookingFormData.houseNumber || '';
+        form.querySelector("#city").value = savedBookingFormData.city || '';
+        form.querySelector("#postalCode").value = savedBookingFormData.postalCode || '';
+        form.querySelector("#email").value = savedBookingFormData.email || '';
+        form.querySelector("#phone").value = savedBookingFormData.phone || '';
+    }
 
     const paymentMethodCards = bookModalEl.querySelectorAll('.payment-method-card');
     const creditCardForm = bookModalEl.querySelector('#creditCardForm');
@@ -252,11 +336,21 @@ function openBookModal(ev, onCloseCallback) {
 
         console.log("Submitting booking with payment for event:", ev);
 
-        const paymentMethod = form.querySelector('input[name="paymentMethod"]:checked').value;
+        const paymentMethodEl = form.querySelector('input[name="paymentMethod"]:checked');
 
+        // Check if payment method is selected
+        if (!paymentMethodEl) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Confirm & Pay';
+            currentBookingStep = 2;
+            showBookingStep(currentBookingStep, bookModalEl);
+            return;
+        }
 
+        const paymentMethod = paymentMethodEl.value;
 
-        const data = {
+        // Collect form data
+        const formDataObj = {
             firstname: form.querySelector("#firstname").value,
             lastname: form.querySelector("#lastname").value,
             birthdate: form.querySelector("#birthdate").value,
@@ -271,7 +365,7 @@ function openBookModal(ev, onCloseCallback) {
         };
 
         const formData = new FormData();
-        for (const k in data) formData.append(k, data[k]);
+        for (const k in formDataObj) formData.append(k, formDataObj[k]);
 
         // Attach the logged-in user's id so bookings remain visible even if a different email is entered
         const userInfoRaw = localStorage.getItem("userInfo");
@@ -288,33 +382,37 @@ function openBookModal(ev, onCloseCallback) {
 
             const responseData = await res.json();
 
-            if (res.ok && responseData.success) {
-                // Payment successful
-                showToast("success", `Booking confirmed! Payment successful. Confirmation sent to ${responseData.email}`);
+            // Mark booking process as completed (either success or failure)
+            bookingProcessCompleted = true;
 
-                // Close modal
-                const modal = bootstrap.Modal.getInstance(bookModalEl);
-                modal.hide();
+            // Close the booking modal first
+            const bookingModal = bootstrap.Modal.getInstance(bookModalEl);
+            bookingModal.hide();
+
+            if (res.ok && responseData.success) {
+                // Payment successful - show success result modal
+                showBookingResultModal(true, responseData.email);
 
                 // Reload events
                 await loadEvents();
             } else {
-                // Payment failed - go back to step 2
-                showToast("error", responseData.message || "Payment failed. Please try again.");
-                currentBookingStep = 2;
-                showBookingStep(currentBookingStep, bookModalEl);
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Confirm & Pay';
+                // Payment failed - show failure result modal with retry option
+                showBookingResultModal(false, null, responseData.message || "Payment failed. Please try again.", ev, formDataObj);
             }
 
         }
         catch (err) {
             console.error(err);
-            showToast("error", "Failed to process booking. Please try again.");
-            currentBookingStep = 2;
-            showBookingStep(currentBookingStep, bookModalEl);
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Confirm & Pay';
+
+            // Mark booking process as completed
+            bookingProcessCompleted = true;
+
+            // Close the booking modal first
+            const bookingModal = bootstrap.Modal.getInstance(bookModalEl);
+            bookingModal.hide();
+
+            // Show failure result modal
+            showBookingResultModal(false, null, "Failed to process booking. Please try again.", ev, formDataObj);
         }
     });
 
@@ -323,14 +421,24 @@ function openBookModal(ev, onCloseCallback) {
         bookModalEl.remove();
         currentBookingStep = 1;
         currentBookingEvent = null;
-        if (typeof onCloseCallback === "function") onCloseCallback();
+
+        // Only call the callback if the booking process was NOT completed
+        // (i.e., user manually closed the modal, not after success/failure)
+        if (!bookingProcessCompleted && typeof onCloseCallback === "function") {
+            onCloseCallback();
+        }
+
+        // Clear saved form data if user manually closed the modal (not after payment attempt)
+        if (!bookingProcessCompleted) {
+            savedBookingFormData = null;
+        }
     });
 
     document.body.appendChild(bookModalEl);
     const bsBookModal = new bootstrap.Modal(bookModalEl);
     bsBookModal.show();
 
-    showBookingStep(1, bookModalEl);
+    showBookingStep(currentBookingStep, bookModalEl);
 
 }
 
