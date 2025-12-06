@@ -55,6 +55,10 @@ public class UserService {
 
 
     public UserDTO createUser(String email, String password, String firstName, String lastName){
+        System.out.println("DEBUG: Creating user with email: " + email);
+        if (userRepository == null) System.out.println("DEBUG: userRepository is NULL");
+        if (passwordEncoder == null) System.out.println("DEBUG: passwordEncoder is NULL");
+
         Optional<User> existingUser = userRepository.findByEmail(email);
         if (existingUser.isPresent()) {
             throw new RuntimeException("User with this email already exists");
@@ -69,7 +73,7 @@ public class UserService {
         User newUser = new User(email, hashpassword, firstName, lastName, userRole);
         newUser.setCreatedAt(createdAt);
 
-        userRepository.save(newUser);
+        userRepository.addNewUser(newUser);
 
         return UserMapperDTO.toDTO(newUser);
     }

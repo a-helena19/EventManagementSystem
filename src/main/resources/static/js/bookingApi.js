@@ -199,7 +199,7 @@ async function openCancelBookingModal(booking, event, modalEl, cancelReasonEl, c
                 body: JSON.stringify({reason})
             });
             if (!res.ok) throw new Error(await res.text());
-            showToast("success", "Event cancelled successfully!");
+            showToast("success", "Booking cancelled successfully!");
             await loadBookings();
             filterBookings();
 

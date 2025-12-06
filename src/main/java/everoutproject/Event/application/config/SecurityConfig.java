@@ -63,6 +63,7 @@ public class SecurityConfig {
                                 "/api/bookings/createWithPayment"
                         ).permitAll()
 
+                        .requestMatchers("/api/users/profile").hasAnyRole("ADMIN", "BACKOFFICE", "FRONTOFFICE", "USER")
                         .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/users", "/api/users/**").hasRole("ADMIN")
 

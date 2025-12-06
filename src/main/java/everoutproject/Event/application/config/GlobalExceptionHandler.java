@@ -18,6 +18,35 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler({org.springframework.validation.BindException.class, org.springframework.web.bind.MethodArgumentNotValidException.class})
+    public ResponseEntity<Map<String, Object>> handleValidationExceptions(Exception ex, HttpServletRequest request) {
+        Map<String, String> errors = new LinkedHashMap<>();
+        org.springframework.validation.BindingResult bindingResult = null;
+
+        if (ex instanceof org.springframework.validation.BindException) {
+            bindingResult = ((org.springframework.validation.BindException) ex).getBindingResult();
+        } else if (ex instanceof org.springframework.web.bind.MethodArgumentNotValidException) {
+            bindingResult = ((org.springframework.web.bind.MethodArgumentNotValidException) ex).getBindingResult();
+        }
+
+        if (bindingResult != null) {
+            bindingResult.getAllErrors().forEach((error) -> {
+                String fieldName = ((org.springframework.validation.FieldError) error).getField();
+                String errorMessage = error.getDefaultMessage();
+                errors.put(fieldName, errorMessage);
+            });
+        }
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(buildErrorResponse(
+                        HttpStatus.BAD_REQUEST,
+                        "Validation Failed",
+                        errors.toString(),
+                        request.getRequestURI()
+                ));
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public Object handleAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
         // Prüfe ob es ein API-Aufruf ist

@@ -15,6 +15,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.validation.Valid;
 
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
@@ -36,7 +37,7 @@ public class EventRestController {
     // Create a new event
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createEvent(
-            @RequestPart("event") CreateEventRequestDTO dto,
+            @Valid @RequestPart("event") CreateEventRequestDTO dto,
             @RequestPart(value = "images") List<MultipartFile> images
     ) {
         try {
@@ -91,7 +92,7 @@ public class EventRestController {
     // Edit an event
     @PutMapping(value = "/edit/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> editEvent(@PathVariable Long id,
-                                       @RequestPart("event") EditEventRequestDTO dto,
+                                       @Valid @RequestPart("event") EditEventRequestDTO dto,
                                        @RequestPart(value =  "images", required = false) List<MultipartFile> images,
                                        @RequestParam(value = "deleteImageIds", required = false) List<Long> deleteImageIds) {
         try {

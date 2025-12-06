@@ -22,6 +22,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @RestController
 @RequestMapping("/api/users")
@@ -35,21 +39,67 @@ public class UserRestController {
         this.authenticationManager = authenticationManager;
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<?> createUser(
-            @RequestParam String email,
-            @RequestParam String password,
-            @RequestParam String firstName,
-            @RequestParam String lastName
-    ) {
-        if (password.length() < 6) {
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Password must include at least 6 characters");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        }
+    public static class CreateUserRequest {
+        @NotBlank(message = "Email is required")
+        @Email(message = "Invalid email format")
+        private String email;
 
+        @NotBlank(message = "Password is required")
+        @Size(min = 6, message = "Password must be at least 6 characters")
+        private String password;
+
+        @NotBlank(message = "First name is required")
+        private String firstName;
+
+        @NotBlank(message = "Last name is required")
+        private String lastName;
+
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
+        public String getFirstName() { return firstName; }
+        public void setFirstName(String firstName) { this.firstName = firstName; }
+        public String getLastName() { return lastName; }
+        public void setLastName(String lastName) { this.lastName = lastName; }
+    }
+
+    public static class LoginRequest {
+        @NotBlank(message = "Email is required")
+        private String email;
+
+        @NotBlank(message = "Password is required")
+        private String password;
+
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
+    }
+
+    public static class UpdateProfileRequest {
+        @NotBlank(message = "First name is required")
+        private String firstName;
+
+        @NotBlank(message = "Last name is required")
+        private String lastName;
+
+        @NotBlank(message = "Email is required")
+        @Email(message = "Invalid email format")
+        private String email;
+
+        public String getFirstName() { return firstName; }
+        public void setFirstName(String firstName) { this.firstName = firstName; }
+        public String getLastName() { return lastName; }
+        public void setLastName(String lastName) { this.lastName = lastName; }
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<?> createUser(@Valid @ModelAttribute CreateUserRequest request) {
         try {
-            UserDTO userDTO = userService.createUser(email, password, firstName, lastName);
+            UserDTO userDTO = userService.createUser(request.getEmail(), request.getPassword(), request.getFirstName(), request.getLastName());
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of(
@@ -68,13 +118,12 @@ public class UserRestController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(
-            @RequestParam String email,
-            @RequestParam String password,
+            @Valid @ModelAttribute LoginRequest loginRequest,
             HttpServletRequest request
     ) {
         try {
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(email, password));
+                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
 
             SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
             securityContext.setAuthentication(authentication);
@@ -87,7 +136,7 @@ public class UserRestController {
             Role role = principal.getRoleDefinition();
 
             // IMPORTANT: Set the current user in the service
-           userService.setCurrentUser(email);
+            userService.setCurrentUser(loginRequest.getEmail());
 
             return ResponseEntity.ok(Map.of(
                     "message", "Login successful",
@@ -132,7 +181,6 @@ public class UserRestController {
     }
 
 
-
     // NEW ENDPOINT: Get current user profile
     @GetMapping("/profile")
     public ResponseEntity<?> getCurrentUserProfile() {
@@ -157,19 +205,15 @@ public class UserRestController {
 
     // NEW ENDPOINT: Update user profile
     @PutMapping("/profile")
-    public ResponseEntity<?> updateUserProfile(
-            @RequestParam String firstName,
-            @RequestParam String lastName,
-            @RequestParam String email) {
-
+    public ResponseEntity<?> updateUserProfile(@Valid @ModelAttribute UpdateProfileRequest request) {
         try {
             User currentUser = userService.getCurrentUser();
 
             User updatedUser = userService.updateUserProfile(
                     currentUser.getId(),
-                    firstName,
-                    lastName,
-                    email
+                    request.getFirstName(),
+                    request.getLastName(),
+                    request.getEmail()
             );
 
             UserDTO userDTO = UserMapperDTO.toDTO(updatedUser);
