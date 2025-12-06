@@ -59,7 +59,7 @@ public class UserRestController {
             UserDTO userDTO = userService.loginUser(email, password);
 
             // IMPORTANT: Set the current user in the service
-           //* userService.setCurrentUser(email);
+            userService.setCurrentUser(email);
 
             return ResponseEntity.ok(Map.of(
                     "message", "Login successful",
