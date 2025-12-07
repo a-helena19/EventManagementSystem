@@ -1,45 +1,85 @@
+#createEventModal{
+    padding: 2rem 1rem;
+}
+
+.modal-dialog{
+    max-width: 90% !important;
+}
+
+#createEventModal .modal-dialog{
+    margin: 0 auto;
+    min-height: calc(100vh - 4rem);
+    display: flex;
+    align-items: center;
+}
+
+#createEventModal .modal-content{
+    width: 100%;
+    max-height: calc(100vh - 4rem);
+    overflow-y: auto;
+}
+
 #event-form {
-    max-width: 600px;
-    margin: 50px auto; /* centers it horizontally */
+    width: 100%;
     padding: 20px;
     background-color: #f9f9f9;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-/* Every row */
-.form-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-/* Label-Styling */
-.form-row label {
-    width: 150px; /* feste Breite der Labels */
+#event-form label {
     font-weight: 600;
     color: #333;
+    margin-bottom: 4px;
+    display: block; /* ensures label is always above */
 }
 
-/* Inputs und Textarea-Styling */
-.form-row input,
-.form-row textarea {
-    flex: 1; /* same width for all */
-    padding: 8px 10px;
+#event-form input,
+#event-form textarea,
+#event-form select {
     border: 1px solid #ccc;
     border-radius: 6px;
+    padding: 10px 12px !important; /* Force consistent padding */
     font-size: 14px;
     transition: border-color 0.3s, box-shadow 0.3s;
+    width: 100%;
 }
 
-/* Hover- und Fokus-Effects */
-.form-row input:focus,
-.form-row textarea:focus {
-    border-color: #007bff;
+/* Fix checkbox spacing + alignment */
+#event-form input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    padding: 0 !important;
+}
+
+/* Focus effects */
+#event-form input:focus,
+#event-form textarea:focus,
+#event-form select:focus {
+    border-color: #007bff !important;
     box-shadow: 0 0 4px rgba(0,123,255,0.4);
     outline: none;
 }
 
+/* When a field is valid */
+#event-form input:valid,
+#event-form textarea:valid,
+#event-form select:valid {
+    border-color: green !important; /* grün, wenn alles korrekt */
+}
+
+/* When a field is invalid */
+#event-form input:invalid:focus,
+#event-form textarea:invalid:focus,
+#event-form select:invalid:focus {
+    border-color: red  !important; /* rot, wenn falsch/fokusiert */
+}
+
+.is-invalid {
+    border-color: red !important;
+    box-shadow: 0 0 4px rgba(255,0,0,0.4) !important;
+}
 
 #nextBtn {
     display: block;
@@ -57,24 +97,6 @@
 #nextBtn:hover {
     background-color: #0056b3;
 }
-
-input, textarea, select {
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    padding: 8px;
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-/* When a field is valid */
-input:valid, textarea:valid, select:valid {
-    border-color: green !important; /* grün, wenn alles korrekt */
-}
-
-/* When a field is invalid */
-input:invalid:focus, textarea:invalid:focus, select:invalid:focus {
-    border-color: red  !important; /* rot, wenn falsch/fokusiert */
-}
-
 
 /* Container for Back & Submit buttons */
 #backBtn,
@@ -140,4 +162,140 @@ input:invalid:focus, textarea:invalid:focus, select:invalid:focus {
     list-style-type: disc;
     padding-left: 20px;
     margin: 0;
+}
+
+#leftColumn h5,
+#rightColumn h5 {
+    font-weight: 600;
+    margin-top: 25px;
+    margin-bottom: 10px;
+}
+
+/* Small extra spacing between badges/lists (requirements, equipment, packages) */
+.badge {
+    font-size: 13px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.icon-btn {
+    border: none;
+    background: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 0 6px;
+}
+
+.icon-btn.save {
+    color: #28a745;
+}
+
+.icon-btn.cancel {
+    color: #dc3545;
+}
+
+.icon-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.remove-item {
+    cursor: pointer;
+    margin-left: 8px;
+    font-weight: bold;
+}
+
+#requirementsContainer,
+#equipmentContainer,
+#packagesContainer,
+#appointmentsContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+#appointmentsContainer .badge,
+#packagesContainer .badge {
+    margin-bottom: 6px;
+}
+
+.add-requirement-btn,
+.add-equipment-btn,
+.add-package-btn,
+.add-appointment-btn {
+    margin-top: 5px;
+}
+
+/* Ensure dynamic input rows look aligned */
+#requirementInputs,
+#equipmentInputs,
+#appointmentInputs,
+#packageInputs {
+    align-items: center;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+/* Smaller buttons inside inline rows */
+#requirementInputs .btn,
+#equipmentInputs .btn,
+#appointmentInputs .btn,
+#packageInputs .btn {
+    padding: 6px 14px;
+}
+
+.input-group input,
+.input-group select {
+    width: auto !important;
+    flex: 1 !important;
+}
+
+.input-group .btn {
+    flex: 0 0 auto !important;
+}
+
+/* Readonly Mode */
+.readonly input,
+.readonly textarea,
+.readonly select {
+    pointer-events: none;
+    background-color: #e9ecef !important;
+    border: 1px solid #bbb !important;
+}
+
+.readonly .btn-outline-primary {
+    display: none !important;
+}
+
+.readonly .remove-item {
+    display: none !important;
+}
+
+/* =========================================
+   FIXES FOR HOMEPAGE & DATE INPUTS
+   ========================================= */
+
+.modal-backdrop {
+    z-index: 10000 !important;
+}
+
+.modal {
+    z-index: 10001 !important;
+}
+
+
+.was-validated input[type="date"].form-control:invalid,
+input[type="date"].form-control.is-invalid {
+    background-position: right calc(0.375em + 0.1875rem) center !important;
+
+    padding-right: 3.5rem !important;
+}
+
+.was-validated input[type="date"].form-control:invalid::-webkit-calendar-picker-indicator,
+input[type="date"].form-control.is-invalid::-webkit-calendar-picker-indicator {
+    margin-right: 1.6rem !important;
+    position: relative;
+    z-index: 5;
 }

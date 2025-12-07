@@ -30,11 +30,16 @@ dependencies {
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'org.postgresql:postgresql'
 
-	// testing support
+    // Spring Security for PasswordEncoder
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // testing support
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation "org.junit.jupiter:junit-jupiter:5.11.0"
 	testImplementation "org.junit.platform:junit-platform-suite:1.14.0"
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	implementation 'org.springframework.session:spring-session-jdbc'
 
 }
 

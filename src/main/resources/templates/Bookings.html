@@ -21,7 +21,19 @@
         <li class="navbarLeft"><a href="/homepage"><img class="logo" src="/images/icons/EVERout_Logo_dunkel_v3.png" alt="Home button"></a></li>
         <li class="navbarLeft"><a class="links" href="/events">EVENTS</a></li>
         <li class="navbarLeft"><a class="links" href="/bookings">BOOKINGS</a></li>
-        <li class="navbarRight"><a href="/user"><img id="profile" src="/images/icons/Profile.png" alt="profile-account"></a></li>
+        <li class="navbarLeft" id="adminNav" style="display: none;"><a class="links" href="/admin">ADMIN</a></li>
+        <li class="navbarRight" id= "loggedOutContainer"><a href="/user"><img id="loggedOutProfile" src="/images/icons/Profile.png" alt="profile-account"></a></li>
+        <li class="navbarRight dropdown" id="loggedInContainer" style="display: none;">
+            <a class="d-flex align-items-center text-decoration-none dropdown-toggle" href="#" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <div id="loggedInProfile" class="profile-circle"></div>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                <li><span class="dropdown-item-text" id="userNameDisplay"></span></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                <li><button class="dropdown-item" id="logout" onclick="logout()">Sign out</button></li>
+            </ul>
+        </li>
         <li class="navbarRight"><a><img id="cart" src="/images/icons/shoppingCart.png" alt="cart"></a></li>
         <li class="navbarRight"><a><img id="favorites" src="/images/icons/favorites.png" alt="favorites"></a></li>
     </ul>
@@ -138,21 +150,62 @@
                                 <span class="info-value d-eventlocation">-</span>
                             </div>
                             <div class="info-row">
+                                <span class="info-label">Price:</span>
+                                <span class="info-value d-eventprice">-</span>
+                            </div>
+                            <div class="info-row">
                                 <span class="info-label">Status:</span>
                                 <span class="d-status badge"></span>
+                            </div>
+                            <div class="d-cancelDeadline info-row">
+                                <span class="info-label">Cancellation Deadline:</span>
+                                <span class="info-value"></span>
+                            </div>
+                            <div class="d-cancelReason info-row" style="display:none;">
+                                <span class="info-label">Cancellation Reason:</span>
+                                <span class="info-value"></span>
+                            </div>
+                            <div class="d-cancelDate info-row" style="display:none;">
+                                <span class="info-label">Cancellation Date:</span>
+                                <span class="info-value"></span>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer d-flex justify-content-between">
-                    <div></div>
-                    <button type="button" class="btn btn-outline-danger">Cancel Booking</button>
+                    <div class="cancel-section text-end">
+                    <button type="button" class="btn btn-outline-danger btn-open-cancel">Cancel Booking</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </template>
 
+<template id="cancelModalTemplate">
+    <div class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form class="cancel-form">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Cancel Booking</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Please provide a reason for cancellation:</p>
+                        <textarea name="cancellationReason" class="form-control cancellationReason" rows="3" required></textarea>
+                    </div>
+                    <div class="modal-footer">
+                         <span id="calculateRefund" class="alert alert-warning"></span>
+                        <button type="submit" class="btn btn-danger">Confirm</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script src="/js/loginUserIcon.js"></script>
 <script src="/js/toast.js"></script>
 <script src="/js/bookingApi.js"></script>
 

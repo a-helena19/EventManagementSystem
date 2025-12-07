@@ -2,11 +2,13 @@ package everoutproject.Event.rest;
 
 import everoutproject.Event.application.services.EventService;
 import everoutproject.Event.domain.model.event.EventStatus;
-import everoutproject.Event.rest.dtos.event.EventDTO;
-import everoutproject.Event.rest.dtos.event.CancelRequestDTO;
 import everoutproject.Event.domain.model.event.EventLocation;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import everoutproject.Event.rest.dtos.event.request.CreateEventRequestDTO;
+import everoutproject.Event.rest.dtos.event.request.EditEventRequestDTO;
+import everoutproject.Event.rest.dtos.event.response.EventDTO;
+import everoutproject.Event.rest.dtos.event.request.CancelRequestDTO;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -32,29 +34,20 @@ public class EventRestController {
     }
 
     // Create a new event
-    @PostMapping("/create")
+    @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createEvent(
-            @RequestParam String name,
-            @RequestParam(required = false) String description,
-            @RequestParam String street,
-            @RequestParam String houseNumber,
-            @RequestParam String city,
-            @RequestParam String postalCode,
-            @RequestParam String state,
-            @RequestParam String country,
-            @RequestParam LocalDate date,
-            @RequestParam BigDecimal price,
-            @RequestParam List<MultipartFile> images
+            @RequestPart("event") CreateEventRequestDTO dto,
+            @RequestPart(value = "images") List<MultipartFile> images
     ) {
         try {
-            EventLocation location = new EventLocation(street, houseNumber, city, postalCode, state, country);
-            EventDTO eventDTO = eventService.createEvent(name, description, location, date, price, images);
-
+            EventDTO created = eventService.createEvent(dto, images);
+            System.out.println("Created event: " + created);
+            System.out.println("ID = " + created.id());
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of(
                             "message", "Event created successfully",
-                            "id", eventDTO.id(),
-                            "name", eventDTO.name()
+                            "id", created.id(),
+                            "name", created.name()
                     ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -70,68 +63,46 @@ public class EventRestController {
 
     // Return image bytes for a specific image ID
     @GetMapping("/image/{id}")
-    public ResponseEntity<byte[]> getEventImage(@PathVariable Long id) {
-        try {
-            byte[] imageData = eventService.getEventImage(id);
-            String contentType = URLConnection.guessContentTypeFromStream(new ByteArrayInputStream(imageData));
-            if (contentType == null) contentType = MediaType.IMAGE_JPEG_VALUE;
+    public ResponseEntity<byte[]> getEventImage(@PathVariable Long id) throws Exception {
+        byte[] imageData = eventService.getEventImage(id);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.parseMediaType(contentType));
-
-            return new ResponseEntity<>(imageData, headers, HttpStatus.OK);
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
+        String contentType = URLConnection.guessContentTypeFromStream(new ByteArrayInputStream(imageData));
+        if (contentType == null) {
+            contentType = MediaType.IMAGE_JPEG_VALUE;
         }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(contentType));
+
+        return new ResponseEntity<>(imageData, headers, HttpStatus.OK);
     }
+
 
     // Cancel an event
     @PutMapping("/cancel/{id}")
-    public ResponseEntity<?> cancelEvent(@PathVariable Long id, @RequestBody CancelRequestDTO request) {
-        try {
-            eventService.cancelEvent(id, request.getReason());
-            return ResponseEntity.ok(Map.of("message", "Event cancelled successfully"));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Failed to cancel event: " + e.getMessage()));
-        }
+    public ResponseEntity<Map<String, String>> cancelEvent(
+            @PathVariable Long id,
+            @RequestBody CancelRequestDTO request
+    ) {
+        eventService.cancelEvent(id, request.getReason());
+        return ResponseEntity.ok(Map.of("message", "Event cancelled successfully"));
     }
 
     // Edit an event
-    @PutMapping("/edit/{id}/status/{status}")
+    @PutMapping(value = "/edit/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> editEvent(@PathVariable Long id,
-                                       @PathVariable String status,
-                                       @RequestParam String name,
-                                       @RequestParam(required = false) String description,
-                                       @RequestParam String street,
-                                       @RequestParam String houseNumber,
-                                       @RequestParam String city,
-                                       @RequestParam String postalCode,
-                                       @RequestParam String state,
-                                       @RequestParam String country,
-                                       @RequestParam LocalDate date,
-                                       @RequestParam BigDecimal price,
-                                       @RequestPart(required = false) List<MultipartFile> images,
-                                       @RequestParam(required = false) String deleteImageIds) {
+                                       @RequestPart("event") EditEventRequestDTO dto,
+                                       @RequestPart(value =  "images", required = false) List<MultipartFile> images,
+                                       @RequestParam(value = "deleteImageIds", required = false) List<Long> deleteImageIds) {
         try {
-            EventLocation location = new EventLocation(street, houseNumber, city, postalCode, state, country);
-            EventStatus eventStatus = EventStatus.valueOf(status);
-
-
-            // Optional: parse IDs to delete
-            List<Long> idsToDelete = null;
-            if (deleteImageIds != null && !deleteImageIds.isEmpty()) {
-                idsToDelete = new ObjectMapper().readValue(deleteImageIds, new TypeReference<List<Long>>() {});
-            }
-
-            eventService.editEvent(id, name, description, location, date, price, eventStatus, images, idsToDelete);
-            return ResponseEntity.ok(Map.of(
-                    "message", "Event was edited successfully",
-                    "id", id,
-                    "name", name));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("message", "Failed to edit event: " + e.getMessage()));
-        }
+        EventDTO updated = eventService.editEvent(id, dto, images, deleteImageIds);
+        return ResponseEntity.ok(Map.of(
+                "message", "Event was edited successfully",
+                "id", updated.id(),
+                "name", updated.name()));
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("message", "Failed to edit event: " + e.getMessage()));
     }
+}
 }

@@ -2,6 +2,8 @@ package everoutproject.Event.infrastructure.persistence.model.booking;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 
@@ -39,7 +41,7 @@ public class Booking {
     private String postalCode;
 
     @Column(nullable = true)
-    @Pattern(regexp = "^\\+[0-9 ]{6,20}$")
+    @Pattern(regexp = "^$|^\\+[0-9 ]{6,20}$")
     private String phoneNumber;
 
     @Column(nullable = false)
@@ -50,9 +52,17 @@ public class Booking {
     @Enumerated(EnumType.STRING)
     private BookingStatus status;
 
+    private LocalDate cancelDate;
+
+    private String cancelReason;
+
+    private BigDecimal refund;
     // Just store the event_id as a foreign key
     @Column(name = "event_id", nullable = false)
     private Long eventId;
+
+    @Column(nullable = true)
+    private Long userId;
 
 
     // Default constructor required by JPA
@@ -70,7 +80,8 @@ public class Booking {
                  String phoneNumber,
                  String email,
                  BookingStatus status,
-                   Long eventId) {
+                   Long eventId,
+                   Long userId) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.birthDate = birthDate;
@@ -83,6 +94,7 @@ public class Booking {
         this.email = email;
         this.status = status;
         this.eventId = eventId;
+        this.userId = userId;
     }
 
 
@@ -151,16 +163,29 @@ public class Booking {
         this.status = status;
     }
 
+    public LocalDate getCancelDate() { return cancelDate; }
+    public void setCancelDate(LocalDate cancelDate) { this.cancelDate = cancelDate; }
+
+    public String getCancelReason() { return cancelReason; }
+    public void setCancelReason(String cancelReason) { this.cancelReason = cancelReason; }
+
+    public BigDecimal getRefund() { return refund; }
+    public void setRefund(BigDecimal refund) { this.refund = refund; }
+
     public Long getEventId() {return eventId;}
 
     public void setEventId(Long eventId) {this.eventId = eventId;}
+
+    public Long getUserId() {return userId;}
+
+    public void setUserId(Long userId) {this.userId = userId;}
 
 
     @Override
     public String toString() {
         return "Booking [id=" + id + ", full name=" + firstname + " " + lastname + ", birth date=" + birthDate + ", booking date=" + bookingDate
                 + ", address=" + street + " " + houseNumber + ", " + postalCode + " " + city + ", phone number=" + phoneNumber +
-                ", email=" + email + ", booking status=" + status + ", event id=" + eventId + "]";
+                ", email=" + email + ", booking status=" + status + ", event id=" + eventId + ", user id=" + userId + "]";
     }
 }
 

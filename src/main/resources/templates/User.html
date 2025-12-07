@@ -17,12 +17,48 @@
 </head>
 <body>
 
+<div id="toastData"
+     th:if="${toastType != null and toastMessage != null}"
+     th:data-type="${toastType}"
+     th:data-message="${toastMessage}"
+     style="display: none;">
+</div>
+
+
+<div id="toastContainer" class="toast-container"></div>
+
+
+<template id="toastTemplate">
+    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">
+                <span class="toast-icon" style="font-size: 18px; margin-right: 8px;"></span>
+                <span class="toast-title"></span>
+            </strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body"></div>
+    </div>
+</template>
 
 <div id="navbar">
     <ul>
         <li class="navbarLeft"><a href="/homepage"><img class="logo" src="/images/icons/EVERout_Logo_dunkel_v3.png" alt="Home button"></a></li>
         <li class="navbarLeft"><a class="links" href="/events">EVENTS</a></li>
-        <li class="navbarRight"><a href="/user"><img id="profile" src="/images/icons/Profile.png" alt="profile-account"></a></li>
+        <li class="navbarLeft"><a class="links" href="/bookings">BOOKINGS</a></li>
+        <li class="navbarLeft" id="adminNav" style="display: none;"><a class="links" href="/admin">ADMIN</a></li>
+        <li class="navbarRight" id= "loggedOutContainer"><a href="/user"><img id="loggedOutProfile" src="/images/icons/Profile.png" alt="profile-account"></a></li>
+        <li class="navbarRight dropdown" id="loggedInContainer" style="display: none;">
+            <a class="d-flex align-items-center text-decoration-none dropdown-toggle" href="#" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <div id="loggedInProfile" class="profile-circle"></div>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                <li><span class="dropdown-item-text" id="userNameDisplay"></span></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                <li><button class="dropdown-item" id="logout" onclick="logout()">Sign out</button></li>
+            </ul>
+        </li>
         <li class="navbarRight"><a><img id="cart" src="/images/icons/shoppingCart.png" alt="cart"></a></li>
         <li class="navbarRight"><a><img id="favorites" src="/images/icons/favorites.png" alt="favorites"></a></li>
     </ul>
@@ -30,8 +66,8 @@
 
 <div class="container" id="container">
     <div class="form-container sign-up">
-        <form>
-            <h1>Create Account</h1>
+        <form id="sign-up-form" novalidate>
+            <h2>Create Account</h2>
             <div class="social-icons">
                 <a href="#" class="icon"><i class="fa-brands fa-google-plus-g"></i></a>
                 <a href="#" class="icon"><i class="fa-brands fa-facebook-f"></i></a>
@@ -39,15 +75,34 @@
                 <a href="#" class="icon"><i class="fa-brands fa-linkedin-in"></i></a>
             </div>
             <span>or use your email for registeration</span>
-            <input type="text" placeholder="Name">
-            <input type="email" placeholder="Email">
-            <input type="password" placeholder="Password">
-            <button>Sign Up</button>
+            <div class="row">
+                <div class="col-md-6">
+                    <input type="text" id="firstName" name="firstName" placeholder="First Name" required>
+                    <div class="invalid-feedback">
+                        No valid Firstname.
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <input type="text" id="lastName" name="lastName" placeholder="Last Name" required>
+                    <div class="invalid-feedback">
+                        No valid Lastname.
+                    </div>
+                </div>
+            </div>
+            <input type="email" id="email" name="email" placeholder="Email" required>
+            <div class="invalid-feedback">
+                Please enter a valid email.
+            </div>
+            <input type="password" id="password" name="password" placeholder="Password" minlength="6" required>
+            <div class="invalid-feedback">
+                Password must be at least 6 characters long
+            </div>
+            <button type="submit" id="signUpBtn">Sign Up </button>
         </form>
     </div>
     <div class="form-container sign-in">
-        <form>
-            <h1>Sign In</h1>
+        <form id="sign-in-form" novalidate>
+            <h2>Sign In</h2>
             <div class="social-icons">
                 <a href="#" class="icon"><i class="fa-brands fa-google-plus-g"></i></a>
                 <a href="#" class="icon"><i class="fa-brands fa-facebook-f"></i></a>
@@ -55,10 +110,16 @@
                 <a href="#" class="icon"><i class="fa-brands fa-linkedin-in"></i></a>
             </div>
             <span>or use your email password</span>
-            <input type="email" placeholder="Email">
-            <input type="password" placeholder="Password">
+            <input type="email" id="login-email" name="login-email" placeholder="Email" required>
+            <div class="invalid-feedback">
+                Please enter a valid login email.
+            </div>
+            <input type="password" id="login-password" name="login-password" placeholder="Password" required>
+            <div class="invalid-feedback">
+                Please enter a valid login password.
+            </div>
             <a href="#">Forget Your Password?</a>
-            <button>Sign In</button>
+            <button type="submit" id="signInBtn">Sign In</button>
         </form>
     </div>
     <div class="toggle-container">
@@ -77,6 +138,8 @@
     </div>
 </div>
 
-<script src="/js/login_page.js?v=1"></script>
+<script src="/js/loginUserIcon.js"></script>
+<script src="/js/toast.js"></script>
+<script src="/js/userApi.js?v=1"></script>
 </body>
 </html>

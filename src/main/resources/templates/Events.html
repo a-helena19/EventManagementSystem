@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="/css/eventList.css">
     <link rel="stylesheet" href="/css/toast.css">
     <link rel="stylesheet" href="/css/bookEvent.css">
+    <link rel="stylesheet" href="/css/editEvent.css">
+    <link rel="stylesheet" href="/css/paymentFlow.css">
 </head>
 <body>
 
@@ -45,7 +47,19 @@
         <li class="navbarLeft"><a href="/homepage"><img class="logo" src="/images/icons/EVERout_Logo_dunkel_v3.png" alt="Home button"></a></li>
         <li class="navbarLeft"><a class="links" href="/events">EVENTS</a></li>
         <li class="navbarLeft"><a class="links" href="/bookings">BOOKINGS</a></li>
-        <li class="navbarRight"><a href="/user"><img id="profile" src="/images/icons/Profile.png" alt="profile-account"></a></li>
+        <li class="navbarLeft" id="adminNav" style="display: none;"><a class="links" href="/admin">ADMIN</a></li>
+        <li class="navbarRight" id= "loggedOutContainer"><a href="/user"><img id="loggedOutProfile" src="/images/icons/Profile.png" alt="profile-account"></a></li>
+        <li class="navbarRight dropdown" id="loggedInContainer" style="display: none;">
+            <a class="d-flex align-items-center text-decoration-none dropdown-toggle" href="#" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <div id="loggedInProfile" class="profile-circle"></div>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                <li><span class="dropdown-item-text" id="userNameDisplay"></span></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="/profile">Profile</a></li>
+                <li><button class="dropdown-item" id="logout" onclick="logout()">Sign out</button></li>
+            </ul>
+        </li>
         <li class="navbarRight"><a><img id="cart" src="/images/icons/shoppingCart.png" alt="cart"></a></li>
         <li class="navbarRight"><a><img id="favorites" src="/images/icons/favorites.png" alt="favorites"></a></li>
     </ul>
@@ -118,41 +132,128 @@
     </div>
 </template>
 
-<template id="detailsModalTemplate">
-    <div class="modal mt-3" tabindex="-1">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="gallery d-flex flex-wrap justify-content-center gap-2 mb-3"></div>
-                    <p><span class="infoLabel">Name:</span> <span class="d-name infoValue"></span></p>
-                    <p><span class="infoLabel">Description:</span> <span class="d-desc infoValue"></span></p>
-                    <p><span class="infoLabel">Location:</span> <span class="d-location infoValue"></span></p>
-                    <p><span class="infoLabel">Date:</span> <span class="d-date infoValue"></span></p>
-                    <p><span class="infoLabel">Price:</span> <span class="d-price infoValue"></span></p>
-                    <p><span class="infoLabel">Status:</span> <span class="d-status badge"></span></p>
-                    <p class="d-cancelreason" style="display:none;"><strong class="infoLabel">Cancellation Reason:</strong> <span class="infoValue"></span></p>
-                </div>
-                <div class="modal-footer">
-                    <div class="d-flex justify-content-between">
-                        <div class="cancel-section text-end" style="display:none;">
-                            <button type="button" class="btn btn-outline-danger btn-sm btn-open-cancel">Cancel Event</button>
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xxl modal-dialog-centered">
+        <div class="modal-content p-3">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="details_title"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="container-fluid">
+                    <div class="row g-3">
+
+                        <!-- COLUMN 1 — MAIN INFO -->
+                        <div class="col-lg-4 col-md-6 col-12">
+                            <h5>Main Information</h5>
+                            <table class="table table-sm table-bordered details-table">
+                                <tbody>
+                                <tr><th>Name</th><td id="details_name"></td></tr>
+                                <tr><th>Description</th><td id="details_desc"></td></tr>
+                                <tr><th>Category</th><td id="details_category"></td></tr>
+                                <tr><th>Start Date</th><td id="details_start"></td></tr>
+                                <tr><th>End Date</th><td id="details_end"></td></tr>
+                                <tr><th>Cancel Deadline</th><td id="details_cancelDeadline"></td></tr>
+                                <tr><th>Price</th><td id="details_price"></td></tr>
+                                <tr><th>Deposit %</th><td id="details_deposit"></td></tr>
+                                <tr>
+                                    <th>Status</th>
+                                    <td><span class="badge" id="details_status"></span></td>
+                                </tr>
+
+                                <tr id="details_cancelReasonRow" style="display:none;">
+                                    <th>Cancellation Reason</th>
+                                    <td id="details_cancelReason"></td>
+                                </tr>
+                                </tbody>
+                            </table>
                         </div>
-                        <div class="book-section text-end" style="display:none;">
-                            <button type="button" class="btn btn-outline-primary btn-sm btn-open-book">Book Now</button>
+
+                        <!-- COLUMN 2 — LOCATION + ORGANIZER -->
+                        <div class="col-lg-4 col-md-6 col-12">
+
+                            <h5>Location</h5>
+                            <table class="table table-sm table-bordered details-table">
+                                <tbody>
+                                <tr><th>Street</th><td id="details_street"></td></tr>
+                                <tr><th>House Nr.</th><td id="details_houseNumber"></td></tr>
+                                <tr><th>Postal Code</th><td id="details_postalCode"></td></tr>
+                                <tr><th>City</th><td id="details_city"></td></tr>
+                                <tr><th>State</th><td id="details_state"></td></tr>
+                                <tr><th>Country</th><td id="details_country"></td></tr>
+                                </tbody>
+                            </table>
+
+                            <h5 class="mt-4">Organizer</h5>
+                            <table class="table table-sm table-bordered details-table">
+                                <tbody>
+                                <tr><th>Name</th><td id="details_orgName"></td></tr>
+                                <tr><th>Email</th><td id="details_orgEmail"></td></tr>
+                                <tr><th>Phone</th><td id="details_orgPhone"></td></tr>
+                                </tbody>
+                            </table>
+
+                            <h5 class="mt-4">Participants</h5>
+                            <table class="table table-sm table-bordered details-table">
+                                <tbody>
+                                <tr><th>Min</th><td id="details_min"></td></tr>
+                                <tr><th>Max</th><td id="details_max"></td></tr>
+                                </tbody>
+                            </table>
                         </div>
-                        <div class="edit-section text-end" style="display:none;">
-                            <button type="button" class="btn btn-outline-primary btn-sm btn-open-edit">Edit Event</button>
+
+                        <!-- COLUMN 3 — TABLES (REQ/EQUIP/PACK/APPT) -->
+                        <div class="col-lg-4 col-md-12 col-12">
+
+                            <h5>Requirements</h5>
+                            <table class="table table-sm table-bordered details-table" id="details_requirementsTable">
+                                <thead><tr><th>Description</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+
+                            <h5 class="mt-4">Equipment</h5>
+                            <table class="table table-sm table-bordered details-table" id="details_equipmentTable">
+                                <thead><tr><th>Name</th><th>Rentable</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+
+                            <h5 class="mt-4">Packages</h5>
+                            <table class="table table-sm table-bordered details-table" id="details_packagesTable">
+                                <thead><tr><th>Title</th><th>Description</th><th>Price</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+
+                            <h5 class="mt-4">Appointments</h5>
+                            <table class="table table-sm table-bordered details-table" id="details_appointmentsTable">
+                                <thead><tr><th>Start</th><th>End</th><th>Seasonal</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+
                         </div>
+
+                        <!-- FULL-WIDTH IMAGES -->
+                        <div class="col-12 mt-4">
+                            <h5>Images</h5>
+                            <div id="details_images" class="d-flex flex-wrap gap-2"></div>
+                        </div>
+
                     </div>
                 </div>
+
             </div>
+
+            <div class="modal-footer d-flex justify-content-end">
+                <button class="btn btn-outline-danger btn-sm" id="details_cancelBtn" style="display:none;">Cancel Event</button>
+                <button class="btn btn-outline-primary btn-sm" id="details_bookBtn" style="display:none;">Book Now</button>
+                <button class="btn btn-outline-primary btn-sm" id="details_editBtn" style="display:none;">Edit Event</button>
+            </div>
+
         </div>
     </div>
-</template>
+</div>
 
 <template id="cancelModalTemplate">
     <div class="modal fade" tabindex="-1">
@@ -178,14 +279,15 @@
 
 <template id="bookModalTemplate">
     <div class="modal fade" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
                 <form class="book-form">
                     <div class="modal-header">
                         <h5 class="modal-title">Book Event</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <div class="modal-body">
+
+                    <div class="modal-body booking-step active" data-step="1">
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="firstname" class="form-label">First name</label>
@@ -202,12 +304,10 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="mb-3 d-flex flex-column">
+                        <div class="mb-3">
                             <label for="birthdate" class="form-label">Birth Date</label>
-                            <input type="date" id="birthdate" name="birthdate" class="form-control" placeholder="DD.MM.YYYY" required>
-                            <div class="invalid-feedback">
-                                Please enter a valid birth date.
-                            </div>
+                            <input type="date" id="birthdate" name="birthdate" class="form-control" required>
+                            <div class="invalid-feedback">Please enter a valid birth date.</div>
                         </div>
 
                         <div class="row">
@@ -251,10 +351,94 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Step 2: Payment Method -->
+                    <div class="modal-body booking-step" data-step="2">
+                        <h5 class="mb-4">Select Payment Method</h5>
+                        <div class="payment-methods">
+                            <label class="payment-method-card">
+                                <input type="radio" name="paymentMethod" value="paypal" required>
+                                <div class="payment-method-icon">💳</div>
+                                <div class="payment-method-name">PayPal</div>
+                            </label>
+                            <label class="payment-method-card">
+                                <input type="radio" name="paymentMethod" value="klarna" required>
+                                <div class="payment-method-icon">🛒</div>
+                                <div class="payment-method-name">Klarna</div>
+                            </label>
+                            <label class="payment-method-card">
+                                <input type="radio" name="paymentMethod" value="creditcard" required>
+                                <div class="payment-method-icon">💳</div>
+                                <div class="payment-method-name">Credit Card</div>
+                            </label>
+                        </div>
+
+                        <!-- Credit Card Form (hidden by default) -->
+                        <div class="credit-card-form" id="creditCardForm" style="display: none;">
+                            <h6 class="mb-3">Credit Card Details</h6>
+                            <div class="mb-3">
+                                <label for="cardNumber" class="form-label">Card Number</label>
+                                <input type="text" id="cardNumber" name="cardNumber" class="form-control"
+                                       pattern="[0-9]{16}" maxlength="16" placeholder="1234567812345678">
+                                <div class="invalid-feedback">Please enter a valid 16-digit card number.</div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="expiryDate" class="form-label">Expiry Date (MM/YY)</label>
+                                    <input type="text" id="expiryDate" name="expiryDate" class="form-control"
+                                           pattern="(0[1-9]|1[0-2])\/[0-9]{2}" maxlength="5" placeholder="12/25">
+                                    <div class="invalid-feedback">Please enter MM/YY format.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="cvv" class="form-label">CVV</label>
+                                    <input type="text" id="cvv" name="cvv" class="form-control"
+                                           pattern="[0-9]{3,4}" maxlength="4" placeholder="123">
+                                    <div class="invalid-feedback">Please enter a valid CVV (3-4 digits).</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Overview -->
+                    <div class="modal-body booking-step" data-step="3">
+                        <div class="payment-overview">
+                            <div class="overview-section">
+                                <h5>Personal Information</h5>
+                                <div class="overview-data">
+                                    <p><strong>Name:</strong> <span id="overview-name"></span></p>
+                                    <p><strong>Birth Date:</strong> <span id="overview-birthdate"></span></p>
+                                    <p><strong>Address:</strong> <span id="overview-address"></span></p>
+                                    <p><strong>Email:</strong> <span id="overview-email"></span></p>
+                                    <p><strong>Phone:</strong> <span id="overview-phone"></span></p>
+                                </div>
+                            </div>
+
+                            <div class="overview-section">
+                                <h5>Payment Method</h5>
+                                <div class="overview-data">
+                                    <p><strong>Selected Method:</strong> <span id="overview-payment-method"></span></p>
+                                </div>
+                            </div>
+
+                            <div class="overview-section">
+                                <h5>Price Details</h5>
+                                <div class="overview-data">
+                                    <p><strong>Deposit (Now to Pay):</strong> <span id="overview-deposit" style="font-size: 1.2rem; color: #28a745; font-weight: 700;">€0.00</span></p>
+                                    <p><strong>Total Price (After Event):</strong> <span id="overview-total" style="font-size: 1.1rem; color: #495057; font-weight: 600;">€0.00</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="modal-footer d-flex justify-content-between">
-                        <button type="button" id="backBtn" class="btn btn-secondary" style="display: none;" onclick="bookNextStep(false)">Back</button>
-                        <button type="button" id = "nextBtn" class="btn btn-primary" onclick="bookCheckValidation(true)">Next</button>
-                        <button type="submit" id="submitBtn" class="btn btn-primary" style="display: none;">Create</button>
+                        <div>
+                            <button type="button" class="btn btn-secondary" id="bookCancelBtn" data-bs-dismiss="modal">Cancel</button>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-secondary" id="bookBackBtn" style="display: none;">Back</button>
+                            <button type="button" class="btn btn-primary" id="bookNextBtn">Next</button>
+                            <button type="submit" class="btn btn-primary" id="bookSubmitBtn" style="display: none;">Confirm & Pay</button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -262,117 +446,391 @@
     </div>
 </template>
 
-<template id="editModalTemplate">
-    <div class="modal fade" tabindex="-1">
+<!-- Booking Result Modal (Success/Failure) -->
+<template id="bookingResultModalTemplate">
+    <div class="modal fade" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <form class="edit-form">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Edit Event</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="modal-body text-center py-5">
+                    <!-- Success State -->
+                    <div class="result-success" style="display: none;">
+                        <div class="result-icon success-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#28a745" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="m9 12 2 2 4-4"></path>
+                            </svg>
+                        </div>
+                        <h3 class="mt-4 mb-2" style="color: #28a745; font-weight: 700;">Booking Confirmed!</h3>
+                        <p class="text-muted mb-1">Your payment was successful.</p>
+                        <p class="confirmation-email text-muted mb-4"></p>
+                        <button type="button" class="btn btn-success btn-lg px-5" data-bs-dismiss="modal">Done</button>
                     </div>
-                    <div class="modal-body">
-                        <div class="mb-3 d-flex flex-column">
-                            <label for="name" class="form-label">Name</label>
-                            <input type="text" id="name" name="name" class="form-control" required>
-                            <div class="invalid-feedback">
-                                Please enter a valid name.
-                            </div>
+
+                    <!-- Failure State -->
+                    <div class="result-failure" style="display: none;">
+                        <div class="result-icon failure-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#dc3545" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="m15 9-6 6"></path>
+                                <path d="m9 9 6 6"></path>
+                            </svg>
                         </div>
-
-                        <div class="mb-3 d-flex flex-column">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea id="description" name="description" class="form-control"></textarea>
-                        </div>
-
-                        <!-- Location fields -->
-                        <div class="row">
-                            <div class="col-md-8 mb-3">
-                                <label for="street" class="form-label">Street</label>
-                                <input type="text" id="editStreet" name="street" class="form-control" required>
-                                <div class="invalid-feedback">Please enter a valid street.</div>
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                <label for="houseNumber" class="form-label">House Number</label>
-                                <input type="text" id="editHouseNumber" name="houseNumber" class="form-control" required>
-                                <div class="invalid-feedback">Please enter a valid house number.</div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-8 mb-3">
-                                <label for="city" class="form-label">City</label>
-                                <input type="text" id="editCity" name="city" class="form-control" required>
-                                <div class="invalid-feedback">Please enter a valid city.</div>
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                <label for="postalCode" class="form-label">Postal Code</label>
-                                <input type="text" id="editPostalCode" name="postalCode" class="form-control" required>
-                                <div class="invalid-feedback">Please enter a valid postal code.</div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="state" class="form-label">State</label>
-                                <input type="text" id="state" name="state" class="form-control" required>
-                                <div class="invalid-feedback">Please enter a valid state.</div>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="country" class="form-label">Country</label>
-                                <input type="text" id="country" name="country" class="form-control" required>
-                                <div class="invalid-feedback">Please enter a valid country.</div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3 d-flex flex-column">
-                            <label for="date" class="form-label">Date</label>
-                            <input type="date" id="date" name="date" class="form-control" required>
-                            <div class="invalid-feedback">
-                                Please enter a valid date.
-                            </div>
-                        </div>
-
-                        <div class="mb-3 d-flex flex-column">
-                            <label for="price" class="form-label">Price (€)</label>
-                            <input type="number" id="price" name="price" step="0.01" min="0.00" max="99999999.99" class="form-control" required>
-                            <div class="invalid-feedback">
-                                Please enter a valid price.
-                            </div>
-                        </div>
-
-                        <div class="mb-3 d-flex flex-column">
-                            <!-- Existing Images -->
-                            <label class="form-label">Existing Images</label>
-                            <div id="existingImages" class="d-flex flex-wrap gap-2"></div>
-                        </div>
-                        <div class="mb-3 d-flex flex-column">
-                            <label for="images" class="form-label">Upload images</label>
-                            <input type="file" id="images" name="images" accept="image/*" multiple class="form-control">
-                            <div class="invalid-feedback">
-                                Please enter a valid image-file.
-                            </div>
-                        </div>
-
-                        <!-- Uploaded Filenames -->
-                        <div class="mb-3" id="fileNames"></div>
+                        <h3 class="mt-4 mb-2" style="color: #dc3545; font-weight: 700;">Payment Failed</h3>
+                        <p class="failure-message text-muted mb-4"></p>
+                        <button type="button" class="btn btn-danger btn-lg px-4 btn-try-again">Try Again</button>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<!--Edit event 1:1 to create event-->
+<div class="modal fade" id="editEventModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Event</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="event-form" enctype="multipart/form-data" novalidate>
+
+                    <div class="row">
+                        <!-- LEFT SIDE – Main Event Data (2/3) -->
+                        <div class="col-lg-8 col-md-7 col-12" id="edit_leftColumn">
+
+                            <!-- Name -->
+                            <div class="mb-3">
+                                <label class="form-label">Name</label>
+                                <input type="text" id="edit_name" class="form-control" required>
+                                <div class="invalid-feedback">
+                                    Please enter a valid name.
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="mb-3">
+                                <label class="form-label">Description</label>
+                                <textarea id="edit_description" class="form-control"></textarea>
+                            </div>
+
+                            <!-- Dates -->
+                            <div class="row">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="edit_singleDayCheckbox">
+                                    <label class="form-check-label">This is a single-day event</label>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label>Start Date</label>
+                                    <input type="date" id="edit_startDate" class="form-control" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a valid date.
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3" id="edit_endDateWrapper">
+                                    <label>End Date</label>
+                                    <input type="date" id="edit_endDate" class="form-control" required>
+                                    <div class="invalid-feedback">
+                                        End date is required and must be later than start date.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label>Cancellation Deadline</label>
+                                    <input type="date" id="edit_cancelDeadline" class="form-control">
+                                </div>
+                            </div>
+                            <!-- Price & Category -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label>Price (€)</label>
+                                    <input type="number" id="edit_price" class="form-control" required step="0.01">
+                                    <div class="invalid-feedback">
+                                        Please enter a valid price.
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label>Category</label>
+                                    <select id="edit_category" class="form-select" required>
+                                        <option value="">Select Category</option>
+                                        <option value="CANYONING">Canyoning</option>
+                                        <option value="CAMPING">Camping</option>
+                                        <option value="TREKKING">Trekking</option>
+                                        <option value="GUIDED_HIKES">Guided Hikes</option>
+                                        <option value="FOOTBALL_TOURNAMENT">Football Tournament</option>
+                                        <option value="GLACIER_COURSE">Glacier Course</option>
+                                        <option value="AVALANCHE_COURSE">Avalanche Course</option>
+                                        <option value="SKI_COURSE">Ski Course</option>
+                                        <option value="OTHER">Other</option>
+                                    </select>
+                                    <div class="invalid-feedback">
+                                        Please choose a valid category.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Deposit Percent -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label>Deposit (%) <small class="text-muted">(default: 30%)</small></label>
+                                    <input type="number" id="edit_depositPercent" class="form-control" min="0" max="100" step="1">
+                                </div>
+                            </div>
+
+
+                            <!-- Location -->
+                            <h5 class="mt-4">Location</h5>
+                            <div class="row">
+                                <div class="col-md-8 mb-3">
+                                    <label>Street</label>
+                                    <input type="text" id="edit_street" class="form-control" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a valid street.
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label>House Number</label>
+                                    <input type="text" id="edit_houseNumber" class="form-control" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a valid house number.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-8 mb-3">
+                                    <label>City</label>
+                                    <input type="text" id="edit_city" class="form-control" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a valid city.
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label>Postal Code</label>
+                                    <input type="text" id="edit_postalCode" class="form-control" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a valid postal code.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label>State</label>
+                                    <input type="text" id="edit_state" class="form-control" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a valid state.
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label>Country</label>
+                                    <input type="text" id="edit_country" class="form-control" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a valid country.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Appointments -->
+                            <h5 class="mt-4">Appointments</h5>
+                            <div id="edit_appointmentsContainer"></div>
+                            <!-- appointment input row ... -->
+                            <button type="button" class="btn btn-outline-primary add-appointment-btn mb-2" onclick="edit_showAppointmentInputs()">
+                                + Add Appointment
+                            </button>
+
+                            <div id="edit_appointmentInputs" class="row mb-3" style="display:none;">
+                                <div class="col-md-4">
+                                    <label>Start</label>
+                                    <input type="date" id="edit_apptStart" class="form-control">
+                                </div>
+                                <div class="col-md-4">
+                                    <label>End</label>
+                                    <input type="date" id="edit_apptEnd" class="form-control">
+                                </div>
+                                <div class="col-md-2 text-center">
+                                    <label>Seasonal</label><br>
+                                    <input type="checkbox" id="edit_apptSeasonal" class="form-check-input mt-2">
+                                </div>
+                                <div id="edit_appoitmentBtns" class="row">
+                                    <div class="col-auto">
+                                        <button type="button" class="icon-btn save" onclick="edit_saveAppointment()">✓</button>
+                                    </div>
+                                    <div class="col-auto">
+                                        <button type="button" class="icon-btn cancel" onclick="edit_cancelAppointment()">✕</button>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- Packages -->
+                            <h5 class="mt-4">Additional Packages</h5>
+                            <div id="edit_packagesContainer"></div>
+                            <!-- package input row ... -->
+                            <button type="button" class="btn btn-outline-primary add-package-btn mb-2" onclick="edit_showPackageInputs()">
+                                + Add Package
+                            </button>
+
+                            <div id="edit_packageInputs" class="row mb-3" style="display:none;">
+                                <div class="col-md-4">
+                                    <input type="text" id="edit_packageTitleInput" class="form-control mb-2" placeholder="Title">
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="text" id="edit_packageDescInput" class="form-control mb-2" placeholder="Description">
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="number" id="edit_packagePriceInput" class="form-control mb-2" step="0.01" min="0" placeholder="Price">
+                                </div>
+                                <div id="edit_packageBtns" class="row">
+                                    <div class="col-auto">
+                                        <button type="button" class="icon-btn save" onclick="edit_savePackage()">✓</button>
+                                    </div>
+                                    <div class="col-auto">
+                                        <button type="button" class="icon-btn cancel" onclick="edit_cancelPackage()">✕</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <!-- RIGHT SIDE – Secondary Info (1/3) -->
+                        <div class="col-lg-4 col-md-5 col-12" id="edit_rightColumn">
+
+                            <!-- Participants -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label>Min Participants</label>
+                                    <input type="number" id="edit_minParticipants" class="form-control" min="0" required>
+                                    <div class="invalid-feedback">
+                                        Please enter a valid number.
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label>Max Participants</label>
+                                    <input type="number" id="edit_maxParticipants" class="form-control" min="0" required>
+                                    <div class="invalid-feedback">
+                                        A valid number is required and must be greater than min participants.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Requirements -->
+                            <h5 class="mt-4">Requirements</h5>
+                            <div id="edit_requirementsContainer"></div>
+
+                            <button type="button" class="btn btn-outline-primary add-requirement-btn mb-2" onclick="edit_showRequirementInputs()">
+                                + Add Requirement
+                            </button>
+
+                            <div id="edit_requirementInputs" class="row mb-3" style="display:none;">
+                                <div class="col-12">
+                                    <input id="edit_requirementInput" class="form-control mb-2" placeholder="Requirement">
+                                </div>
+                                <div id="edit_requirementBtns" class="row">
+                                    <div class="col-auto">
+                                        <button type="button" class="icon-btn save" onclick="edit_saveRequirement()">✓</button>
+                                    </div>
+                                    <div class="col-auto">
+                                        <button type="button" class="icon-btn cancel" onclick="edit_cancelRequirement()">✕</button>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- Equipment -->
+                            <h5 class="mt-4">Equipment</h5>
+                            <div id="edit_equipmentContainer"></div>
+
+                            <button type="button" class="btn btn-outline-primary add-equipment-btn mb-2" onclick="edit_showEquipmentInputs()">
+                                + Add Equipment
+                            </button>
+
+                            <div id="edit_equipmentInputs" class="row mb-3" style="display:none;">
+                                <div class="col-md-6">
+                                    <input id="edit_equipmentNameInput" class="form-control mb-2" placeholder="Name">
+                                </div>
+                                <div class="col-md-5">
+                                    <select id="edit_equipmentRentableInput" class="form-select mb-2">
+                                        <option value="">Select</option>
+                                        <option value="true">Rentable</option>
+                                        <option value="false">Not Rentable</option>
+                                    </select>
+                                </div>
+                                <div id="edit_equipmentBtns" class="row">
+                                    <div class="col-auto">
+                                        <button type="button" class="icon-btn save" onclick="edit_saveEquipment()">✓</button>
+                                    </div>
+                                    <div class="col-auto">
+                                        <button type="button" class="icon-btn cancel" onclick="edit_cancelEquipment()">✕</button>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- Organizer -->
+                            <h5 class="mt-4">Organizer</h5>
+
+                            <select id="edit_organizerSelect" class="form-select mb-3" required>
+                                <option value="">Select Organizer</option>
+                            </select>
+
+                            <div id="edit_newOrganizerFields" style="display:none;">
+                                <div class="mb-3">
+                                    <label>Name</label>
+                                    <input type="text" id="edit_orgName" class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label>Email</label>
+                                    <input type="email" id="edit_orgEmail" class="form-control">
+                                </div>
+                                <div class="mb-3">
+                                    <label>Phone</label>
+                                    <input type="text" id="edit_orgPhone" class="form-control">
+                                </div>
+                            </div>
+
+                            <!-- Images -->
+                            <div class="mb-3 d-flex flex-column">
+                                <label for="edit_images" class="form-label">Upload images</label>
+                                <input type="file" id="edit_images" name="images" accept="image/*" multiple class="form-control">
+                                <div class="invalid-feedback">
+                                    Please enter a valid image-file.
+                                </div>
+                            </div>
+                            <div class="mb-3 d-flex flex-column">
+                                <!-- Existing Images -->
+                                <label class="form-label">Existing Images</label>
+                                <div id="edit_existingImages" class="d-flex flex-wrap gap-2"></div>
+                            </div>
+
+                            <!-- Uploaded Filenames -->
+                            <div class="mb-3" id="edit_fileNames"></div>
+
+                        </div>
+                    </div>
+
+
+
+
                     <div class="modal-footer d-flex justify-content-between">
-                        <button type="button" id="edit-backBtn" class="btn btn-secondary" style="display: none;" onclick="editNextStep(false)">Back</button>
-                        <button type="button" id = "edit-nextBtn" class="btn btn-primary" onclick="editCheckValidation(true)">Next</button>
-                        <button type="submit" id="edit-submitBtn" class="btn btn-primary" style="display: none;">Update</button>
+                        <button type="button" id="edit_backBtn" class="btn btn-secondary" style="display: none;" onclick="edit_nextStep(false)">Back</button>
+                        <button type="button" id = "edit_nextBtn" class="btn btn-primary" onclick="edit_checkValidation(true)">Next</button>
+                        <button type="submit" id="edit_submitBtn" class="btn btn-primary" style="display: none;">Update</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-</template>
+</div>
+
+<script src="/js/loginUserIcon.js"></script>
 <script src="/js/toast.js"></script>
 <script src="/js/eventSearch.js"></script>
 <script src="/js/eventApi.js"></script>
+<script src="/js/editEvent.js"></script>
 
 
 </body>

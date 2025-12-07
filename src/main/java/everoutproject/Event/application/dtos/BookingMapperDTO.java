@@ -18,6 +18,9 @@ public class BookingMapperDTO {
                 booking.getPhoneNumber(),
                 booking.getEmail(),
                 booking.getStatus().name(),
+                booking.getCancelDate(),
+                booking.getCancelReason(),
+                booking.getRefund(),
                 booking.getEventId()
         );
     }

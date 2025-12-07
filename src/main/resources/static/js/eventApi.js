@@ -1,3 +1,73 @@
+// GLOBAL variable to store current editing event
+let editCurrentEvent = null;
+
+// Flag to track if booking process completed (success or showing result modal)
+let bookingProcessCompleted = false;
+
+// Store form data for retry after payment failure
+let savedBookingFormData = null;
+
+// Show Booking Result Modal (Success or Failure)
+function showBookingResultModal(isSuccess, email = null, errorMessage = null, event = null, formData = null) {
+    const resultTemplate = document.getElementById("bookingResultModalTemplate");
+    const resultContent = resultTemplate.content.cloneNode(true);
+    const resultModalEl = resultContent.querySelector(".modal");
+
+    const successSection = resultModalEl.querySelector(".result-success");
+    const failureSection = resultModalEl.querySelector(".result-failure");
+
+    if (isSuccess) {
+        // Show success state
+        successSection.style.display = "block";
+        failureSection.style.display = "none";
+
+        // Clear saved form data on success
+        savedBookingFormData = null;
+
+        // Set email confirmation message
+        if (email) {
+            resultModalEl.querySelector(".confirmation-email").textContent =
+                `Confirmation sent to ${email}`;
+        }
+    } else {
+        // Show failure state
+        successSection.style.display = "none";
+        failureSection.style.display = "block";
+
+        // Save form data for retry
+        if (formData) {
+            savedBookingFormData = formData;
+        }
+
+        // Set error message
+        resultModalEl.querySelector(".failure-message").textContent =
+            errorMessage || "Payment could not be processed. Please try again.";
+
+        // Set up "Try Again" button to reopen booking modal
+        const tryAgainBtn = resultModalEl.querySelector(".btn-try-again");
+        tryAgainBtn.addEventListener("click", () => {
+            const resultModal = bootstrap.Modal.getInstance(resultModalEl);
+            resultModal.hide();
+
+            // Reopen booking modal at step 2 (payment method) - no callback needed
+            if (event) {
+                setTimeout(() => {
+                    openBookModal(event, null, true); // Pass true to start at step 2
+                }, 300);
+            }
+        });
+    }
+
+    // Cleanup when modal is hidden
+    resultModalEl.addEventListener("hidden.bs.modal", () => {
+        resultModalEl.remove();
+    });
+
+    document.body.appendChild(resultModalEl);
+    const bsResultModal = new bootstrap.Modal(resultModalEl);
+    bsResultModal.show();
+}
+
 // Load events from backend
 async function loadEvents() {
     try {
@@ -12,7 +82,7 @@ async function loadEvents() {
 }
 
 // Function to check if there is at least 1 image
-function updateImageRequirement(imagesInput, existingImagesContainer) {
+window.updateImageRequirement = function(imagesInput, existingImagesContainer) {
     const existingImages = existingImagesContainer.querySelectorAll("img");
     const hasNewFiles = imagesInput.files && imagesInput.files.length > 0;
 
@@ -23,312 +93,170 @@ function updateImageRequirement(imagesInput, existingImagesContainer) {
     }
 }
 
+// Multi-Step Booking Flow
+let currentBookingStep = 1;
+let currentBookingEvent = null;
 
-function listFileNames() {
-    const fileInput = document.getElementById('images');
-    const fileNamesDiv = document.getElementById('fileNames');
-    const files = Array.from(fileInput.files);
-
-    if (!files.length) {
-        fileNamesDiv.textContent = "No files selected";
-        return;
-    }
-
-    fileNamesDiv.innerHTML = `<ul>${files.map(f => `<li>${f.name}</li>`).join('')}</ul>`;
-}
-
-// Next step for edit form
-function editNextStep(readonly) {
-    const fields = [
-        "name", "description", "editStreet", "editHouseNumber", "editCity",
-        "editPostalCode", "state", "country", "date", "price"
-    ].map(id => document.getElementById(id));
-    const images = document.getElementById("images");
-    const imagesLabel = document.querySelector('label[for="images"]');
-    const existingImagesContainer = document.getElementById("existingImages");
-
-    const nextBtn = document.getElementById("edit-nextBtn");
-    const backBtn = document.getElementById("edit-backBtn");
-    const submitBtn = document.getElementById("edit-submitBtn");
-
-    if(readonly) {
-        nextBtn.style.display = "none";
-        backBtn.style.display = "inline-block";
-        submitBtn.style.display = "inline-block";
-        fields.forEach(el => {
-            el.setAttribute("readonly", "");
-            el.style.border = "0px";
-            el.style.backgroundColor = "#e9ecef";
-            el.style.color = "#495057";
-        });
-        images.classList.add('readonly-file');
-        images.style.border = "0px";
-        images.style.backgroundColor = "#e9ecef";
-        images.style.pointerEvents = "none";
-
-        if (imagesLabel) {
-            imagesLabel.style.pointerEvents = "none";
-            imagesLabel.style.opacity = "1";
-            imagesLabel.style.cursor = "not-allowed";
+function showBookingStep(step, modalEl) {
+    const steps = modalEl.querySelectorAll('.booking-step');
+    steps.forEach(stepEl => {
+        if (parseInt(stepEl.dataset.step) === step) {
+            stepEl.classList.add('active');
+        } else {
+            stepEl.classList.remove('active');
         }
+    });
 
-        // Disable remove buttons on existing images
-        if (existingImagesContainer) {
-            existingImagesContainer.querySelectorAll("button").forEach(btn => {
-                btn.style.pointerEvents = "none";
-                btn.style.opacity = "0.5";
-            });
-        }
+    const backBtn = modalEl.querySelector('#bookBackBtn');
+    const nextBtn = modalEl.querySelector('#bookNextBtn');
+    const submitBtn = modalEl.querySelector('#bookSubmitBtn');
 
-    } else {
-        nextBtn.style.display = "inline-block";
-        backBtn.style.display = "none";
-        submitBtn.style.display = "none";
-        fields.forEach(el => {
-            el.removeAttribute("readonly");
-            el.style.border = "1px solid";
-            el.style.backgroundColor = "white";
-            el.style.color = "black";
-        });
-
-        images.classList.remove('readonly-file');
-        images.style.border = "1px solid";
-        images.style.backgroundColor = "white";
-        images.style.pointerEvents = "auto";
-
-        if (imagesLabel) {
-            imagesLabel.style.pointerEvents = "auto";
-            imagesLabel.style.opacity = "1";
-            imagesLabel.style.cursor = "pointer";
-        }
-
-        // Enable remove buttons on existing images
-        if (existingImagesContainer) {
-            existingImagesContainer.querySelectorAll("button").forEach(btn => {
-                btn.style.pointerEvents = "auto";
-                btn.style.opacity = "1";
-            });
-        }
+    if (step === 1) {
+        backBtn.style.display = 'none';
+        nextBtn.style.display = 'inline-block';
+        submitBtn.style.display = 'none';
+    } else if (step === 2) {
+        backBtn.style.display = 'inline-block';
+        nextBtn.style.display = 'inline-block';
+        submitBtn.style.display = 'none';
+    } else if (step === 3) {
+        backBtn.style.display = 'inline-block';
+        nextBtn.style.display = 'none';
+        submitBtn.style.display = 'inline-block';
     }
 }
 
+function validateStep1(form) {
+    const fields = ['firstname', 'lastname', 'birthdate', 'street', 'houseNumber', 'city', 'postalCode', 'email', 'phone'];
+    let valid = true;
 
-// Next step for booking form
-function bookNextStep(readonly) {
-    const fields = [
-        "firstname", "lastname", "birthdate", "street", "houseNumber",
-        "city", "postalCode", "email", "phone"
-    ].map(id => document.getElementById(id));
+    fields.forEach(fieldId => {
+        const field = form.querySelector(`#${fieldId}`);
+        if (!field.checkValidity()) {
+            valid = false;
+        }
+    });
 
-    const nextBtn = document.getElementById("nextBtn");
-    const backBtn = document.getElementById("backBtn");
-    const submitBtn = document.getElementById("submitBtn");
-
-    if(readonly) {
-        nextBtn.style.display = "none";
-        backBtn.style.display = "inline-block";
-        submitBtn.style.display = "inline-block";
-        fields.forEach(el => {
-            el.setAttribute("readonly", "");
-            el.style.border = "0px";
-            el.style.backgroundColor = "#e9ecef";
-            el.style.color = "#495057";
-        });
-    }
-    else {
-        nextBtn.style.display = "inline-block";
-        backBtn.style.display = "none";
-        submitBtn.style.display = "none";
-        fields.forEach(el => {
-            el.removeAttribute("readonly");
-            el.style.border = "1px solid";
-            el.style.backgroundColor = "white";
-            el.style.color = "black";
-        });
-    }
-}
-
-// ---Validation for Next Button (Edit) ---
-function editCheckValidation(next) {
-    const form = document.querySelector(".edit-form");
-
-    if (form.checkValidity()) {
-        editNextStep(next);
-    } else {
+    if (!valid) {
         form.classList.add('was-validated');
     }
+
+    return valid;
 }
 
-// --- Validation for Next Button (Book) ---
-function bookCheckValidation(next) {
-    const form = document.querySelector(".book-form");
+function validateStep2(form) {
+    const paymentMethod = form.querySelector('input[name="paymentMethod"]:checked');
 
-    if (form.checkValidity()) {
-        bookNextStep(next);
-    } else {
-        form.classList.add('was-validated');
-    }
-}
-
-function openEditModal(ev, modalEl) {
-    const editTemplate = document.getElementById("editModalTemplate");
-    const editContent = editTemplate.content.cloneNode(true);
-    const editModalEl = editContent.querySelector(".modal");
-
-    const detailsBsModal = bootstrap.Modal.getInstance(modalEl);
-    detailsBsModal.hide();
-
-    const name = editModalEl.querySelector('#name');
-    const description = editModalEl.querySelector('#description');
-    const street = editModalEl.querySelector('#editStreet');
-    const houseNumber = editModalEl.querySelector('#editHouseNumber');
-    const city = editModalEl.querySelector('#editCity');
-    const postalCode = editModalEl.querySelector('#editPostalCode');
-    const state = editModalEl.querySelector('#state');
-    const country = editModalEl.querySelector('#country');
-    const date = editModalEl.querySelector('#date');
-    const price = editModalEl.querySelector('#price');
-    const images = editModalEl.querySelector("#images");
-    // Fill inputs
-
-    name.value = ev.name;
-    description.value = ev.description;
-    street.value = ev.location.street;
-    houseNumber.value = ev.location.houseNumber;
-    city.value = ev.location.city;
-    postalCode.value = ev.location.postalCode;
-    state.value = ev.location.state;
-    country.value = ev.location.country;
-    date.value = ev.date;
-    price.value = ev.price;
-
-    // Set min date to today
-    const today = new Date();
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, '0');
-    const dd = String(today.getDate()).padStart(2, '0');
-    date.setAttribute("min", `${yyyy}-${mm}-${dd}`);
-
-    let imagesToDelete = [];
-    const existingImagesContainer = editModalEl.querySelector("#existingImages");
-    existingImagesContainer.innerHTML = "";
-
-    if (ev.imageIds && ev.imageIds.length > 0) {
-        ev.imageIds.forEach(id => {
-            const wrapper = document.createElement("div");
-            wrapper.classList.add("position-relative", "m-2");
-            wrapper.style.width = "120px";
-
-            const img = document.createElement("img");
-            img.src = `/api/events/image/${id}`;
-            img.classList.add("img-thumbnail");
-            img.style.width = "120px";
-            img.style.height = "120px";
-            img.style.objectFit = "cover";
-
-            const btn = document.createElement("button");
-            btn.type = "button";
-            btn.classList.add("btn", "btn-sm", "btn-danger", "position-absolute", "top-0", "end-0");
-            btn.innerText = "X";
-            btn.onclick = () => {
-                imagesToDelete.push(id);
-                wrapper.remove();
-                // Check whether input should be required now
-                updateImageRequirement(images, existingImagesContainer);
-            };
-
-            wrapper.appendChild(img);
-            wrapper.appendChild(btn);
-            existingImagesContainer.appendChild(wrapper);
-        });
+    if (!paymentMethod) {
+        showToast("error", "Please select a payment method");
+        return false;
     }
 
-    // Event listener für neue Dateien
-    images.addEventListener("change", () => {
-        updateImageRequirement(images, existingImagesContainer);
-        listFileNames();
-    });
+    // If credit card is selected, validate card details
+    if (paymentMethod.value === 'creditcard') {
+        const cardNumber = form.querySelector('#cardNumber');
+        const expiryDate = form.querySelector('#expiryDate');
+        const cvv = form.querySelector('#cvv');
 
-
-    // Initial check after rendering
-    updateImageRequirement(images, existingImagesContainer);
-
-
-    //Track whether submit was pressed
-    let submitted = false;
-
-    // Form submission to backend
-    editModalEl.querySelector(".edit-form").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        submitted = true;
-
-        // Build FormData for backend
-        const formData = new FormData();
-        formData.append("name", name.value);
-        formData.append("description", description.value);
-        formData.append("street", street.value);
-        formData.append("houseNumber", houseNumber.value);
-        formData.append("city", city.value);
-        formData.append("postalCode", postalCode.value);
-        formData.append("state", state.value);
-        formData.append("country", country.value);
-        formData.append("date", date.value);
-        formData.append("price", price.value);
-
-        if (images && images.files.length > 0) {
-            for (const file of images.files) {
-                formData.append("images", file);
-            }
+        if (!cardNumber.value || !cardNumber.checkValidity()) {
+            showToast("error", "Please enter a valid 16-digit card number");
+            cardNumber.focus();
+            return false;
         }
 
-        // Deleted images
-        if (imagesToDelete.length > 0) {
-            formData.append("deleteImageIds", JSON.stringify(imagesToDelete));
+        if (!expiryDate.value || !expiryDate.checkValidity()) {
+            showToast("error", "Please enter expiry date in MM/YY format");
+            expiryDate.focus();
+            return false;
         }
 
-        for (let [key, value] of formData.entries()) {
-            console.log(key, value);
+        // Check if expiry date is in the future
+        const [month, year] = expiryDate.value.split('/').map(Number);
+        const now = new Date();
+        const currentYear = now.getFullYear() % 100;
+        const currentMonth = now.getMonth() + 1;
+
+        if (year < currentYear || (year === currentYear && month < currentMonth)) {
+            showToast("error", "Card has expired. Please use a valid card");
+            expiryDate.focus();
+            return false;
         }
 
-        try {
-            const res = await fetch(`/api/events/edit/${ev.id}/status/${ev.status}`, {
-                method: "PUT",
-                body: formData
-            });
-
-            if (res.ok) {
-                const data = await res.json();
-                showToast("success", `Event "${data.name}" was updated successfully!`);
-                await loadEvents();
-
-                const editBsModal = bootstrap.Modal.getInstance(editModalEl);
-                editBsModal.hide();
-            } else {
-                const text = await res.text();
-                showToast("error", text);
-            }
-        } catch (err) {
-            showToast("error", "Network error: " + err.message);
+        if (!cvv.value || !cvv.checkValidity()) {
+            showToast("error", "Please enter a valid CVV (3-4 digits)");
+            cvv.focus();
+            return false;
         }
-    });
+    }
 
-    editModalEl.addEventListener("hidden.bs.modal", () => {
-        editModalEl.remove();
-
-        if (!submitted) {
-            detailsBsModal.show();
-        }
-    });
-
-    document.body.appendChild(editModalEl);
-    const bsEditModal = new bootstrap.Modal(editModalEl);
-    bsEditModal.show();
+    return true;
 }
+
+function updateOverview(form, event) {
+    // Personal information
+    const firstname = form.querySelector('#firstname').value;
+    const lastname = form.querySelector('#lastname').value;
+    const birthdate = form.querySelector('#birthdate').value;
+    const street = form.querySelector('#street').value;
+    const houseNumber = form.querySelector('#houseNumber').value;
+    const city = form.querySelector('#city').value;
+    const postalCode = form.querySelector('#postalCode').value;
+    const email = form.querySelector('#email').value;
+    const phone = form.querySelector('#phone').value;
+
+    form.querySelector('#overview-name').textContent = `${firstname} ${lastname}`;
+    form.querySelector('#overview-birthdate').textContent = birthdate;
+    form.querySelector('#overview-address').textContent = `${street} ${houseNumber}, ${postalCode} ${city}`;
+    form.querySelector('#overview-email').textContent = email;
+    form.querySelector('#overview-phone').textContent = phone;
+
+    // Payment method
+    const paymentMethod = form.querySelector('input[name="paymentMethod"]:checked');
+    const paymentMethodText = paymentMethod.value.charAt(0).toUpperCase() + paymentMethod.value.slice(1);
+    form.querySelector('#overview-payment-method').textContent = paymentMethodText;
+
+    // Calculate deposit and total
+    const depositPercent = event.depositPercent || 30;
+    const totalPrice = event.price;
+    const depositAmount = (totalPrice * depositPercent) / 100;
+
+    form.querySelector('#overview-deposit').textContent = `€${depositAmount.toFixed(2)}`;
+    form.querySelector('#overview-total').textContent = `€${totalPrice.toFixed(2)}`;
+}
+
+
+function navigateBookingStep(direction, modalEl, event) {
+    const form = modalEl.querySelector('.book-form');
+
+    if (direction === 'next') {
+        if (currentBookingStep === 1) {
+            if (!validateStep1(form)) return;
+            currentBookingStep = 2;
+        } else if (currentBookingStep === 2) {
+            if (!validateStep2(form)) return;
+            updateOverview(form, event);
+            currentBookingStep = 3;
+        }
+    } else if (direction === 'back') {
+        if (currentBookingStep > 1) {
+            currentBookingStep--;
+        }
+    }
+
+    showBookingStep(currentBookingStep, modalEl);
+}
+
 // Open shared Book Modal
-function openBookModal(ev, onCloseCallback) {
+function openBookModal(ev, onCloseCallback, startAtStep2 = false) {
     const bookTemplate = document.getElementById("bookModalTemplate");
     const bookContent = bookTemplate.content.cloneNode(true);
     const bookModalEl = bookContent.querySelector(".modal");
+
+    // Reset the completed flag
+    bookingProcessCompleted = false;
+
+    currentBookingStep = startAtStep2 ? 2 : 1;
+    currentBookingEvent = ev;
 
     const dateOfBirth = bookModalEl.querySelector("#birthdate");
 
@@ -339,16 +267,90 @@ function openBookModal(ev, onCloseCallback) {
     const dd = String(today.getDate()).padStart(2, '0');
     dateOfBirth.setAttribute("max", `${yyyy}-${mm}-${dd}`);
 
+    // Restore saved form data if retrying after payment failure
+    if (startAtStep2 && savedBookingFormData) {
+        const form = bookModalEl.querySelector(".book-form");
+        form.querySelector("#firstname").value = savedBookingFormData.firstname || '';
+        form.querySelector("#lastname").value = savedBookingFormData.lastname || '';
+        form.querySelector("#birthdate").value = savedBookingFormData.birthdate || '';
+        form.querySelector("#street").value = savedBookingFormData.street || '';
+        form.querySelector("#houseNumber").value = savedBookingFormData.houseNumber || '';
+        form.querySelector("#city").value = savedBookingFormData.city || '';
+        form.querySelector("#postalCode").value = savedBookingFormData.postalCode || '';
+        form.querySelector("#email").value = savedBookingFormData.email || '';
+        form.querySelector("#phone").value = savedBookingFormData.phone || '';
+    }
+
+    const paymentMethodCards = bookModalEl.querySelectorAll('.payment-method-card');
+    const creditCardForm = bookModalEl.querySelector('#creditCardForm');
+
+    paymentMethodCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            radio.checked = true;
+
+            // Remove selected class from all cards
+            paymentMethodCards.forEach(c => c.classList.remove('selected'));
+            // Add selected class to clicked card
+            this.classList.add('selected');
+
+            // Show/hide credit card form
+            if (radio.value === 'creditcard') {
+                creditCardForm.style.display = 'block';
+                // Make credit card fields required
+                creditCardForm.querySelector('#cardNumber').setAttribute('required', '');
+                creditCardForm.querySelector('#expiryDate').setAttribute('required', '');
+                creditCardForm.querySelector('#cvv').setAttribute('required', '');
+            } else {
+                creditCardForm.style.display = 'none';
+                // Remove required attribute
+                creditCardForm.querySelector('#cardNumber').removeAttribute('required');
+                creditCardForm.querySelector('#expiryDate').removeAttribute('required');
+                creditCardForm.querySelector('#cvv').removeAttribute('required');
+            }
+        });
+    });
+
+    // Navigation buttons
+    const backBtn = bookModalEl.querySelector('#bookBackBtn');
+    const nextBtn = bookModalEl.querySelector('#bookNextBtn');
+
+    backBtn.addEventListener('click', () => {
+        navigateBookingStep('back', bookModalEl, ev);
+    });
+
+    nextBtn.addEventListener('click', () => {
+        navigateBookingStep('next', bookModalEl, ev);
+    });
+
     // Form submit handler
     bookModalEl.querySelector(".book-form").addEventListener("submit", async (e) => {
         e.preventDefault();
 
         const form = bookModalEl.querySelector(".book-form");
+        const submitBtn = bookModalEl.querySelector('#bookSubmitBtn');
 
-        console.log("Submitting booking for event:", ev);
-        console.log("eventId =", ev?.id);
-        // Get values from the modal (only inside!)
-        const data = {
+        // Disable submit button to prevent double submission
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Processing...';
+
+        console.log("Submitting booking with payment for event:", ev);
+
+        const paymentMethodEl = form.querySelector('input[name="paymentMethod"]:checked');
+
+        // Check if payment method is selected
+        if (!paymentMethodEl) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Confirm & Pay';
+            currentBookingStep = 2;
+            showBookingStep(currentBookingStep, bookModalEl);
+            return;
+        }
+
+        const paymentMethod = paymentMethodEl.value;
+
+        // Collect form data
+        const formDataObj = {
             firstname: form.querySelector("#firstname").value,
             lastname: form.querySelector("#lastname").value,
             birthdate: form.querySelector("#birthdate").value,
@@ -358,51 +360,85 @@ function openBookModal(ev, onCloseCallback) {
             postalCode: form.querySelector("#postalCode").value,
             email: form.querySelector("#email").value,
             phone: form.querySelector("#phone").value,
-            eventId: ev?.id
+            eventId: ev?.id,
+            paymentMethod: paymentMethod
         };
 
         const formData = new FormData();
-        for (const k in data) formData.append(k, data[k]);
+        for (const k in formDataObj) formData.append(k, formDataObj[k]);
+
+        // Attach the logged-in user's id so bookings remain visible even if a different email is entered
+        const userInfoRaw = localStorage.getItem("userInfo");
+        const user = userInfoRaw ? JSON.parse(userInfoRaw) : null;
+        if (user?.id) {
+            formData.append("userId", user.id);
+        }
 
         try {
-            const res = await fetch('/api/bookings/create', {
+            const res = await fetch('/api/bookings/createWithPayment', {
                 method: "POST",
                 body: formData
             });
 
-            if (!res.ok) {
-                const text = await res.text();
-                showToast("error", text);
-                return;
+            const responseData = await res.json();
+
+            // Mark booking process as completed (either success or failure)
+            bookingProcessCompleted = true;
+
+            // Close the booking modal first
+            const bookingModal = bootstrap.Modal.getInstance(bookModalEl);
+            bookingModal.hide();
+
+            if (res.ok && responseData.success) {
+                // Payment successful - show success result modal
+                showBookingResultModal(true, responseData.email);
+
+                // Reload events
+                await loadEvents();
+            } else {
+                // Payment failed - show failure result modal with retry option
+                showBookingResultModal(false, null, responseData.message || "Payment failed. Please try again.", ev, formDataObj);
             }
 
-            const data = await res.json();
-            showToast("success", `Booking for "${data.name}" created successfully!`);
-
-            // Reset UI
-            form.reset();
-            bookNextStep(false);
-
-            // Close modal
-            const modal = bootstrap.Modal.getInstance(bookModalEl);
-            modal.hide();
         }
         catch (err) {
             console.error(err);
-            showToast("error", "Failed to book event");
+
+            // Mark booking process as completed
+            bookingProcessCompleted = true;
+
+            // Close the booking modal first
+            const bookingModal = bootstrap.Modal.getInstance(bookModalEl);
+            bookingModal.hide();
+
+            // Show failure result modal
+            showBookingResultModal(false, null, "Failed to process booking. Please try again.", ev, formDataObj);
         }
     });
 
     // Cleanup and optional callback on close
     bookModalEl.addEventListener("hidden.bs.modal", () => {
         bookModalEl.remove();
-        if (typeof onCloseCallback === "function") onCloseCallback();
+        currentBookingStep = 1;
+        currentBookingEvent = null;
+
+        // Only call the callback if the booking process was NOT completed
+        // (i.e., user manually closed the modal, not after success/failure)
+        if (!bookingProcessCompleted && typeof onCloseCallback === "function") {
+            onCloseCallback();
+        }
+
+        // Clear saved form data if user manually closed the modal (not after payment attempt)
+        if (!bookingProcessCompleted) {
+            savedBookingFormData = null;
+        }
     });
 
     document.body.appendChild(bookModalEl);
     const bsBookModal = new bootstrap.Modal(bookModalEl);
     bsBookModal.show();
 
+    showBookingStep(currentBookingStep, bookModalEl);
 
 }
 
@@ -473,6 +509,8 @@ function formatLocation(location) {
 function renderEvents(events) {
     const container = document.getElementById("eventsContainer");
     const template = document.getElementById("eventCardTemplate");
+    const role = typeof getCurrentUserRole === "function" ? getCurrentUserRole() : "GUEST";
+    const canBook = ["ADMIN", "BACKOFFICE", "FRONTOFFICE", "USER", "GUEST"].includes(role);
 
 
     container.innerHTML = "";
@@ -517,7 +555,7 @@ function renderEvents(events) {
         const bookSection = el.querySelector(".book-section");
         const bookBtn = el.querySelector(".btn-open-book");
 
-        if (ev.status && ev.status.toLowerCase() === "active") {
+        if (ev.status && ev.status.toLowerCase() === "active" && canBook) {
             bookSection.style.display = "block";
 
             bookBtn.addEventListener("click", (e) => {
@@ -534,96 +572,209 @@ function renderEvents(events) {
 }
 
 // Open details modal and populate info
+// ===============================
+// OPEN FULL DETAILS MODAL (NEW)
+// ===============================
 function openDetailsModal(ev) {
-    const detailsTemplate = document.getElementById("detailsModalTemplate");
-    const modalContent = detailsTemplate.content.cloneNode(true);
-    const modalEl = modalContent.querySelector(".modal");
+    const modalEl = document.getElementById("detailsModal");
 
-    modalEl.querySelector(".modal-title").textContent = ev.name;
-    modalEl.querySelector(".d-name").textContent = ev.name;
-    modalEl.querySelector(".d-desc").textContent = ev.description || "-";
-    modalEl.querySelector(".d-location").textContent = formatLocation(ev.location);
-    modalEl.querySelector(".d-date").textContent = ev.date;
-    modalEl.querySelector(".d-price").textContent = ev.price.toFixed(2) + " €";
+    // Bootstrap instance
+    const bsModal = new bootstrap.Modal(modalEl);
 
-    // Status badge
-    const statusBadge = modalEl.querySelector(".d-status");
+    // Shortcuts to DOM
+    const $ = id => modalEl.querySelector(id);
+
+    // --------------------------------
+    // BASIC / MAIN INFO
+    // --------------------------------
+    $("#details_title").textContent = ev.name;
+    $("#details_name").textContent = ev.name;
+    $("#details_desc").textContent = ev.description || "-";
+    $("#details_category").textContent = ev.category || "-";
+    $("#details_start").textContent = ev.startDate || "-";
+    $("#details_end").textContent = ev.endDate || "-";
+    $("#details_cancelDeadline").textContent = ev.cancelDeadline || "-";
+    $("#details_price").textContent = ev.price != null ? ev.price.toFixed(2) + " €" : "-";
+    $("#details_deposit").textContent = ev.depositPercent != null ? ev.depositPercent + "%" : "-";
+
+    // STATUS BADGE
+    const statusBadge = $("#details_status");
     statusBadge.textContent = ev.status;
 
-    // Add badge color based on status
-    if (ev.status === "ACTIVE") {
-        statusBadge.classList.add("bg-success");
-    } else if (ev.status === "CANCELLED") {
-        statusBadge.classList.add("bg-danger");
-    } else if (ev.status === "EXPIRED") {
-        statusBadge.classList.add("bg-warning");
-    }
+    statusBadge.className = "badge"; // reset
+    if (ev.status === "ACTIVE") statusBadge.classList.add("bg-success");
+    else if (ev.status === "CANCELLED") statusBadge.classList.add("bg-danger");
+    else if (ev.status === "EXPIRED") statusBadge.classList.add("bg-warning");
+    else statusBadge.classList.add("bg-secondary");
 
-    // Images gallery
-    const gallery = modalEl.querySelector(".gallery");
-    gallery.innerHTML = "";
-    if (ev.imageIds && ev.imageIds.length > 0) {
-        ev.imageIds.forEach(imgId => {
-            const imgEl = document.createElement("img");
-            imgEl.src = `/api/events/image/${imgId}`;
-            imgEl.className = "img-thumbnail";
-            imgEl.style.width = "120px";
-            imgEl.style.height = "80px";
-            imgEl.style.objectFit = "cover";
-            gallery.appendChild(imgEl);
-        });
-    }
-
-    // Cancel Button logic
-    const cancelSection = modalEl.querySelector(".cancel-section");
-    const cancelBtn = modalEl.querySelector(".btn-open-cancel");
-    const cancelReasonEl = modalEl.querySelector(".d-cancelreason");
-
-    const bookSection = modalEl.querySelector(".book-section");
-    const bookBtn = modalEl.querySelector(".btn-open-book");
-
-    const editSection = modalEl.querySelector(".edit-section");
-    const editBtn = modalEl.querySelector(".btn-open-edit");
-
-    if (ev.status && ev.status.toLowerCase() === "cancelled") {
-        cancelSection.style.display = "none";
-        bookSection.style.display = "none";
-        editSection.style.display = "none";
-        cancelReasonEl.style.display = "block"; // show reason
-        cancelReasonEl.querySelector("span").textContent = ev.cancellationReason || "-";
+    // SHOW CANCELLATION REASON IF EXISTS
+    if (ev.status === "CANCELLED") {
+        $("#details_cancelReasonRow").style.display = "table-row";
+        $("#details_cancelReason").textContent = ev.cancellationReason || "-";
     } else {
-        cancelSection.style.display = "block"; // show cancel button
-        bookSection.style.display = "block";
-        editSection.style.display ="block";
-        cancelReasonEl.style.display = "none";
-
-        editBtn.addEventListener("click", () => openEditModal(ev, modalEl))
-        //Booking handler
-        bookBtn.addEventListener("click", () => {
-            const detailsBsModal = bootstrap.Modal.getInstance(modalEl);
-            detailsBsModal.hide();
-
-            openBookModal(ev, () => {
-                // Das wird ausgeführt, wenn Book-Modal geschlossen wird!
-                detailsBsModal.show();})
-
-        });
-
-        // Cancel handler
-        cancelBtn.addEventListener("click", () => openCancelModal(ev, modalEl, cancelReasonEl, cancelSection, bookSection, editSection));
-
+        $("#details_cancelReasonRow").style.display = "none";
     }
 
-    document.body.appendChild(modalEl);
-    const bsModal = new bootstrap.Modal(modalEl);
-    bsModal.show();
 
-    modalEl.addEventListener("hidden.bs.modal", () => {
-        modalEl.remove();
-    });
+    // --------------------------------
+    // LOCATION
+    // --------------------------------
+    $("#details_street").textContent = ev.location?.street || "-";
+    $("#details_houseNumber").textContent = ev.location?.houseNumber || "-";
+    $("#details_postalCode").textContent = ev.location?.postalCode || "-";
+    $("#details_city").textContent = ev.location?.city || "-";
+    $("#details_state").textContent = ev.location?.state || "-";
+    $("#details_country").textContent = ev.location?.country || "-";
+
+    // --------------------------------
+    // ORGANIZER
+    // --------------------------------
+    $("#details_orgName").textContent = ev.organizer.name ?? "-";
+    $("#details_orgEmail").textContent = ev.organizer.contactEmail ?? "-";
+    $("#details_orgPhone").textContent = ev.organizer.phone ?? "-";
+
+    // --------------------------------
+    // PARTICIPANTS
+    // --------------------------------
+    $("#details_min").textContent = ev.minParticipants ?? "-";
+    $("#details_max").textContent = ev.maxParticipants ?? "-";
+
+
+    // --------------------------------
+    // TABLE HELPERS
+    // --------------------------------
+    function fillTable(tableId, rowsHtml) {
+        const tbody = $(tableId).querySelector("tbody");
+        tbody.innerHTML = rowsHtml || `<tr><td colspan="10" class="text-muted">No data</td></tr>`;
+    }
+
+    // Requirements
+    fillTable("#details_requirementsTable",
+        ev.requirements?.map(r =>
+            `<tr><td>${r.description}</td></tr>`
+        ).join("") || ""
+    );
+
+    // Equipment
+    fillTable("#details_equipmentTable",
+        ev.equipment?.map(e =>
+            `<tr>
+                <td>${e.name}</td>
+                <td>${e.rentable ? "Yes" : "No"}</td>
+             </tr>`
+        ).join("") || ""
+    );
+
+    // Packages
+    fillTable("#details_packagesTable",
+        ev.additionalPackages?.map(p =>
+            `<tr>
+                <td>${p.title}</td>
+                <td>${p.description}</td>
+                <td>€${p.price.toFixed(2)}</td>
+             </tr>`
+        ).join("") || ""
+    );
+
+    // Appointments
+    fillTable("#details_appointmentsTable",
+        ev.appointments?.map(a =>
+            `<tr>
+                <td>${a.startDate}</td>
+                <td>${a.endDate}</td>
+                <td>${a.seasonal ? "Yes" : "No"}</td>
+            </tr>`
+        ).join("") || ""
+    );
+
+    // --------------------------------
+    // IMAGES
+    // --------------------------------
+    const imgContainer = $("#details_images");
+    imgContainer.innerHTML = "";
+
+    if (ev.imageIds?.length > 0) {
+        ev.imageIds.forEach(id => {
+            const img = document.createElement("img");
+            img.src = `/api/events/image/${id}`;
+            img.className = "img-thumbnail";
+            img.style.width = "140px";
+            img.style.height = "100px";
+            img.style.objectFit = "cover";
+            imgContainer.appendChild(img);
+        });
+    } else {
+        imgContainer.innerHTML = `<span class="text-muted">No images available</span>`;
+    }
+
+
+    // --------------------------------
+    // BUTTON CONTROLS (BOOK / EDIT / CANCEL)
+    // --------------------------------
+    const role = typeof getCurrentUserRole === "function" ? getCurrentUserRole() : "GUEST";
+    const canManage = role === "ADMIN" || role === "BACKOFFICE";
+    const canBook = ["ADMIN", "BACKOFFICE", "FRONTOFFICE", "USER", "GUEST"].includes(role);
+
+    const btnCancel = $("#details_cancelBtn");
+    const btnBook = $("#details_bookBtn");
+    const btnEdit = $("#details_editBtn");
+
+    // Hide all first
+    btnCancel.style.display = "none";
+    btnBook.style.display = "none";
+    btnEdit.style.display = "none";
+
+    const isActive = ev.status === "ACTIVE";
+
+    if (isActive) {
+        if (canBook) btnBook.style.display = "inline-block";
+        if (canManage) {
+            btnEdit.style.display = "inline-block";
+            btnCancel.style.display = "inline-block";
+        }
+    }
+
+    // --- BOOK BUTTON ---
+    btnBook.onclick = () => {
+        bsModal.hide();
+        openBookModal(ev, () => bsModal.show());
+    };
+
+    // --- EDIT BUTTON ---
+    btnEdit.onclick = () => openEditModal(ev, modalEl);
+
+    // --- CANCEL BUTTON ---
+    btnCancel.onclick = () => openCancelModal(
+        ev,
+        modalEl,
+        $("#details_cancelReasonRow"),
+        btnCancel,
+        btnBook,
+        btnEdit
+    );
+
+    // SHOW FINAL MODAL
+    bsModal.show();
 }
+
 
 // Page initialize
 document.addEventListener("DOMContentLoaded", () => {
     loadEvents();
 });
+
+function openEditModal(ev, detailsModalEl) {
+
+    // store globally so editEvent.js can read it
+    editCurrentEvent = ev;
+
+    // hide details modal FIRST (falls offen)
+    if (detailsModalEl) {
+        const instance = bootstrap.Modal.getInstance(detailsModalEl);
+        if (instance) instance.hide();
+    }
+
+    // open edit modal
+    const editModal = new bootstrap.Modal(document.getElementById("editEventModal"));
+    editModal.show();
+}

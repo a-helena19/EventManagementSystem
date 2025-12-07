@@ -1,5 +1,6 @@
 package everoutproject.Event.rest.dtos.booking;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record BookingDTO (
@@ -12,5 +13,8 @@ public record BookingDTO (
         String phoneNumber,
         String email,
         String status,
+        LocalDate cancelDate,
+        String cancelReason,
+        BigDecimal refund,
         Long eventId
 ) {}

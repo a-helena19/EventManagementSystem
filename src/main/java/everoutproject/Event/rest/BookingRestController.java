@@ -1,14 +1,18 @@
 package everoutproject.Event.rest;
 
+import everoutproject.Event.application.security.RoleChecker;
 import everoutproject.Event.application.services.BookingService;
 import everoutproject.Event.domain.model.booking.BookingAddress;
 import everoutproject.Event.rest.dtos.booking.BookingDTO;
+import everoutproject.Event.rest.dtos.booking.CancelBookingRequestDTO;
+import everoutproject.Event.rest.dtos.booking.RefundDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import everoutproject.Event.application.exceptions.PaymentFailedException;
 
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,18 +21,28 @@ import java.util.Map;
 public class BookingRestController {
 
     private final BookingService bookingService;
+    private final RoleChecker roleChecker;
 
-    public BookingRestController(BookingService bookingService) {
+    public BookingRestController(BookingService bookingService, RoleChecker roleChecker) {
         this.bookingService = bookingService;
+        this.roleChecker = roleChecker;
     }
 
     @GetMapping
-    public ResponseEntity<List<BookingDTO>> getAllBookings() {
-        return ResponseEntity.ok(bookingService.getAllBookingsDTO());
+    public ResponseEntity<List<BookingDTO>> getAllBookings(
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) Long userId) {
+        List<BookingDTO> bookings = bookingService.getFilteredBookings(email, userId);
+        return ResponseEntity.ok(bookings);
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<?> createBooking(
+    @GetMapping("/my")
+    public ResponseEntity<List<BookingDTO>> getMyBookings() {
+        return ResponseEntity.ok(bookingService.getAccessibleBookings());
+    }
+
+    @PostMapping("/createWithPayment")
+    public ResponseEntity<Map<String, Object>> createBookingWithPayment(
             @RequestParam String firstname,
             @RequestParam String lastname,
             @RequestParam LocalDate birthdate,
@@ -38,22 +52,59 @@ public class BookingRestController {
             @RequestParam String postalCode,
             @RequestParam String phone,
             @RequestParam String email,
-            @RequestParam Long eventId
+            @RequestParam Long eventId,
+            @RequestParam String paymentMethod,
+            Authentication authentication
     ) {
         try {
-            BookingAddress address = new BookingAddress(street, houseNumber, city, postalCode);
-            BookingDTO bookingDTO = bookingService.createBooking(firstname, lastname, birthdate, address, phone, email, eventId);
+            Long userId = roleChecker.getUserId(authentication);
 
-            return ResponseEntity.status(HttpStatus.CREATED)
+            BookingAddress address = new BookingAddress(street, houseNumber, city, postalCode);
+            BookingDTO bookingDTO = bookingService.createBookingWithPayment(
+                    firstname, lastname, birthdate, address, phone, email, userId, eventId, paymentMethod
+            );
+
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
                     .body(Map.of(
+                            "success", true,
                             "message", "Booking created successfully",
                             "id", bookingDTO.id(),
-                            "name", bookingDTO.firstname() + " " + bookingDTO.lastname()
+                            "firstname", bookingDTO.firstname(),
+                            "lastname", bookingDTO.lastname(),
+                            "email", bookingDTO.email()
+                    ));
+        } catch (PaymentFailedException e) {
+            return ResponseEntity
+                    .status(HttpStatus.PAYMENT_REQUIRED)
+                    .body(Map.of(
+                            "success", false,
+                            "message", e.getMessage()
                     ));
         } catch (Exception e) {
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "Failed to create booking: " + (e.getMessage() != null ? e.getMessage() : e.toString()));
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(
+                            "success", false,
+                            "message", e.getMessage()
+                    ));
         }
+    }
+
+    // Cancel a booking
+    @PutMapping("/cancel/{eventId}/{bookingId}")
+    public ResponseEntity<?> cancelBooking(@PathVariable Long eventId, @PathVariable Long bookingId, @RequestBody CancelBookingRequestDTO request) {
+        try {
+            bookingService.cancelBooking(eventId, bookingId, request.getReason());
+            return ResponseEntity.ok(Map.of("message", "Booking cancelled successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Failed to cancel booking: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/refund/{id}")
+    public ResponseEntity<RefundDTO> getRefund(@PathVariable Long id) {
+        return ResponseEntity.ok(bookingService.getRefund(id));
     }
 }
