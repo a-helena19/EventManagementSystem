@@ -83,9 +83,7 @@ public class CreateEventRequestDTO {
     @Size(max = 365, message = "Cannot have more than 365 appointments")
     public List<AppointmentRequestDTO> appointments;
 
-    /**
-     * Custom validation: Cancel deadline must be before or equal to start date.
-     */
+
     @AssertTrue(message = "Cancel deadline must be before or equal to start date")
     public boolean isCancelDeadlineValid() {
         if (cancelDeadline == null || startDate == null) {
