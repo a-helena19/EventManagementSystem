@@ -41,36 +41,6 @@ public class BookingRestController {
         return ResponseEntity.ok(bookingService.getAccessibleBookings());
     }
 
-    @PostMapping("/create")
-    public ResponseEntity<Map<String, Object>> createBooking(
-            @RequestParam String firstname,
-            @RequestParam String lastname,
-            @RequestParam LocalDate birthdate,
-            @RequestParam String street,
-            @RequestParam String houseNumber,
-            @RequestParam String city,
-            @RequestParam String postalCode,
-            @RequestParam String phone,
-            @RequestParam String email,
-            @RequestParam Long eventId,
-            Authentication authentication
-    ) {
-        Long userId = roleChecker.getUserId(authentication);
-
-        BookingAddress address = new BookingAddress(street, houseNumber, city, postalCode);
-        BookingDTO bookingDTO = bookingService.createBooking(
-                firstname, lastname, birthdate, address, phone, email, userId, eventId
-        );
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(Map.of(
-                        "message", "Booking created successfully",
-                        "id", bookingDTO.id(),
-                        "name", bookingDTO.firstname() + " " + bookingDTO.lastname()
-                ));
-    }
-
     @PostMapping("/createWithPayment")
     public ResponseEntity<Map<String, Object>> createBookingWithPayment(
             @RequestParam String firstname,
@@ -119,12 +89,6 @@ public class BookingRestController {
                             "message", e.getMessage()
                     ));
         }
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, String>> cancelBooking(@PathVariable Long id) {
-        bookingService.cancelBooking(id);
-        return ResponseEntity.ok(Map.of("message", "Booking cancelled successfully"));
     }
 
     // Cancel a booking

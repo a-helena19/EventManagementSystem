@@ -82,6 +82,9 @@ public class EventRepositoryJPAImpl implements EventRepository {
                     entity.setState(domainEvent.getLocation().getState());
                     entity.setCountry(domainEvent.getLocation().getCountry());
 
+                    entity.setMinParticipants(domainEvent.getMinParticipants());
+                    entity.setMaxParticipants(domainEvent.getMaxParticipants());
+
                     entity.setStartDate(domainEvent.getStartDate());
                     entity.setEndDate(domainEvent.getEndDate());
                     entity.setCancelDeadline(domainEvent.getCancelDeadline());

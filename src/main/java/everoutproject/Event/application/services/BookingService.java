@@ -38,41 +38,6 @@ public class BookingService {
         this.paymentService = paymentService;
     }
 
-
-    @PreAuthorize("@roleChecker.canCreateBooking(authentication)")
-    public BookingDTO createBooking(String firstname, String lastname, LocalDate birthDate,
-                                    BookingAddress address, String phoneNumber, String email,
-                                    Long userId, Long eventId) {
-
-
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Event not found"));
-
-        if (event.getStatus() != EventStatus.ACTIVE) {
-            throw new RuntimeException("Event is not bookable");
-        }
-
-        if (event.getBookedParticipants() >= event.getMaxParticipants()) {
-            throw new RuntimeException("Event is fully booked");
-        }
-
-
-        Booking newBooking = new Booking(
-                firstname, lastname, birthDate, LocalDate.now(),
-                address, phoneNumber, email,
-                BookingStatus.ACTIVE, eventId, userId
-        );
-
-        // Persist event
-        //bookingRepository.addNewBooking(newBooking);
-
-        event.increaseBookedParticipants(1);
-        eventRepository.save(event);
-
-        bookingRepository.addNewBooking(newBooking);
-        return BookingMapperDTO.toDTO(newBooking);
-    }
-
     @PreAuthorize("@roleChecker.canCreateBooking(authentication)")
     public BookingDTO createBookingWithPayment(String firstname, String lastname, LocalDate birthDate,
                                                BookingAddress address, String phoneNumber, String email,
@@ -162,19 +127,6 @@ public class BookingService {
     }
 
 
-    @PreAuthorize("@roleChecker.canViewAllBookings(authentication) or " +
-            "@roleChecker.canViewBooking(authentication, #bookingId)")
-    public void cancelBooking(Long bookingId) {
-        Booking booking = bookingRepository.findAll().stream()
-                .filter(b -> b.getId().equals(bookingId))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Booking not found"));
-
-        booking.setStatus(BookingStatus.CANCELLED);
-        bookingRepository.save(booking);
-    }
-
-
     public List<BookingDTO> getFilteredBookings(String filterEmail, Long filterUserId) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
@@ -228,6 +180,8 @@ public BigDecimal calculateRefund(LocalDate startDate, Integer depositPercent, B
     return refund;
 }
 
+@PreAuthorize("@roleChecker.canViewAllBookings(authentication) or " +
+            "@roleChecker.canViewBooking(authentication, #bookingId)")
 public void cancelBooking(Long eventId, Long bookingId, String cancelReason) {
     Booking bookingToCancel = bookingRepository.findById(bookingId)
             .orElseThrow(() -> new RuntimeException("Booking not found"));
@@ -241,6 +195,8 @@ public void cancelBooking(Long eventId, Long bookingId, String cancelReason) {
         if(cancelDeadline.isBefore(cancelDate)) {
             bookingToCancel.cancel(cancelReason, BigDecimal.ZERO);
             bookingRepository.save(bookingToCancel);
+            event.decreaseBookedParticipants(1);
+            eventRepository.save(event);
             return;
         }
     }
@@ -252,7 +208,10 @@ public void cancelBooking(Long eventId, Long bookingId, String cancelReason) {
 
         bookingToCancel.cancel(cancelReason, refund);
         bookingRepository.save(bookingToCancel);
+        event.decreaseBookedParticipants(1);
+        eventRepository.save(event);
     }
+
     public RefundDTO getRefund(Long id) {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Event not found"));
