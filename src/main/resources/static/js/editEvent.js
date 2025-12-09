@@ -104,6 +104,12 @@ function edit_resetForm() {
     edit_imagesToDelete = [];
     edit_existingImageIds = [];
 
+    edit_requirementIdsToDelete = [];
+    edit_equipmentIdsToDelete = [];
+    edit_packageIdsToDelete = [];
+    edit_appointmentIdsToDelete = [];
+
+
     // Reset containers
     document.getElementById("edit_requirementsContainer").innerHTML = "";
     document.getElementById("edit_equipmentContainer").innerHTML = "";
@@ -451,7 +457,7 @@ function edit_saveRequirement() {
 
     input.classList.remove("is-invalid")
 
-    const id = Date.now();
+    const id = null;
     edit_requirements.push({ id, description: val });
     edit_renderBadges();
     edit_cancelRequirement();
@@ -516,7 +522,7 @@ function edit_saveEquipment() {
 
     if (!valid) return;
 
-    const id = Date.now();
+    const id = null;
     edit_equipment.push({ id, name, rentable: rentable === "true" });
     edit_renderBadges();
     edit_cancelEquipment();
@@ -589,7 +595,7 @@ function edit_savePackage() {
     if (!valid) return;
 
 
-    const id = Date.now();
+    const id = null;
     edit_packages.push({ id, title, description: desc, price });
     edit_renderBadges();
     edit_cancelPackage();
@@ -657,7 +663,7 @@ function edit_saveAppointment() {
 
     if (!valid) return;
 
-    const id = Date.now();
+    const id = null;
     edit_appointments.push({ id, startDate: start, endDate: end, seasonal });
     edit_renderBadges();
     edit_cancelAppointment();
