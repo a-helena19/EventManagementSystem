@@ -222,6 +222,7 @@ public class UserService {
      */
     public void deleteUser(Long id) {
         User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        if (user.getRole() == UserRole.ADMIN) {throw new RuntimeException("Admins cannot delete their own account");}
 
         HttpSession session = getSession();
         if (session != null) {
