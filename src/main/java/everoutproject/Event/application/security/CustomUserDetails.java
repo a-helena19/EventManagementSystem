@@ -16,7 +16,7 @@ public class CustomUserDetails implements UserDetails {
     private final Long id;
     private final String email;
     private final String password;
-    private final UserRole userRole; // Das Enum aus der DB
+    private final UserRole userRole;
     private final String firstName;
     private final String lastName;
 
@@ -31,7 +31,6 @@ public class CustomUserDetails implements UserDetails {
 
     public Long getId() { return id; }
 
-    // Holt die mächtige Role-Klasse mit den Rechten
     public Role getRoleDefinition() {
         return RoleRegistry.fromUserRole(userRole);
     }
