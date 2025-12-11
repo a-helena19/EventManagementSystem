@@ -855,6 +855,18 @@ async function submitEvent() {
             body: formData
         });
 
+        // Create Event Linkt to another Site
+        document.addEventListener("DOMContentLoaded", () => {
+            const createBtn = document.getElementById("createEventButton");
+            if (createBtn) {
+                createBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    //open the new Site
+                    window.location.href = "/events/new";
+                });
+            }
+        });
+
         if (res.ok) {
             const data = await res.json();
             showToast("success", `Event "${data.name}" created successfully!`);

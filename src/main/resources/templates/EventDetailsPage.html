@@ -9,79 +9,93 @@
     <main class="container" id="event-details-root" data-event-id="${eventId}">
         <h1 id="d-eventname">Loading...</h1>
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Booking Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-6 booking-section">
-                        <h6 class="text-muted mb-4">PERSONAL INFORMATION</h6>
-                        <div class="info-row">
-                            <span class="info-label">Full Name:</span>
-                            <span class="info-value d-name"></span>
+            <div id="event-info">
+                <div class="modal-header">
+                    <h5 class="modal-title">Booking Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 booking-section">
+                            <h6 class="text-muted mb-4">PERSONAL INFORMATION</h6>
+                            <div class="info-row">
+                                <span class="info-label">Full Name:</span>
+                                <span class="info-value d-name"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Birth Date:</span>
+                                <span class="info-value d-birthdate"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Email:</span>
+                                <span class="info-value d-email"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Phone:</span>
+                                <span class="info-value d-phone"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Address:</span>
+                                <span class="info-value d-address"></span>
+                            </div>
                         </div>
-                        <div class="info-row">
-                            <span class="info-label">Birth Date:</span>
-                            <span class="info-value d-birthdate"></span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Email:</span>
-                            <span class="info-value d-email"></span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Phone:</span>
-                            <span class="info-value d-phone"></span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Address:</span>
-                            <span class="info-value d-address"></span>
-                        </div>
-                    </div>
-                    <div class="col-md-6 booking-section">
-                        <h6 class="text-muted mb-4">BOOKING INFORMATION</h6>
-                        <div class="info-row">
-                            <span class="info-label">Booking Date:</span>
-                            <span class="info-value d-bookingdate"></span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Event Name:</span>
-                            <span class="info-value d-eventname">-</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Event Location:</span>
-                            <span class="info-value d-eventlocation">-</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Price:</span>
-                            <span class="info-value d-eventprice">-</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">Status:</span>
-                            <span class="d-status badge"></span>
-                        </div>
-                        <div class="d-cancelDeadline info-row">
-                            <span class="info-label">Cancellation Deadline:</span>
-                            <span class="info-value"></span>
-                        </div>
-                        <div class="d-cancelReason info-row" style="display:none;">
-                            <span class="info-label">Cancellation Reason:</span>
-                            <span class="info-value"></span>
-                        </div>
-                        <div class="d-cancelDate info-row" style="display:none;">
-                            <span class="info-label">Cancellation Date:</span>
-                            <span class="info-value"></span>
+                        <div class="col-md-6 booking-section">
+                            <h6 class="text-muted mb-4">BOOKING INFORMATION</h6>
+                            <div class="info-row">
+                                <span class="info-label">Booking Date:</span>
+                                <span class="info-value d-bookingdate"></span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Event Name:</span>
+                                <span class="info-value d-eventname">-</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Event Location:</span>
+                                <span class="info-value d-eventlocation">-</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Price:</span>
+                                <span class="info-value d-eventprice">-</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Status:</span>
+                                <span class="d-status badge"></span>
+                            </div>
+                            <div class="d-cancelDeadline info-row">
+                                <span class="info-label">Cancellation Deadline:</span>
+                                <span class="info-value"></span>
+                            </div>
+                            <div class="d-cancelReason info-row" style="display:none;">
+                                <span class="info-label">Cancellation Reason:</span>
+                                <span class="info-value"></span>
+                            </div>
+                            <div class="d-cancelDate info-row" style="display:none;">
+                                <span class="info-label">Cancellation Date:</span>
+                                <span class="info-value"></span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="modal-footer d-flex justify-content-between">
-                <div class="cancel-section text-end">
-                    <button type="button" class="btn btn-outline-danger btn-open-cancel">Cancel Booking</button>
+                <div class="modal-footer d-flex justify-content-between">
+                    <div class="cancel-section text-end">
+                        <button type="button" class="btn btn-outline-danger btn-open-cancel">Cancel Booking</button>
+                    </div>
+                </div>
+                <div>
+                    <strong>Location:</strong>
+                    <span id="d-eventlocation">-</span>
+                </div>
+                <div>
+                    <strong>Price</strong>
+                    <span id="d-eventprice">-</span>
+                </div>
+                <div id="actions">
+                    <a class="btn btn-outline-primary" id="bookBtn" href="#">Book</a>
+                    <a class="btn btn-outline-warning" id="cancelBtn" href="#">Cancel Event</a>
+                    <a class="btn btn-outline-secondary" id="editBtn" href="#">Edit</a>
                 </div>
             </div>
         </div>
-
     </main>
 </body>
 </html>
