@@ -368,10 +368,10 @@ function openBookModal(ev, onCloseCallback, startAtStep2 = false) {
         for (const k in formDataObj) formData.append(k, formDataObj[k]);
 
         // Attach the logged-in user's id so bookings remain visible even if a different email is entered
-        const userInfoRaw = localStorage.getItem("userInfo");
-        const user = userInfoRaw ? JSON.parse(userInfoRaw) : null;
-        if (user?.id) {
-            formData.append("userId", user.id);
+        await AppSession.loadSession();
+        const sessionUser = AppSession.getUser();
+        if (sessionUser?.isLoggedIn && sessionUser.id) {
+            formData.append("userId", sessionUser.id);
         }
 
         try {
@@ -506,12 +506,15 @@ function formatLocation(location) {
 }
 
 // Render event cards and attach click listener to open details modal
-function renderEvents(events) {
+async function renderEvents(events) {
     const container = document.getElementById("eventsContainer");
     const template = document.getElementById("eventCardTemplate");
-    const role = typeof getCurrentUserRole === "function" ? getCurrentUserRole() : "GUEST";
-    const canBook = ["ADMIN", "BACKOFFICE", "FRONTOFFICE", "USER", "GUEST"].includes(role);
 
+    await AppSession.loadSession();
+    const sessionUser = AppSession.getUser();
+    const role = sessionUser.role ?? "GUEST";
+
+    const canBook = ["ADMIN", "BACKOFFICE", "FRONTOFFICE", "USER", "GUEST"].includes(role);
 
     container.innerHTML = "";
 
@@ -571,11 +574,11 @@ function renderEvents(events) {
     });
 }
 
-// Open details modal and populate info
+
 // ===============================
-// OPEN FULL DETAILS MODAL (NEW)
+// OPEN FULL DETAILS MODAL
 // ===============================
-function openDetailsModal(ev) {
+async function openDetailsModal(ev) {
     const modalEl = document.getElementById("detailsModal");
 
     // Bootstrap instance
@@ -711,7 +714,10 @@ function openDetailsModal(ev) {
     // --------------------------------
     // BUTTON CONTROLS (BOOK / EDIT / CANCEL)
     // --------------------------------
-    const role = typeof getCurrentUserRole === "function" ? getCurrentUserRole() : "GUEST";
+    await AppSession.loadSession();
+    const user = AppSession.getUser();
+    const role = user.role ?? "GUEST";
+
     const canManage = role === "ADMIN" || role === "BACKOFFICE";
     const canBook = ["ADMIN", "BACKOFFICE", "FRONTOFFICE", "USER", "GUEST"].includes(role);
 

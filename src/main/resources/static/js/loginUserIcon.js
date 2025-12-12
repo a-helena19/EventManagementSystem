@@ -1,4 +1,5 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+    await AppSession.loadSession();
     // getting user from local storage
     const loggedInContainer = document.getElementById("loggedInContainer");
     const loggedOutContainer = document.getElementById("loggedOutContainer");
@@ -6,7 +7,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const loggedInProfileIcon = document.getElementById("loggedInProfile");
     const userNameDisplay = document.getElementById("userNameDisplay");
 
-    function updateUI() {
+    async function updateUI() {
+        await AppSession.loadSession();
+
         const session = AppSession.getUser();
         const isLoggedIn = session.isLoggedIn;
         const role = session.role || "GUEST";
@@ -24,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (loggedOutContainer) loggedOutContainer.style.display = "none";
 
         // Show initials
-        const initials = (session.fullName || "?")
+        const initials = (session.fullName || session.email || "?")
             .split(" ")
             .map(n => n[0]?.toUpperCase() || "")
             .join("");

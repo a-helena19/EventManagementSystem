@@ -12,9 +12,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     await AppSession.loadSession();
     const session = AppSession.getUser();
 
-    if (!session.isLoggedIn || !(session.role === "ADMIN" || session.role === "BACKOFFICE")) {
-        // access denied → empty Page + Warning
-        showToast("error", "You do not have permission to create events");
+    const canManageEvents = session.role === "ADMIN" || session.role === "BACKOFFICE";
+
+    if (!session.isLoggedIn || !canManageEvents) {
         return;
     }
 
