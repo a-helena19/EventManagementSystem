@@ -8,6 +8,7 @@ import everoutproject.Event.domain.model.user.User;
 import everoutproject.Event.rest.dtos.user.UserDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -85,23 +86,20 @@ public class UserRestController {
 
             CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
             Role role = principal.getRoleDefinition();
-//
-//            // IMPORTANT: Set the current user in the service
-//           userService.setCurrentUser(email);
 
             return ResponseEntity.ok(Map.of(
                     "message", "Login successful",
                     "id", principal.getId(),
                     "email", principal.getUsername(),
                     "name", principal.getFullName().isBlank() ? principal.getUsername() : principal.getFullName(),
-                    "role", role.getRoleName(),
+                    "role", normalizeRole(role.getRoleName()),
                     "isLoggedIn", true
             ));
         } catch (Exception e) {
             Map<String, String> response = new HashMap<>();
             response.put("message", "Login failed: " +
                     (e.getMessage() != null ? e.getMessage() : "Invalid credentials"));
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            return ResponseEntity.status(401).body(response);
         }
     }
 
@@ -128,14 +126,23 @@ public class UserRestController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+    public ResponseEntity<?> getCurrentUser(HttpServletRequest request) {
 
-        if (authentication == null || !authentication.isAuthenticated()
-                || authentication.getPrincipal().equals("anonymousUser")) {
-            return ResponseEntity.status(401).body(Map.of(
-                    "role", "GUEST",
-                    "isLoggedIn", false
-            ));
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return ResponseEntity.ok(Map.of("role", "GUEST", "isLoggedIn", false));
+        }
+
+        SecurityContext context = (SecurityContext) session.getAttribute("SPRING_SECURITY_CONTEXT");
+        if (context == null || context.getAuthentication() == null) {
+            return ResponseEntity.ok(Map.of("role", "GUEST", "isLoggedIn", false));
+        }
+
+        Authentication authentication = context.getAuthentication();
+
+        if (authentication == null || !authentication.isAuthenticated() ||
+                authentication.getPrincipal().equals("anonymousUser")) {
+            return ResponseEntity.ok(Map.of("role", "GUEST", "isLoggedIn", false));
         }
 
         CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
@@ -144,7 +151,7 @@ public class UserRestController {
                 "id", user.getId(),
                 "email", user.getUsername(),
                 "fullName", user.getFullName(),
-                "role", user.getRoleDefinition().getRoleName(),
+                "role", normalizeRole(user.getRoleDefinition().getRoleName()),
                 "isLoggedIn", true
         ));
     }
@@ -154,12 +161,13 @@ public class UserRestController {
 
     // NEW ENDPOINT: Get current user profile
     @GetMapping("/profile")
-    public ResponseEntity<?> getCurrentUserProfile(Authentication authentication) {
+    public ResponseEntity<?> getCurrentUserProfile(HttpServletRequest request, Authentication authentication) {
         try {
-            if (authentication == null || authentication.getPrincipal().equals("anonymousUser")) {
-                return ResponseEntity.status(401).body(Map.of("message", "Not logged in"));
+            CustomUserDetails principal = resolvePrincipal(request, authentication);
+            if (principal == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Not logged in"));
             }
-            CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+
             UserDTO userDTO = userService.getUserByEmail(principal.getUsername());
 
             return ResponseEntity.ok(Map.of(
@@ -167,7 +175,7 @@ public class UserRestController {
                     "email", userDTO.email(),
                     "firstName", userDTO.firstName(),
                     "lastName", userDTO.lastName(),
-                    "role", userDTO.role()
+                    "role", normalizeRole(userDTO.role())
             ));
         } catch (Exception e) {
             Map<String, String> response = new HashMap<>();
@@ -180,13 +188,18 @@ public class UserRestController {
     // NEW ENDPOINT: Update user profile
     @PutMapping("/profile")
     public ResponseEntity<?> updateUserProfile(
+            HttpServletRequest request,
             Authentication authentication,
             @RequestParam String firstName,
             @RequestParam String lastName,
             @RequestParam String email) {
 
         try {
-            CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+            CustomUserDetails principal = resolvePrincipal(request, authentication);
+            if (principal == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Not logged in"));
+            }
+
             UserDTO currentUser = userService.getUserByEmail(principal.getUsername());
 
             User updatedUser = userService.updateUserProfile(
@@ -204,7 +217,7 @@ public class UserRestController {
                     "email", userDTO.email(),
                     "firstName", userDTO.firstName(),
                     "lastName", userDTO.lastName(),
-                    "role", userDTO.role()
+                    "role", normalizeRole(userDTO.role())
             ));
         } catch (Exception e) {
             Map<String, String> response = new HashMap<>();
@@ -216,9 +229,12 @@ public class UserRestController {
 
     // NEW ENDPOINT: Delete current user
     @DeleteMapping("/profile")
-    public ResponseEntity<?> deleteCurrentUser(Authentication authentication) {
+    public ResponseEntity<?> deleteCurrentUser(HttpServletRequest request, Authentication authentication) {
         try {
-            CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+            CustomUserDetails principal = resolvePrincipal(request, authentication);;
+            if (principal == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Not logged in"));
+            }
             userService.deleteUser(principal.getId());
 
             return ResponseEntity.ok(Map.of(
@@ -231,7 +247,7 @@ public class UserRestController {
         }
     }
 
-
+@PreAuthorize("hasRole('ADMIN')")
 @GetMapping
 public ResponseEntity<?> getAllUsers() {
     try {
@@ -242,13 +258,14 @@ public ResponseEntity<?> getAllUsers() {
     }
 }
 
+@PreAuthorize("hasRole('ADMIN')")
 @PutMapping("/{id}/role")
 public ResponseEntity<?> updateUserRole(
         @PathVariable Long id,
         @RequestParam String role
 ) {
     try {
-        String normalizedRole = role.toUpperCase();
+        String normalizedRole = normalizeRole(role);
         userService.updateUserRole(id, normalizedRole);
         return ResponseEntity.ok(Map.of(
                 "message", "User role updated successfully",
@@ -263,5 +280,30 @@ public ResponseEntity<?> updateUserRole(
                 .body(Map.of("message", e.getMessage()));
     }
 }
+    private CustomUserDetails resolvePrincipal(HttpServletRequest request, Authentication authentication) {
+        // prefer the injected Authentication if present and valid
+        if (authentication != null && authentication.isAuthenticated()
+                && authentication.getPrincipal() instanceof CustomUserDetails) {
+            return (CustomUserDetails) authentication.getPrincipal();
+        }
+
+        // fallback to session-stored SecurityContext (works for cookie/session auth)
+        HttpSession session = request.getSession(false);
+        if (session == null) return null;
+        Object ctxObj = session.getAttribute("SPRING_SECURITY_CONTEXT");
+        if (!(ctxObj instanceof SecurityContext)) return null;
+        SecurityContext ctx = (SecurityContext) ctxObj;
+        Authentication auth = ctx.getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || !(auth.getPrincipal() instanceof CustomUserDetails)) return null;
+        return (CustomUserDetails) auth.getPrincipal();
+    }
+
+    private static String normalizeRole(String raw) {
+        if (raw == null) return "GUEST";
+        // remove optional "ROLE_" prefix and uppercase
+        String r = raw.toUpperCase();
+        if (r.startsWith("ROLE_")) r = r.substring(5);
+        return r;
+    }
 
 }

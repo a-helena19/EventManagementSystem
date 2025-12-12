@@ -12,7 +12,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     await AppSession.loadSession();
     const session = AppSession.getUser();
 
-    const canManageEvents = session.role === "ADMIN" || session.role === "BACKOFFICE";
+    const role = (session.role || "GUEST").toUpperCase();
+    const canManageEvents = role === "ADMIN" || role === "BACKOFFICE";
+
+    const createBtn = document.getElementById('createEventButton');
+    if (createBtn) {
+        createBtn.style.display = canManageEvents ? 'inline-block' : 'none';
+
+        if (!canManageEvents) {
+            createBtn.removeAttribute('data-bs-toggle');
+            createBtn.removeAttribute('data-bs-target');
+            createBtn.classList.add('disabled'); // visual hint
+        }
+    }
 
     if (!session.isLoggedIn || !canManageEvents) {
         return;

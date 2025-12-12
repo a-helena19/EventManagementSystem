@@ -1,3 +1,12 @@
+function renderEmptyBookings() {
+    const container = document.getElementById("bookingsContainer");
+    if (!container) return;
+
+    container.innerHTML = `
+        <p class="text-muted text-center mt-4">No bookings to display.</p>
+    `;
+}
+
 // Load bookings from backend
 async function loadBookings() {
     try {
@@ -5,7 +14,8 @@ async function loadBookings() {
         const session = AppSession.getUser();
 
         if (!session.isLoggedIn) {
-            showToast("error", "Please log in to view bookings");
+            renderEmptyBookings();
+            showToast("info", "Please log in to view bookings");
             return;
         }
 
@@ -32,11 +42,10 @@ async function loadBookings() {
         }
 
         const res = await fetch(url);
-        if (res.status === 401 || res.status === 403) {
-            console.warn("Session expired or invalid. Logging out.");
-            await AppSession.logout();
-            alert("Your session has expired. Please log in again.");
-            window.location.href = "/homepage";
+
+        if (res.status === 403) {
+            renderEmptyBookings();
+            showToast("info", "Please log in to view your bookings.");
             return;
         }
 

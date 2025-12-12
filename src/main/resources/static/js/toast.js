@@ -22,6 +22,10 @@ function showToast(type, message) {
         icon = '✗';
         title = 'Error';
         toastClass = 'toast-error';
+    } else if (type === "info") {
+        icon = '🛈';
+        title = 'Info';
+        toastClass = 'toast-info';
     }
 
     toastElement.classList.add(toastClass);

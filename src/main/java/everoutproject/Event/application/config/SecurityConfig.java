@@ -54,17 +54,24 @@ public class SecurityConfig {
 
                         .requestMatchers("/", "/homepage", "/user", "/events").permitAll()
 
+                        .requestMatchers("/bookings", "/bookings/**").permitAll()
+
                         .requestMatchers(
                                 "/api/users/login",
                                 "/api/users/create",
+                                "/api/users/me",
+                                "/api/users/logout"
+                        ).permitAll()
+
+                        .requestMatchers("/api/users/{id}/role").hasRole("ADMIN")
+                        .requestMatchers("/api/users").hasRole("ADMIN")
+
+                        .requestMatchers(
                                 "/api/events",
                                 "/api/events/image/**",
                                 "/api/bookings/create",
                                 "/api/bookings/createWithPayment"
                         ).permitAll()
-
-                        .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/users", "/api/users/**").hasRole("ADMIN")
 
                         .requestMatchers("/api/events/create", "/api/events/edit/**", "/api/events/cancel/**")
                         .hasAnyRole("ADMIN", "BACKOFFICE")
