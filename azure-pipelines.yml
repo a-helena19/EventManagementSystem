@@ -1,0 +1,34 @@
+trigger:
+  - main
+
+pool:
+  name: 'Deployment'
+
+variables:
+  imageName: 'everout'
+  registryUrl: 'localhost:5000'
+
+stages:
+  - stage: BuildAndDeploy
+    jobs:
+      - job: Build
+        displayName: 'Build, Push and Run'
+        steps:
+          - script: |
+              docker build -t $(registryUrl)/$(imageName):latest .
+            displayName: 'Docker Build'
+
+          - script: |
+              docker push $(registryUrl)/$(imageName):latest
+            displayName: 'Push to Local Registry'
+
+          - script: |
+              # Stoppt die alten Container
+              docker-compose down
+              
+              # Zieht sich das neue Image (das wir gerade gepusht haben)
+              docker-compose pull
+              
+              # Startet alles neu im Hintergrund
+              docker-compose up -d
+            displayName: 'Deploy with Docker Compose'

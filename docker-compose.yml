@@ -1,6 +1,6 @@
 services:
   app:
-    build: .
+    image: localhost:5000/everout:latest
     container_name: Everout
     ports:
       - "8080:8080"
