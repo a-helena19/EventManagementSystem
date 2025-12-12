@@ -32,4 +32,4 @@ stages:
               docker-compose down
               docker-compose pull
               docker-compose up -d
-              displayName: 'Deploy with Docker Compose'
+            displayName: 'Deploy with Docker Compose'
