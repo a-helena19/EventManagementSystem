@@ -85,15 +85,17 @@ public class UserRestController {
 
             CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
             Role role = principal.getRoleDefinition();
-
-            // IMPORTANT: Set the current user in the service
-           userService.setCurrentUser(email);
+//
+//            // IMPORTANT: Set the current user in the service
+//           userService.setCurrentUser(email);
 
             return ResponseEntity.ok(Map.of(
                     "message", "Login successful",
                     "id", principal.getId(),
+                    "email", principal.getUsername(),
                     "name", principal.getFullName().isBlank() ? principal.getUsername() : principal.getFullName(),
-                    "role", role.getRoleName()
+                    "role", role.getRoleName(),
+                    "isLoggedIn", true
             ));
         } catch (Exception e) {
             Map<String, String> response = new HashMap<>();
@@ -104,12 +106,20 @@ public class UserRestController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<?> logout() {
+    public ResponseEntity<?> logout(HttpServletRequest request) {
         try {
-            userService.logoutUser();
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                session.invalidate();   // delete session
+            }
+
+            SecurityContextHolder.clearContext(); //delete security
+
             return ResponseEntity.ok(Map.of(
-                    "message", "Logout successful"
+                    "message", "Logout successful",
+                    "isLoggedIn", false
             ));
+
         } catch (Exception e) {
             Map<String, String> response = new HashMap<>();
             response.put("message", "Logout failed: " + e.getMessage());
@@ -117,28 +127,40 @@ public class UserRestController {
         }
     }
 
-    @GetMapping("/check-login")
-    public ResponseEntity<?> checkLogin() {
-        try {
-            boolean isLoggedIn = userService.isLoggedIn();
-            return ResponseEntity.ok(Map.of(
-                    "isLoggedIn", isLoggedIn
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.ok(Map.of(
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+
+        if (authentication == null || !authentication.isAuthenticated()
+                || authentication.getPrincipal().equals("anonymousUser")) {
+            return ResponseEntity.status(401).body(Map.of(
+                    "role", "GUEST",
                     "isLoggedIn", false
             ));
         }
+
+        CustomUserDetails user = (CustomUserDetails) authentication.getPrincipal();
+
+        return ResponseEntity.ok(Map.of(
+                "id", user.getId(),
+                "email", user.getUsername(),
+                "fullName", user.getFullName(),
+                "role", user.getRoleDefinition().getRoleName(),
+                "isLoggedIn", true
+        ));
     }
+
 
 
 
     // NEW ENDPOINT: Get current user profile
     @GetMapping("/profile")
-    public ResponseEntity<?> getCurrentUserProfile() {
+    public ResponseEntity<?> getCurrentUserProfile(Authentication authentication) {
         try {
-            User currentUser = userService.getCurrentUser();
-            UserDTO userDTO = UserMapperDTO.toDTO(currentUser);
+            if (authentication == null || authentication.getPrincipal().equals("anonymousUser")) {
+                return ResponseEntity.status(401).body(Map.of("message", "Not logged in"));
+            }
+            CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+            UserDTO userDTO = userService.getUserByEmail(principal.getUsername());
 
             return ResponseEntity.ok(Map.of(
                     "id", userDTO.id(),
@@ -158,15 +180,17 @@ public class UserRestController {
     // NEW ENDPOINT: Update user profile
     @PutMapping("/profile")
     public ResponseEntity<?> updateUserProfile(
+            Authentication authentication,
             @RequestParam String firstName,
             @RequestParam String lastName,
             @RequestParam String email) {
 
         try {
-            User currentUser = userService.getCurrentUser();
+            CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+            UserDTO currentUser = userService.getUserByEmail(principal.getUsername());
 
             User updatedUser = userService.updateUserProfile(
-                    currentUser.getId(),
+                    currentUser.id(),
                     firstName,
                     lastName,
                     email
@@ -192,10 +216,10 @@ public class UserRestController {
 
     // NEW ENDPOINT: Delete current user
     @DeleteMapping("/profile")
-    public ResponseEntity<?> deleteCurrentUser() {
+    public ResponseEntity<?> deleteCurrentUser(Authentication authentication) {
         try {
-            User currentUser = userService.getCurrentUser();
-            userService.deleteUser(currentUser.getId());
+            CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+            userService.deleteUser(principal.getId());
 
             return ResponseEntity.ok(Map.of(
                     "message", "Account deleted successfully"

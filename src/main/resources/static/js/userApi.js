@@ -79,6 +79,7 @@ if (loginForm) {
         try {
             const res = await fetch('/api/users/login', {
                 method: "POST",
+                credentials: "include",
                 body: formData
             });
             if (!res.ok) {
@@ -89,8 +90,8 @@ if (loginForm) {
 
             const user = await res.json();
 
-            // save user
-            localStorage.setItem("userInfo", JSON.stringify(user));
+            // update UI-State
+            await AppSession.loadSession();
 
             // redirect to Homepage
             window.location.href = "/homepage";

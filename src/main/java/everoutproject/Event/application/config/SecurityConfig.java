@@ -74,11 +74,20 @@ public class SecurityConfig {
                         .requestMatchers("/api/bookings").hasAnyRole("ADMIN", "BACKOFFICE", "FRONTOFFICE", "USER")
                         .requestMatchers("/profile").hasAnyRole("ADMIN", "BACKOFFICE", "FRONTOFFICE", "USER")
 
-                        .anyRequest().authenticated())
+                        .anyRequest().authenticated()
+                )
 
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
+                .anonymous(anon -> anon
+                        .authorities("ROLE_GUEST")
+                )
                 .formLogin(form -> form.disable())
+                .logout(logout -> logout
+                        .logoutUrl("/api/users/logout")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                )
                 .httpBasic(httpBasic -> httpBasic.disable());
+
 
         return http.build();
     }

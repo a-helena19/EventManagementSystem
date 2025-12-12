@@ -1,34 +1,40 @@
 // Load bookings from backend
 async function loadBookings() {
     try {
-        const userInfoRaw = localStorage.getItem("userInfo");
-        const user = userInfoRaw ? JSON.parse(userInfoRaw) : null;
+        await AppSession.loadSession();
+        const session = AppSession.getUser();
+
+        if (!session.isLoggedIn) {
+            showToast("error", "Please log in to view bookings");
+            return;
+        }
+
+        const role = session.role || "GUEST";
+        const userId = session.id;
+        const userEmail = session.email;
+
         // Staff roles (ADMIN, BACKOFFICE, FRONTOFFICE) see all bookings
         // Regular USER only sees their own bookings (filtered by email)
         const staffRoles = ["ADMIN", "BACKOFFICE", "FRONTOFFICE"];
-        const isStaff = user && staffRoles.includes(user.role);
+        const isStaff = staffRoles.includes(role);
 
         let url;
-        if (!user) {
-            // Not logged in - redirect to login or show error
-            showToast("error", "Please log in to view bookings");
-            return;
-        } else if (isStaff) {
+        if (isStaff) {
             // Staff sees all bookings
             url = "/api/bookings";
         } else {
             // Regular user only sees their own bookings, matched by account rather than the email used during booking
-            if (user.id) {
-                url = `/api/bookings?userId=${encodeURIComponent(user.id)}`;
+            if (userId) {
+                url = `/api/bookings?userId=${encodeURIComponent(userId)}`;
             } else {
-                url = `/api/bookings?email=${encodeURIComponent(user.email)}`;
+                url = `/api/bookings?email=${encodeURIComponent(userEmail)}`;
             }
         }
 
         const res = await fetch(url);
         if (res.status === 401 || res.status === 403) {
             console.warn("Session expired or invalid. Logging out.");
-            localStorage.removeItem("userInfo");
+            await AppSession.logout();
             alert("Your session has expired. Please log in again.");
             window.location.href = "/homepage";
             return;

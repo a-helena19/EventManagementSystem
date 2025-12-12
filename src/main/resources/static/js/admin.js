@@ -1,13 +1,16 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const role = getCurrentUserRole();
+document.addEventListener("DOMContentLoaded", async () => {
+    // --- Load real session from backend ---
+    await AppSession.loadSession();
+    const session = AppSession.getUser();
+
     const roleBadge = document.getElementById("roleBadge");
 
-    if (roleBadge && role) {
-        roleBadge.textContent = `You are logged in as ${role}`;
+    if (roleBadge) {
+        roleBadge.textContent = `You are logged in as ${session.role}`;
         roleBadge.style.display = "inline-block";
     }
 
-    if (role !== "ADMIN") {
+    if (!session.isLoggedIn || session.role !== "ADMIN") {
         showToast("error", "You are not allowed to view this page.");
         setTimeout(() => window.location.href = "/homepage", 1200);
         return;

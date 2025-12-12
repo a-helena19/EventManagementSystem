@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", async function() {
     const profileForm = document.getElementById('profileForm');
     const cancelBtn = document.getElementById('cancelBtn');
 
@@ -6,7 +6,10 @@ document.addEventListener("DOMContentLoaded", function() {
     let isEditing = false;
 
     // Load user data when page loads
-    loadUserData();
+    await AppSession.loadSession();
+    const ok = await loadUserData();
+    if (!ok) return;
+
     setProfileReadOnly(true);
 
     // Form submission handler
@@ -41,7 +44,9 @@ document.addEventListener("DOMContentLoaded", function() {
             if (response.ok) {
                 const result = await response.json();
                 showToast('success', result.message);
-                loadUserData(); // Reload data from server
+                await AppSession.loadSession();
+                const ok = await loadUserData();// Reload data from server
+                if (!ok) return;
                 setProfileReadOnly(true);
                 isEditing = false;
             } else {
@@ -54,8 +59,9 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     // Cancel button handler
-    cancelBtn.addEventListener('click', function () {
-        loadUserData();
+    cancelBtn.addEventListener('click', async function () {
+        const ok = await loadUserData();
+        if (!ok) return;
         setProfileReadOnly(true);
         isEditing = false;
         showToast('info', 'Changes cancelled');
@@ -77,8 +83,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 });
 
                 if (response.ok) {
-                    // Clear user data from localStorage
-                    localStorage.removeItem("userInfo");
+                    // logout with session
+                    await AppSession.logout();
 
                     showToast('success', 'Account deleted successfully');
                     setTimeout(() => {
@@ -122,6 +128,13 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     async function loadUserData() {
+        const session = AppSession.getUser();
+        if (!session.isLoggedIn) {
+            showToast("error", "Please log in first");
+            window.location.href = "/user";
+            return false;
+        }
+
         try {
             const response = await fetch('/api/users/profile');
             if (response.ok) {
@@ -133,12 +146,6 @@ document.addEventListener("DOMContentLoaded", function() {
                 originalData = {...userData};
 
                 const fullName = `${userData.firstName} ${userData.lastName}`.trim();
-                const updatedUserInfo = {
-                    name: fullName,
-                    email: userData.email,
-                    role: userData.role || 'USER'
-                };
-                localStorage.setItem("userInfo", JSON.stringify(updatedUserInfo));
 
                 const userNameDisplay = document.getElementById('userNameDisplay');
                 if (userNameDisplay) {
@@ -151,6 +158,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     loggedInProfile.textContent = initials.toUpperCase();
                     loggedInProfile.style.backgroundColor = nameToColor(fullName);
                 }
+                return true;
             } else {
                 // Handle unauthorized (user not logged in)
                 if (response.status === 401 || response.status === 403) {
@@ -158,7 +166,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     setTimeout(() => {
                         window.location.href = '/user';
                     }, 2000);
-                    return;
+                    return false;
                 }
                 throw new Error('Failed to load user data');
             }
@@ -171,6 +179,8 @@ document.addEventListener("DOMContentLoaded", function() {
             document.getElementById('lastName').value = '';
             document.getElementById('email').value = '';
             updateUserDisplay({firstName: '', lastName: '', email: ''});
+
+            return false;
         }
     }
 
