@@ -200,14 +200,30 @@ public class UserRestController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Not logged in"));
             }
 
-            UserDTO currentUser = userService.getUserByEmail(principal.getUsername());
+            Long userId = principal.getId();
 
             User updatedUser = userService.updateUserProfile(
-                    currentUser.id(),
+                    userId,
                     firstName,
                     lastName,
                     email
             );
+
+            // update authentication (name + email)
+            CustomUserDetails updatedDetails = new CustomUserDetails(updatedUser);
+
+            Authentication newAuth = new UsernamePasswordAuthenticationToken(
+                    updatedDetails,
+                    authentication != null ? authentication.getCredentials() : null,
+                    updatedDetails.getAuthorities()
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(newAuth);
+
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                session.setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+            }
 
             UserDTO userDTO = UserMapperDTO.toDTO(updatedUser);
 
@@ -236,6 +252,14 @@ public class UserRestController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Not logged in"));
             }
             userService.deleteUser(principal.getId());
+
+            // invalidate session + clear context
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                session.invalidate();
+            }
+
+            SecurityContextHolder.clearContext();
 
             return ResponseEntity.ok(Map.of(
                     "message", "Account deleted successfully"

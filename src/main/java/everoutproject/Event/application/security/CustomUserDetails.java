@@ -2,6 +2,7 @@ package everoutproject.Event.application.security;
 
 import everoutproject.Event.domain.model.user.Role;
 import everoutproject.Event.domain.model.user.RoleRegistry;
+import everoutproject.Event.domain.model.user.User;
 import everoutproject.Event.domain.model.user.UserRole;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -27,6 +28,15 @@ public class CustomUserDetails implements UserDetails {
         this.userRole = role;
         this.firstName = firstName;
         this.lastName = lastName;
+    }
+
+    public CustomUserDetails(User user) {
+        this.id = user.getId();
+        this.email = user.getEmail();
+        this.password = user.getPassword();
+        this.userRole = user.getRole();
+        this.firstName = user.getFirstName();
+        this.lastName = user.getLastName();
     }
 
     public Long getId() { return id; }
