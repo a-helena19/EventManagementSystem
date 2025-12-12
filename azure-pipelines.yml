@@ -16,20 +16,20 @@ stages:
         displayName: 'Build, Push and Run'
         steps:
           - script: |
-              docker build -t $(registryUrl)/$(imageName):latest .
-            displayName: 'Docker Build'
+              docker build -t $(registryUrl)/$(imageName):$(imageTag) .
+            displayName: 'Docker Build (Unique Tag)'
 
           - script: |
+              docker tag $(registryUrl)/$(imageName):$(imageTag) $(registryUrl)/$(imageName):latest
+            displayName: 'Tag as Latest'
+
+          - script: |
+              docker push $(registryUrl)/$(imageName):$(imageTag)
               docker push $(registryUrl)/$(imageName):latest
-            displayName: 'Push to Local Registry'
-
-          - script: |
-              # Stoppt die alten Container
+              displayName: 'Push both Tags to Registry'
+              
+              - script: |
               docker-compose down
-              
-              # Zieht sich das neue Image (das wir gerade gepusht haben)
               docker-compose pull
-              
-              # Startet alles neu im Hintergrund
               docker-compose up -d
-            displayName: 'Deploy with Docker Compose'
+              displayName: 'Deploy with Docker Compose'
