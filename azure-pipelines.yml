@@ -26,9 +26,9 @@ stages:
           - script: |
               docker push $(registryUrl)/$(imageName):$(imageTag)
               docker push $(registryUrl)/$(imageName):latest
-              displayName: 'Push both Tags to Registry'
+            displayName: 'Push both Tags to Registry'
               
-              - script: |
+          - script: |
               docker-compose down
               docker-compose pull
               docker-compose up -d
