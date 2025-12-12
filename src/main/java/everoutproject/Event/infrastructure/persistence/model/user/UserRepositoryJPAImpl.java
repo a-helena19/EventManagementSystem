@@ -48,7 +48,8 @@ public class UserRepositoryJPAImpl implements UserRepository {
     @Override
     public void save(User domainUser) {
         everoutproject.Event.infrastructure.persistence.model.user.User entity = UserMapper.toEntity(domainUser);
-        userJPARepository.save(entity);
+        everoutproject.Event.infrastructure.persistence.model.user.User savedUser = userJPARepository.save(entity);
+        domainUser.setId(savedUser.getId());
     }
 
     @Override

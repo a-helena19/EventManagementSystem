@@ -45,6 +45,10 @@ registerBtn.addEventListener('click', () => {
             // Reset UI
             form.reset();
             form.classList.remove("was-validated");
+
+            window.location.href = "/homepage";
+
+
         }
         catch (err) {
             console.error(err);

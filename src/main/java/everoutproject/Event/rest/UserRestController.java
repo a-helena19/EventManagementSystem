@@ -41,7 +41,8 @@ public class UserRestController {
             @RequestParam String email,
             @RequestParam String password,
             @RequestParam String firstName,
-            @RequestParam String lastName
+            @RequestParam String lastName,
+            HttpServletRequest request
     ) {
         if (password.length() < 6) {
             Map<String, String> response = new HashMap<>();
@@ -52,12 +53,28 @@ public class UserRestController {
         try {
             UserDTO userDTO = userService.createUser(email, password, firstName, lastName);
 
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(email, password));
+
+            SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+            securityContext.setAuthentication(authentication);
+            SecurityContextHolder.setContext(securityContext);
+
+            HttpSession session = request.getSession(true);
+            session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
+
+            CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Map.of(
                             "message", "User created successfully",
-                            "id", userDTO.id(),
-                            "name", userDTO.firstName() + " " + userDTO.lastName(),
-                            "email", userDTO.email()
+                            "id", principal.getId(),
+                            "email", principal.getUsername(),
+                            "name", principal.getFullName().isBlank()
+                                    ? principal.getUsername()
+                                    : principal.getFullName(),
+                            "role", normalizeRole(principal.getRoleDefinition().getRoleName()),
+                            "isLoggedIn", true
                     ));
         } catch (Exception e) {
             Map<String, String> response = new HashMap<>();

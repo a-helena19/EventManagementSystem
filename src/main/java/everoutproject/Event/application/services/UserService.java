@@ -46,6 +46,7 @@ public class UserService {
         newUser.setCreatedAt(createdAt);
 
         userRepository.save(newUser);
+        System.out.println("DEBUG ID = " + newUser.getId());
 
         return UserMapperDTO.toDTO(newUser);
     }

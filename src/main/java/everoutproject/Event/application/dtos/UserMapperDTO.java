@@ -12,7 +12,7 @@ public class UserMapperDTO {
                 user.getEmail(),
                 user.getFirstName(),
                 user.getLastName(),
-                user.getRole().name(),
+                user.getRole() != null ? user.getRole().name() : "USER",
                 user.getCreatedAt(),
                 user.getUpdatedAt()
         );
